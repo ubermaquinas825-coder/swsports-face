@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { cepSchema, defaultShippingConfig, shippingConfigSchema, quoteUnavailable } from "@/lib/shipping";
+import { defaultShippingConfig, shippingConfigSchema } from "@/lib/shipping";
+import { shippingRequestSchema } from "@/lib/checkout";
+import { quoteFreight } from "@/lib/checkout.server";
 
 export const getShippingAdmin = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
@@ -21,5 +23,8 @@ export const saveShippingConfig = createServerFn({ method: "POST" }).middleware(
   if (result.error) throw new Error("Não foi possível salvar as configurações.");
   return { saved: true };
 });
-// Public validation only: no billable proxy and no fabricated prices.
-export const requestShippingQuote = createServerFn({ method: "POST" }).inputValidator((data: { cep: string }) => ({ cep: cepSchema.parse(data.cep) })).handler(async () => quoteUnavailable());
+// Public read-only quote for guest shoppers; never creates or pays for labels.
+export const requestShippingQuote = createServerFn({ method: "POST" }).inputValidator((data: unknown) => shippingRequestSchema.parse(data)).handler(async ({ data }) => {
+  const options = await quoteFreight(data.cep, data.lines);
+  return { options, message: options.length ? "" : "Nenhuma opção de entrega disponível para este CEP." };
+});
