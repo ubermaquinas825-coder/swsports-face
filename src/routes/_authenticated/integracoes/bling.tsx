@@ -6,6 +6,7 @@ import { Plug, RefreshCw, PackageSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBlingAdmin, startBlingOAuth, renewBlingOAuth, testBlingProducts } from "@/lib/bling.functions";
 import logo from "@/assets/sw-sports-logo.png.asset.json";
+import { BlingInventory } from "@/components/BlingInventory";
 
 const adminQuery = queryOptions({ queryKey: ["bling-admin"], queryFn: () => getBlingAdmin() });
 export const Route = createFileRoute("/_authenticated/integracoes/bling")({
@@ -32,7 +33,7 @@ function BlingAdmin() {
         </section><section className="border-b border-border py-8"><h2 className="mb-4 font-display text-xl font-bold">PRODUTOS DO BLING</h2>
           <Button variant="outline" disabled={busy || !data.connected} onClick={async () => { setBusy(true); setMessage(""); setProducts(null); try { const result = await testProducts(); setProducts(result.products); setMessage(`Consulta concluída: ${result.products.length} produto(s) nesta página.`); } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível consultar os produtos."); } finally { await qc.invalidateQueries({ queryKey: ["bling-admin"] }); setBusy(false); } }}><PackageSearch /> Consultar produtos</Button>
           {products && <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b border-border"><th className="py-3 pr-4">SKU</th><th className="py-3">Produto</th></tr></thead><tbody>{products.map((product) => <tr key={product.id} className="border-b border-border"><td className="py-3 pr-4 text-muted-foreground">{product.sku || "—"}</td><td className="py-3">{product.name}</td></tr>)}</tbody></table></div>}
-        </section><section className="py-8"><h2 className="mb-4 font-display text-xl font-bold">URL DE RETORNO</h2><p className="break-all text-sm text-muted-foreground">{data.callbackUrl}</p></section>
+        </section><BlingInventory connected={data.connected} /><section className="py-8"><h2 className="mb-4 font-display text-xl font-bold">URL DE RETORNO</h2><p className="break-all text-sm text-muted-foreground">{data.callbackUrl}</p></section>
       </>}
     </main></div>;
 }
