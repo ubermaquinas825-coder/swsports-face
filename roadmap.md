@@ -1,6 +1,9 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [x] Solicitação atual: identificação real dos seis modelos por nome e conferência oficial Appmax implementadas; consulta de saldo antes de salvar configuração, trava por pedido e barreiras financeiras testadas (42 testes de integração). Painel verificado com proprietário; sem pedido com link disponível para leitura real de pagamento.
+- [ ] Solicitação atual: ativar depósito Geral e estoque real — nova consulta ainda HTTP 403; exige reautorizar no Bling após liberar permissões.
+- [ ] Solicitação atual: pedidos automáticos/fluxo pago completo — exige endereço final confiável, configuração de contato/situação/forma de pagamento Bling e confirmação da regra de baixa; nenhum pedido/link salvo disponível para teste de pagamento, não gerar cobrança sem etapa acompanhada.
 - [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
 - [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
 - [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
@@ -10,7 +13,7 @@
 - [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
 - [x] Solicitar publicação da consulta administrativa de produtos Bling
 - [x] Bling autorização real e consulta de produtos — callback concluiu HTTP 303 às 22:51 UTC; painel autenticado verificou acesso e retornou os seis SKUs existentes sem alterações
-- [ ] Bling depósitos/estoque — consulta real GET /depositos retorna HTTP 403; proprietário precisa conferir acesso/permissões de depósitos e estoque no aplicativo e autorizar novamente, depois confirmar vínculos e depósito
+- [ ] Bling depósitos/estoque — depósito Geral confirmado pelo proprietário, mas GET /depositos continua HTTP 403 em novo teste às 22:59 UTC; reautorizar no aplicativo, depois confirmar vínculos e depósito
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias

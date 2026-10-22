@@ -11,6 +11,15 @@ export const blingInventoryConfigSchema = z.object({
 });
 export type BlingInventoryConfig = z.infer<typeof blingInventoryConfigSchema>;
 export const emptyBlingInventoryConfig: BlingInventoryConfig = { warehouseId: null, checkAtCheckout: false, mappings: [] };
+export function matchBlingCatalog(rows: Array<{ id: number; name: string; sku: string }>) {
+  const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  return products.map((product) => {
+    const matches = rows.filter((row) => normalize(row.name) === normalize(product.name) && row.sku.trim());
+    const row = matches[0];
+    if (matches.length !== 1 || !row) throw new Error(`Confirme manualmente o SKU de ${product.name}: nome ausente ou ambíguo no Bling.`);
+    return { productId: product.id, sku: row.sku, blingId: row.id };
+  });
+}
 const balancesSchema = z.object({ data: z.array(z.object({ produto: z.object({ id: z.number().int().positive() }), depositos: z.array(z.object({ id: z.number().int().positive(), saldoVirtual: z.number().finite() })) })).max(100) });
 export function projectWarehouseStock(value: unknown, warehouseId: number) {
   return balancesSchema.parse(value).data.map((row) => ({ blingId: row.produto.id, available: Math.max(0, Math.floor(row.depositos.find((d) => d.id === warehouseId)?.saldoVirtual ?? 0)) }));

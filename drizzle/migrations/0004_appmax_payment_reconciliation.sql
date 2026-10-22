@@ -1,0 +1,5 @@
+ALTER TABLE public.shipping_orders ADD COLUMN appmax_checked_at timestamptz, ADD COLUMN appmax_status text, ADD COLUMN appmax_check_lock_until timestamptz;
+CREATE FUNCTION public.claim_appmax_check(_order_id uuid) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN UPDATE public.shipping_orders SET appmax_check_lock_until=now()+interval '60 seconds' WHERE id=_order_id AND payment_link_id IS NOT NULL AND (appmax_check_lock_until IS NULL OR appmax_check_lock_until<now()); RETURN FOUND; END $$;
+REVOKE ALL ON FUNCTION public.claim_appmax_check(uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_appmax_check(uuid) TO service_role;
+COMMENT ON COLUMN public.shipping_orders.appmax_status IS 'Current status independently retrieved through authenticated Appmax order API; not a webhook assertion.';

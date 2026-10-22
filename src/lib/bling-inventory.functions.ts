@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { blingInventoryConfigSchema, emptyBlingInventoryConfig } from "./bling-inventory";
 import { readBlingWarehouses, readMappedStock, verifyBlingMappings } from "./bling-inventory.server";
+import { readBlingProducts } from "./bling.server";
+import { matchBlingCatalog } from "./bling-inventory";
 
 export const getBlingInventory = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
@@ -19,9 +21,15 @@ export const saveBlingInventory = createServerFn({ method: "POST" }).middleware(
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const verified = await verifyBlingMappings(data);
+  const stock = await readMappedStock(verified);
   const result = await context.supabase.from("bling_store_settings").upsert({ id: true, config: verified, updated_at: new Date().toISOString() });
   if (result.error) throw new Error("Não foi possível salvar os vínculos.");
-  return { config: verified, stock: await readMappedStock(verified) };
+  return { config: verified, stock };
+});
+export const discoverBlingCatalog = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
+  return matchBlingCatalog(await readBlingProducts());
 });
 export const testBlingInventory = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
