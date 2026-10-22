@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/sw-sports-logo.jpg.asset.json";
+import logo from "@/assets/sw-sports-logo.png.asset.json";
 import "@lovable.dev/cloud-auth-js/styles.css";
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Acesso administrativo | SW Sports" }, { name: "description", content: "Acesso seguro ao painel de frete e envios SW Sports." }, { property: "og:title", content: "Acesso SW Sports" }, { property: "og:description", content: "Painel administrativo de frete e envios." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),

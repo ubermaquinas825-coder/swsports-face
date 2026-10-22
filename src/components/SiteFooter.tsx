@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
 import { INSTAGRAM_URL, WHATSAPP_NUMBER, waLink } from "@/lib/products";
 import { business } from "@/lib/business";
-import logoAsset from "@/assets/sw-sports-logo.jpg.asset.json";
+import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
 
 export function SiteFooter() {
   return (

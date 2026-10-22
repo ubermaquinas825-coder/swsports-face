@@ -4,7 +4,7 @@ import { Instagram, Menu, ShoppingBag, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/hooks/use-cart";
 import { INSTAGRAM_URL } from "@/lib/products";
-import logoAsset from "@/assets/sw-sports-logo.jpg.asset.json";
+import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
