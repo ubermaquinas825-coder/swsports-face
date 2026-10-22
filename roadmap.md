@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Bling etapa 1: preparar OAuth seguro, página administrativa e callback HTTPS; conexão real aguarda cadastro do aplicativo e credenciais
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
