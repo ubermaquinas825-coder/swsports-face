@@ -51,3 +51,11 @@ O botão Conectar Bling gera um state novo de uso único; não usar o state est�
 - Nenhuma configuração em bling_store_settings; **Consultar estoque** corretamente exige salvar os vínculos primeiro. Saldos reais e bloqueio de estoque no checkout permanecem não verificados/não ativados.
 - Renovação antecipada possui teste automatizado aprovado, mas não houve refresh real: token ainda válido. Não confundir **Verificar acesso** com forçar renovação.
 - 11 testes Bling passaram; envio automático de pedidos continua não implementado, condicionado à confirmação Appmax, endereço e reconciliação segura.
+
+## Pedido de ativação — 22/10/2026 23:00 UTC
+
+- Proprietário confirmou o depósito Geral. Nova consulta real, com sessão administrativa, ainda recebeu HTTP 403 em GET /depositos; a autorização armazenada às 22:51 ainda não concede esse acesso. Reautorizar no botão Conectar Bling após ajustar permissões.
+- Os seis nomes/SKUs foram relidos: Velhinho Bigodudo SW-BAL-001, Boca de Beijo SW-BAL-002, Vovó Rebelde SW-BAL-003, Sorriso Banguela SW-BAL-004, Gato Divertido SW-BAL-005, Bebê com Chupeta SW-BAL-006.
+- Identificar modelos no Bling preenche o rascunho somente por correspondência única de nomes retornados; verificado no navegador. Não cria/edita produtos e exige confirmar os vínculos.
+- Confirmação agora valida a consulta real de estoque antes de gravar configuração, para não ativar uma configuração cujo acesso a saldo falha.
+- 17 testes de Bling, estoque e persistência Appmax passaram; nenhum pagamento real ou pedido ERP criado nesta verificação.
