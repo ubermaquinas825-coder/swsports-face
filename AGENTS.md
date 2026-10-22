@@ -18,3 +18,4 @@ Technical decisions for this project:
 - Cart state lives in `src/hooks/use-cart.tsx`, with one provider and drawer in the root layout so it remains available across storefront routes; product data and WhatsApp helpers in `src/lib/products.ts` are the single source of truth for prices and links.
 - Checkout always opens `https://wa.me/5534984350833` in a new tab with the order message built by `buildOrderMessage`; nothing marks a sale as completed.
 - Kit offers are rendered disabled ("EM APROVAÇÃO") until the owner approves the commercial values.
+- Public business identity, address and hours live in `src/lib/business.ts`; sales links remain in `src/lib/products.ts` so listing metadata cannot override checkout contacts.
