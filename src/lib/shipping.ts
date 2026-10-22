@@ -7,8 +7,12 @@ export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddre
 export type ShippingConfig = z.infer<typeof shippingConfigSchema>;
 export const defaultShippingConfig: ShippingConfig = {
   originCep: "38408562", senderAddress: "Rua Álvares de Azevedo, 994 — Carajás, Uberlândia — MG, CEP 38408-562",
-  productWeightKg: null,
-  packages: [{ name: "Uma balaclava", weightKg: 0.15, lengthCm: 20, widthCm: 15, heightCm: 10, capacity: 1, packagingWeightKg: null }], carriers: [],
+  productWeightKg: 0.1,
+  packages: [
+    { name: "Uma balaclava", weightKg: 0.15, lengthCm: 20, widthCm: 15, heightCm: 10, capacity: 1, packagingWeightKg: null },
+    { name: "Envelope 2 a 3 unidades", weightKg: 0.315, lengthCm: 36, widthCm: 26, heightCm: 4, capacity: 3, packagingWeightKg: 0.015 },
+    { name: "Envelope grande 4 a 10 unidades", weightKg: 1.025, lengthCm: 40, widthCm: 32, heightCm: 8, capacity: 10, packagingWeightKg: 0.025 },
+  ], carriers: [],
 };
 export const shippingStates: Record<string, string> = { awaiting_payment: "Aguardando pagamento", paid: "Pago", awaiting_label: "Aguardando emissão", awaiting_label_payment: "Aguardando pagamento da etiqueta", label_issued: "Etiqueta emitida", ready_to_post: "Pronto para postagem", posted: "Postado", delivered: "Entregue", logistics_failed: "Falha logística" };
 export function choosePackage(quantity: number, config: ShippingConfig) {
