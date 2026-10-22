@@ -16,7 +16,7 @@
 - Multi-unit packaging: 100 g per unit; 26x36 envelope (2-3 un.), 32x40 envelope (4-10 un.); above 10 blocked.
 
 ## Not implemented or live-tested
-- Signed payment webhook, verified labels, label payment, official PDF provenance and tracking synchronization remain unimplemented.
+- Appstore webhooks are officially unsigned (no HMAC header); they cannot establish payment/address truth. Verified labels, label payment, official PDF provenance and tracking synchronization remain unimplemented.
 - Atomic event deduplication/reprocessing, failed label emission and real approved/pending payment flows require those adapters. Unique external identifiers are present in storage but not a completed webhook implementation.
 - Retail checkout is Appmax only; no WhatsApp finalization fallback. Packaging supports 1–10 units; above 10 is blocked. Envelope tare/thickness still reflect the disclosed estimates pending owner measurement.
 - Administrative access verified with the owner's account; configuration persistence checked by saving unchanged settings and reading them again.
@@ -30,3 +30,12 @@
 - Admin **Verificar integrações** now uses the same server adapters for real freight/auth checks, never creates links/orders and returns no token. Replaced misleading static “waiting for credentials” text with session-specific verified results.
 - Provider token-error bodies are no longer logged; external requests have bounded timeouts. Failed/ambiguous link creation or persistence flags the pending record for reconciliation rather than leaving an apparently normal pending order or confirming payment.
 - Full Appmax payment, final-address verification, duplicate-safe Bling export and label issuance remain unimplemented and must not be described as working.
+
+## Appmax reconciliation — 22/10/2026
+
+- Official link membership lookup: GET /v1/payment-link/{id}/orders; current financial details: GET /v1/orders/{id}. Sources: https://docs.appmax.com.br/api-reference/payment-links/consultar-link-pagamento and https://docs.appmax.com.br/api-reference/orders/consultar-pedido.
+- Admin Conferir pagamentos Appmax now checks saved links with merchant credentials, all bounded result pages, exact detailed total_paid cents and approved/integrated status plus payment timestamp. Refunded/contested payments do not authorize fulfillment. No raw customer/payment response is persisted or exposed.
+- Per-order service-role-only lease prevents concurrent reconciliations; unique provider_payment_id binds one payment to one local order. Missing/ambiguous/multiple approvals enter reconciliation, never export or decrement stock.
+- The existing database has no saved payment-link orders to exercise this read flow against; live paid/refunded lookup remains unverified. No charge was created for testing.
+- Automatic scheduling and Bling export are not enabled: authenticated final-address source, owner-reauthorized deposit access, sale/contact/payment/situation configuration and actual stock automation behavior remain blockers.
+- Official GET order provides customer identity but no documented immutable delivery-address snapshot. Hosted address may differ from quoted CEP. Never trust unsigned customer webhook address for automatic fulfillment.
