@@ -19,3 +19,4 @@ Technical decisions for this project:
 - Checkout always opens `https://wa.me/5534984350833` in a new tab with the order message built by `buildOrderMessage`; nothing marks a sale as completed.
 - Kit offers are rendered disabled ("EM APROVAÇÃO") until the owner approves the commercial values.
 - Public business identity, address and hours live in `src/lib/business.ts`; sales links remain in `src/lib/products.ts` so listing metadata cannot override checkout contacts.
+- Logistics rules and configuration schemas live in `src/lib/shipping.ts`; authenticated server functions verify a protected `user_roles` admin role and persist configuration in Cloud. Provider calls remain unavailable until official authorization is configured; no checkout migration or label side effects occur in preparation mode.

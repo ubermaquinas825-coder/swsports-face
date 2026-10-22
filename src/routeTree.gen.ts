@@ -10,11 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AtacadoRouteImport } from './routes/atacado'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtacadoRoute = AtacadoRouteImport.update({
@@ -22,31 +30,67 @@ const AtacadoRoute = AtacadoRouteImport.update({
   path: '/atacado',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedFreteEnviosRoute =
+  AuthenticatedFreteEnviosRouteImport.update({
+    id: '/frete-envios',
+    path: '/frete-envios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
+  '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/frete-envios': typeof AuthenticatedFreteEnviosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
+  '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/frete-envios': typeof AuthenticatedFreteEnviosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/atacado': typeof AtacadoRoute
+  '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/atacado'
+  fullPaths: '/' | '/atacado' | '/auth' | '/redefinir-senha' | '/frete-envios'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/atacado'
-  id: '__root__' | '/' | '/atacado'
+  to: '/' | '/atacado' | '/auth' | '/redefinir-senha' | '/frete-envios'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/atacado'
+    | '/auth'
+    | '/redefinir-senha'
+    | '/_authenticated/frete-envios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AtacadoRoute: typeof AtacadoRoute
+  AuthRoute: typeof AuthRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/atacado': {
       id: '/atacado'
       path: '/atacado'
@@ -65,12 +116,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtacadoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/frete-envios': {
+      id: '/_authenticated/frete-envios'
+      path: '/frete-envios'
+      fullPath: '/frete-envios'
+      preLoaderRoute: typeof AuthenticatedFreteEnviosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedFreteEnviosRoute: typeof AuthenticatedFreteEnviosRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedFreteEnviosRoute: AuthenticatedFreteEnviosRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AtacadoRoute: AtacadoRoute,
+  AuthRoute: AuthRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
