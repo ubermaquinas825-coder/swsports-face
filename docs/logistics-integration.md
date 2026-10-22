@@ -39,3 +39,4 @@
 - The existing database has no saved payment-link orders to exercise this read flow against; live paid/refunded lookup remains unverified. No charge was created for testing.
 - Automatic scheduling and Bling export are not enabled: authenticated final-address source, owner-reauthorized deposit access, sale/contact/payment/situation configuration and actual stock automation behavior remain blockers.
 - Official GET order provides customer identity but no documented immutable delivery-address snapshot. Hosted address may differ from quoted CEP. Never trust unsigned customer webhook address for automatic fulfillment.
+- 42 targeted integration tests passed including approved/exact amount, refund with paid timestamp, wrong order, concurrent lease, multiple paid orders and API failure. Admin payment button verified with owner session; reported no saved payment-link orders. This is not a live-payment test.

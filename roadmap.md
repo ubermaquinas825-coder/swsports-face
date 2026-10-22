@@ -1,7 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
-- [x] Solicitação atual: identificação real dos seis modelos por nome e conferência oficial Appmax implementadas; consulta de saldo antes de salvar configuração, trava por pedido e barreiras financeiras testadas.
+- [x] Solicitação atual: identificação real dos seis modelos por nome e conferência oficial Appmax implementadas; consulta de saldo antes de salvar configuração, trava por pedido e barreiras financeiras testadas (42 testes de integração). Painel verificado com proprietário; sem pedido com link disponível para leitura real de pagamento.
 - [ ] Solicitação atual: ativar depósito Geral e estoque real — nova consulta ainda HTTP 403; exige reautorizar no Bling após liberar permissões.
 - [ ] Solicitação atual: pedidos automáticos/fluxo pago completo — exige endereço final confiável, configuração de contato/situação/forma de pagamento Bling e confirmação da regra de baixa; nenhum pedido/link salvo disponível para teste de pagamento, não gerar cobrança sem etapa acompanhada.
 - [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
