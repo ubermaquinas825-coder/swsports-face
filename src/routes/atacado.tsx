@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
-import { CartProvider } from "@/hooks/use-cart";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { products, waLink } from "@/lib/products";
@@ -69,7 +68,7 @@ function AtacadoPage() {
     "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-brand";
 
   return (
-    <CartProvider>
+    <>
       <SiteHeader />
       <main className="relative overflow-hidden pt-32 pb-24 md:pt-40">
         <div
@@ -200,6 +199,6 @@ function AtacadoPage() {
         </div>
       </main>
       <SiteFooter />
-    </CartProvider>
+    </>
   );
 }

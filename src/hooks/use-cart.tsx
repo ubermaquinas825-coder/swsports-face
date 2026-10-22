@@ -4,12 +4,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { productFor, type Product } from "@/lib/products";
+import { productFor, UNIT_PRICE, type Product } from "@/lib/products";
 
 export type CartItem = { id: string; qty: number };
 
@@ -48,21 +47,21 @@ function readStored(): CartItem[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const hydrated = useRef(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setItems(readStored());
-    hydrated.current = true;
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated.current) return;
+    if (!hydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       // storage unavailable — cart stays in memory
     }
-  }, [items]);
+  }, [items, hydrated]);
 
   const add = useCallback((id: string, qty = 1) => {
     setItems((prev) => {
@@ -102,7 +101,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       })
       .filter((l): l is { product: Product; qty: number } => l !== null);
     const count = lines.reduce((sum, l) => sum + l.qty, 0);
-    const subtotal = lines.reduce((sum, l) => sum + l.qty * 49.9, 0);
+    const subtotal = lines.reduce((sum, l) => sum + l.qty * UNIT_PRICE, 0);
     return {
       items,
       lines,

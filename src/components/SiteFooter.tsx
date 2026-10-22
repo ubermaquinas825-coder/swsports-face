@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, MessageCircle } from "lucide-react";
 import { INSTAGRAM_URL, waLink } from "@/lib/products";
+import logoAsset from "@/assets/sw-sports-logo.jpg.asset.json";
 
 export function SiteFooter() {
   return (
@@ -8,12 +9,7 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between md:px-6">
         <div>
           <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-sm font-bold text-white">
-              SW
-            </span>
-            <span>
-              SW<span className="text-brand"> SPORTS</span>
-            </span>
+            <img src={logoAsset.url} alt="SW Sports Uniformes" width={453} height={255} className="h-24 w-44 object-contain" />
           </Link>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Balaclavas divertidas com estampas realistas. Uma nova personalidade por{" "}

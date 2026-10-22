@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CartProvider } from "@/hooks/use-cart";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Hero } from "@/components/Hero";
 import { Collection } from "@/components/Collection";
@@ -9,7 +8,6 @@ import { Benefits } from "@/components/Benefits";
 import { Faq } from "@/components/Faq";
 import { FinalCta } from "@/components/FinalCta";
 import { SiteFooter } from "@/components/SiteFooter";
-import { CartDrawer } from "@/components/CartDrawer";
 import { Reveal } from "@/components/Reveal";
 import { Link } from "@tanstack/react-router";
 
@@ -70,7 +68,7 @@ function WholesaleStrip() {
 
 function Home() {
   return (
-    <CartProvider>
+    <>
       <SiteHeader />
       <main>
         <Hero />
@@ -83,7 +81,6 @@ function Home() {
         <FinalCta />
       </main>
       <SiteFooter />
-      <CartDrawer />
-    </CartProvider>
+    </>
   );
 }
