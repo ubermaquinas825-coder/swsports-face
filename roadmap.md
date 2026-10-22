@@ -1,7 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
-- [ ] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
+- [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
 - [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
