@@ -1,0 +1,9 @@
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+export const Route = createFileRoute("/redefinir-senha")({ head: () => ({ meta: [{ title: "Redefinir senha | SW Sports" }, { name: "description", content: "Recupere o acesso administrativo SW Sports." }, { property: "og:title", content: "Redefinir senha SW Sports" }, { property: "og:description", content: "Recuperação segura de acesso." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Reset });
+function Reset() {
+  const [password, setPassword] = useState(""); const [message, setMessage] = useState("");
+  return <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-5 px-6"><h1 className="font-display text-3xl font-bold">NOVA SENHA</h1><form className="space-y-4" onSubmit={async (e) => { e.preventDefault(); const { data } = await supabase.auth.getSession(); if (!data.session) { setMessage("Abra o link de recuperação enviado por e-mail."); return; } const { error } = await supabase.auth.updateUser({ password }); setMessage(error ? "Não foi possível alterar a senha." : "Senha atualizada."); }}><label className="block">Nova senha<input type="password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full rounded-md border border-input bg-card p-3" /></label><Button type="submit">Salvar senha</Button></form><p role="status">{message}</p><Link to="/auth">Voltar ao acesso</Link></main>;
+}
