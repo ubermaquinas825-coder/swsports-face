@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, useSpring } from "motion/react";
 import { ArrowDown, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { products, UNIT_PRICE, formatBRL } from "@/lib/products";
@@ -11,6 +11,13 @@ export function Hero() {
   const areaRef = useRef<HTMLDivElement>(null);
   const rotateY = useSpring(0, { stiffness: 110, damping: 22 });
   const rotateX = useSpring(0, { stiffness: 110, damping: 22 });
+  const [hovered, setHovered] = useState(false);
+  // troca automática a cada 10s; pausa com o mouse em cima e para sempre com movimento reduzido
+  useEffect(() => {
+    if (reduce || hovered) return;
+    const id = window.setTimeout(() => setCurrent((value) => (value + 1) % products.length), 10000);
+    return () => window.clearTimeout(id);
+  }, [current, reduce, hovered]);
   if (!featured) return null;
   const change = (direction: number) => setCurrent((value) => (value + direction + products.length) % products.length);
   return (
@@ -26,13 +33,14 @@ export function Hero() {
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">Não é só uma balaclava. É uma nova personalidade.</p>
         </motion.div>
         <div ref={areaRef} className="relative mx-auto mt-2 flex h-[240px] max-w-4xl items-center justify-center sm:h-[300px] lg:h-[360px] [perspective:1200px]"
+          onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
           onPointerMove={(event) => {
             if (reduce || event.pointerType !== "mouse") return;
             const rect = areaRef.current?.getBoundingClientRect();
             if (!rect) return;
             rotateY.set(((event.clientX - rect.left) / rect.width - 0.5) * 28);
             rotateX.set(-((event.clientY - rect.top) / rect.height - 0.5) * 18);
-          }} onPointerLeave={() => { rotateX.set(0); rotateY.set(0); }}>
+          }} onPointerLeave={() => { rotateX.set(0); rotateY.set(0); setHovered(false); }}>
           <span aria-hidden className="absolute left-0 top-10 font-display text-7xl font-bold text-foreground/5 sm:text-9xl">0{current + 1}</span>
           <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative flex h-full w-full items-center justify-center">
             <AnimatePresence mode="wait">
