@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { buildOrderMessage, formatBRL, UNIT_PRICE, waLink } from "@/lib/products";
+import { ShippingCalculator } from "@/components/ShippingCalculator";
 
 export function CartDrawer() {
   const { lines, count, subtotal, isOpen, closeCart, setQty, remove } = useCart();
@@ -108,6 +109,7 @@ export function CartDrawer() {
                       </div>
                     </motion.div>
                   ))}
+                  <ShippingCalculator cartKey={lines.map((l) => `${l.product.id}:${l.qty}`).join(",")} />
                 </div>
                 <div className="border-t border-border px-5 py-4">
                   <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground">

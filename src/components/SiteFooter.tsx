@@ -62,6 +62,7 @@ export function SiteFooter() {
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-border px-4 pt-6 text-xs text-muted-foreground md:px-6">
         © {new Date().getFullYear()} SW Sports. Todos os direitos reservados.
+        <Link to="/frete-envios" className="ml-4 inline-block transition-colors hover:text-foreground">Área administrativa</Link>
       </div>
     </footer>
   );
