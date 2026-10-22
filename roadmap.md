@@ -1,12 +1,14 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
-- [ ] Ligar pedidos pagos e estoque ao Bling sem duplicações — preparar controles; ativação aguarda consentimento Bling, mapeamento dos produtos/depósito e contrato oficial de confirmação Appmax
+- [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
+- [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
+- [ ] Ativar pedidos automáticos/estoque real Bling — aguarda consentimento Bling, mapeamento dos produtos/depósito, contrato validado de confirmação/cliente/endereço Appmax, reconciliação segura e teste real; alterações atuais ainda não publicadas
 - [x] Bling etapa 1: infraestrutura OAuth, armazenamento criptografado, renovação e página administrativa; testes locais passaram
 - [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
 - [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
 - [x] Solicitar publicação da consulta administrativa de produtos Bling
-- [ ] Bling autorização real e consulta de produtos — nenhuma conta cadastrada; aguarda cadastro/login do proprietário, autorização administrativa e consentimento no Bling
+- [ ] Bling autorização real e consulta de produtos — conta administrativa liberada; aguarda consentimento no Bling
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
