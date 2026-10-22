@@ -18,6 +18,7 @@ import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenti
 import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_authenticated/integracoes/bling'
 import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
 import { Route as ApiPublicBlingStartRouteImport } from './routes/api/public/bling/start'
+import { Route as ApiPublicCronSyncOrdersRouteImport } from './routes/api/public/cron/sync-orders'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,6 +66,11 @@ const ApiPublicBlingStartRoute = ApiPublicBlingStartRouteImport.update({
   path: '/api/public/bling/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronSyncOrdersRoute = ApiPublicCronSyncOrdersRouteImport.update({
+  id: '/api/public/cron/sync-orders',
+  path: '/api/public/cron/sync-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
+  '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
+  '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/_authenticated/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
+  '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/integracoes/bling'
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
+    | '/api/public/cron/sync-orders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/integracoes/bling'
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
+    | '/api/public/cron/sync-orders'
   id:
     | '__root__'
     | '/'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/_authenticated/integracoes/bling'
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
+    | '/api/public/cron/sync-orders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
   ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
+  ApiPublicCronSyncOrdersRoute: typeof ApiPublicCronSyncOrdersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBlingStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/sync-orders': {
+      id: '/api/public/cron/sync-orders'
+      path: '/api/public/cron/sync-orders'
+      fullPath: '/api/public/cron/sync-orders'
+      preLoaderRoute: typeof ApiPublicCronSyncOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -231,6 +251,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
   ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
+  ApiPublicCronSyncOrdersRoute: ApiPublicCronSyncOrdersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
