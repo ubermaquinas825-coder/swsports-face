@@ -2,8 +2,9 @@
 
 ## Correções atuais
 - [x] Bling etapa 1: infraestrutura OAuth, armazenamento criptografado, renovação e página administrativa; testes locais passaram
-- [ ] Bling callback HTTPS disponível publicamente — publicação autorizada pelo proprietário; aguarda implantação e verificação do endereço de retorno
-- [ ] Bling autorização real e painel administrativo — aguarda cadastro do aplicativo, credenciais seguras e identificação/autorização da conta administrativa
+- [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
+- [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
+- [ ] Bling autorização real e consulta de produtos — aguarda criação e autorização da conta administrativa do proprietário; nova consulta ainda precisa de publicação
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias

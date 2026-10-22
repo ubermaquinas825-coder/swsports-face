@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { BLING_CALLBACK_URL, blingAuthorizationUrl, needsBlingRefresh } from "@/lib/bling";
+import { BLING_CALLBACK_URL, BLING_PRODUCTS_URL, blingAuthorizationUrl, needsBlingRefresh, projectBlingProducts } from "@/lib/bling";
 
 describe("Bling OAuth", () => {
+  it("uses the official read-only products endpoint with bounded pagination", () => {
+    const url = new URL(BLING_PRODUCTS_URL);
+    expect(url.origin).toBe("https://api.bling.com.br");
+    expect(url.pathname).toBe("/Api/v3/produtos");
+    expect(url.searchParams.get("pagina")).toBe("1");
+    expect(url.searchParams.get("limite")).toBe("10");
+  });
+  it("returns only product identifiers, names and SKUs", () => {
+    expect(projectBlingProducts({ data: [{ id: 1, nome: "Balaclava", codigo: "SW-BAL-001", privateField: "discard", access_token: "discard" }], refresh_token: "discard" })).toEqual([{ id: 1, name: "Balaclava", sku: "SW-BAL-001" }]);
+  });
+  it("rejects invalid products instead of forwarding arbitrary responses", () => {
+    expect(() => projectBlingProducts({ data: [{ id: -1, nome: "Invalid" }] })).toThrow();
+  });
   it("uses the site's HTTPS callback", () => {
     const url = new URL(BLING_CALLBACK_URL);
     expect(url.protocol).toBe("https:");
