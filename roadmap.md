@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Verificar Bling, SuperFrete e Appmax com consultas reais sem cobranças; corrigir falhas encontradas e informar bloqueios externos
 - [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
 - [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
 - [ ] Ativar pedidos automáticos/estoque real Bling — aguarda consentimento Bling, mapeamento dos produtos/depósito, contrato validado de confirmação/cliente/endereço Appmax, reconciliação segura e teste real; alterações atuais ainda não publicadas
