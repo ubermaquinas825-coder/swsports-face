@@ -18,8 +18,15 @@
 ## Not implemented or live-tested
 - Signed payment webhook, verified labels, label payment, official PDF provenance and tracking synchronization remain unimplemented.
 - Atomic event deduplication/reprocessing, failed label emission and real approved/pending payment flows require those adapters. Unique external identifiers are present in storage but not a completed webhook implementation.
-- Retail checkout is Appmax only; no WhatsApp finalization fallback. Multi-unit shipping remains blocked until actual weights and supported packaging are supplied.
-- Administrative persistence must be tested with an owner-approved account. Public login verification does not establish admin access.
+- Retail checkout is Appmax only; no WhatsApp finalization fallback. Packaging supports 1–10 units; above 10 is blocked. Envelope tare/thickness still reflect the disclosed estimates pending owner measurement.
+- Administrative access verified with the owner's account; configuration persistence checked by saving unchanged settings and reading them again.
 
 ## Tests
 - 18 tests pass, including catalog-price totals, freight invalidation and invalid cart rejection. Browser verified live SuperFrete prices, selected total, hosted Appmax amount, and blocking unconfigured multi-unit packages. Payment and complete event/reprocessing tests remain pending their contracts.
+
+## Verification 2026-10-22
+- Appmax client-credentials exchange returned HTTP 200 with a token; no link, order or charge was created during this check. This does not verify approved payments or fulfillment.
+- Live cart quote to 01310-100 returned Jadlog R$14.74, PAC R$16.19 and SEDEX R$19.45; selecting Jadlog displayed R$64.64 total and enabled Appmax continuation without clicking it. Prices are observations, not fixed commercial values.
+- Admin **Verificar integrações** now uses the same server adapters for real freight/auth checks, never creates links/orders and returns no token. Replaced misleading static “waiting for credentials” text with session-specific verified results.
+- Provider token-error bodies are no longer logged; external requests have bounded timeouts. Failed/ambiguous link creation or persistence flags the pending record for reconciliation rather than leaving an apparently normal pending order or confirming payment.
+- Full Appmax payment, final-address verification, duplicate-safe Bling export and label issuance remain unimplemented and must not be described as working.

@@ -35,3 +35,10 @@ O botão Conectar Bling gera um state novo de uso único; não usar o state est�
 - Conferência no checkout é opcional e só pode ser habilitada com os seis vínculos; consulta falha fechada, sem reserva nem baixa. Consulta não garante ausência de venda concorrente até que reservas/pedidos sejam integrados.
 - Pedidos pendentes e IDs de links Appmax são registrados antes do redirecionamento. Criação de link nunca confirma pagamento nem exporta pedido ao Bling.
 - Envio automático NÃO implementado/ativado: faltam contrato validado de confirmação Appmax e associação do cliente/endereço ao link; depósito/mapeamento/consentimento e teste real de pedido com reconciliação também pendentes. Não criar webhook sem validação nem presumir que numeroLoja garante unicidade no ERP.
+
+## Verificação de 22/10/2026 22:45 UTC
+
+- Painel autenticado do proprietário acessível; conexão ainda sem autorização salva e consultas de produtos/depósitos/estoque indisponíveis.
+- Logs publicados mostram início OAuth HTTP 302 seguido de retorno à raiz `/?code=…&state=…`, não ao callback. Não reutilizar esses códigos expirados nem encaminhá-los por suporte/chat.
+- Corrigir no aplicativo Bling o campo **Link de redirecionamento** para `https://swsports-face.lovable.app/api/public/bling/callback`, salvar e iniciar **Conectar Bling** novamente. A documentação oficial associa o retorno ao endereço cadastrado: https://developer.bling.com.br/aplicativos e https://developer.bling.com.br/como-testar.
+- Callback publicado retorna HTTP 400 sem parâmetros, como esperado. Não confirma troca de tokens, permissões ou estoque real.
