@@ -7,7 +7,8 @@ import { Reveal } from "@/components/Reveal";
 export function Personality() {
   const [current, setCurrent] = useState(0);
   const { add } = useCart();
-  const product = products[current]!;
+  const product = products[current];
+  if (!product) return null;
 
   return (
     <section id="personalidade" className="scroll-mt-24 border-y border-border bg-popover/40 py-20 md:py-28">

@@ -4,13 +4,15 @@ import { Instagram, Menu, ShoppingBag, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/hooks/use-cart";
 import { INSTAGRAM_URL } from "@/lib/products";
+import logoAsset from "@/assets/sw-sports-logo.jpg.asset.json";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
   { label: "Início", to: "/", hash: "" },
   { label: "Coleção", to: "/", hash: "#colecao" },
   { label: "Kits", to: "/", hash: "#kits" },
   { label: "Atacado", to: "/atacado", hash: "" },
-];
+] as const;
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -25,7 +27,7 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const go = (to: string, hash: string) => {
+  const go = (to: "/" | "/atacado", hash: string) => {
     setMenuOpen(false);
     if (to !== "/") {
       navigate({ to });
@@ -38,7 +40,10 @@ export function SiteHeader() {
         return;
       }
     }
-    navigate({ to: "/" });
+    if (window.location.pathname === "/" && !hash) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    navigate({ to: "/", hash: hash.replace(/^#/, "") });
   };
 
   return (
@@ -51,23 +56,18 @@ export function SiteHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:h-[76px] md:px-6">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-sm font-bold text-white">
-            SW
-          </span>
-          <span>
-            SW<span className="text-brand"> SPORTS</span>
-          </span>
+          <img src={logoAsset.url} alt="SW Sports Uniformes" width={453} height={255} className="h-12 w-28 object-contain md:h-16 md:w-36" />
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
           {NAV.map((item) => (
-            <button
+            <Button variant="ghost"
               key={item.label}
               onClick={() => go(item.to, item.hash)}
-              className="transition-colors hover:text-white"
+              className="px-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
             >
               {item.label}
-            </button>
+            </Button>
           ))}
         </nav>
 
@@ -81,7 +81,7 @@ export function SiteHeader() {
           >
             <Instagram className="h-4 w-4" />
           </a>
-          <button
+          <Button variant="ghost" size="icon"
             onClick={openCart}
             aria-label="Abrir carrinho"
             className="relative grid h-9 w-9 place-items-center rounded-full border border-border transition-colors hover:border-brand hover:text-brand"
@@ -100,20 +100,20 @@ export function SiteHeader() {
                 </motion.span>
               )}
             </AnimatePresence>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => go("/", "#colecao")}
             className="hidden rounded-full bg-brand px-4 py-2 text-xs font-bold tracking-wide text-white transition-colors hover:bg-brand-deep md:block"
           >
             COMPRAR
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost" size="icon"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Abrir menu"
             className="grid h-9 w-9 place-items-center rounded-full border border-border md:hidden"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -128,13 +128,13 @@ export function SiteHeader() {
           >
             <div className="flex flex-col gap-1 px-4 py-3">
               {NAV.map((item) => (
-                <button
+                <Button variant="ghost"
                   key={item.label}
                   onClick={() => go(item.to, item.hash)}
-                  className="rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-card hover:text-white"
+                  className="justify-start rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
           </motion.nav>

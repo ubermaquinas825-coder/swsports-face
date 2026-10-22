@@ -4,9 +4,10 @@ import { ShoppingBag, Zap } from "lucide-react";
 import { formatBRL, productFor, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
 import { Reveal } from "@/components/Reveal";
+import { Button } from "@/components/ui/button";
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
-  const { add, openCart, setQty } = useCart();
+  const { add, openCart } = useCart();
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -19,7 +20,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   };
 
   const buyNow = () => {
-    setQty(product.id, 1);
+    add(product.id);
     openCart();
   };
 
@@ -60,20 +61,20 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             </div>
             <p className="font-display text-2xl font-bold text-brand">{formatBRL(UNIT_PRICE)}</p>
             <div className="flex gap-2">
-              <button
+              <Button variant="outline"
                 onClick={() => add(product.id)}
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
               >
                 <ShoppingBag className="h-3.5 w-3.5" />
                 ADICIONAR
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={buyNow}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-xs font-bold tracking-wide text-white transition-colors hover:bg-brand-deep"
+                className="inline-flex h-auto min-h-10 flex-1 items-center justify-center gap-2 whitespace-normal rounded-full bg-brand px-4 py-2.5 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep"
               >
                 <Zap className="h-3.5 w-3.5" />
                 COMPRAR AGORA
-              </button>
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -105,9 +106,10 @@ export function Collection() {
             "bebe-chupeta",
             "vovo-rebelde",
             "sorriso-banguela",
-          ].map((id, i) => (
-            <ProductCard key={id} product={productFor(id)!} index={i} />
-          ))}
+          ].map((id, i) => {
+            const product = productFor(id);
+            return product ? <ProductCard key={id} product={product} index={i} /> : null;
+          })}
         </div>
       </div>
     </section>
