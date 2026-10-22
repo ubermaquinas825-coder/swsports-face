@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "motion/react";
 import { ShoppingBag, Zap } from "lucide-react";
-import { formatBRL, UNIT_PRICE, type Product } from "@/lib/products";
+import { formatBRL, productFor, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
 import { Reveal } from "@/components/Reveal";
 
