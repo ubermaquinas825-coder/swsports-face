@@ -1,134 +1,59 @@
-import { useRef } from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
-import { ChevronDown } from "lucide-react";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, useSpring } from "motion/react";
+import { ArrowDown, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { products, UNIT_PRICE, formatBRL } from "@/lib/products";
-import { Reveal } from "@/components/Reveal";
-
-const featured = products.find((p) => p.id === "boca-de-beijo")!;
+import { Button } from "@/components/ui/button";
 
 export function Hero() {
   const reduce = useReducedMotion();
+  const [current, setCurrent] = useState(1);
+  const featured = products[current];
   const areaRef = useRef<HTMLDivElement>(null);
-  const rotateY = useSpring(0, { stiffness: 120, damping: 16 });
-  const rotateX = useSpring(0, { stiffness: 120, damping: 16 });
-
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (reduce || !areaRef.current) return;
-    const rect = areaRef.current.getBoundingClientRect();
-    const dx = (e.clientX - rect.left) / rect.width - 0.5;
-    const dy = (e.clientY - rect.top) / rect.height - 0.5;
-    rotateY.set(dx * 24); // ±12 graus
-    rotateX.set(-dy * 16); // ±8 graus
-  };
-
-  const onMouseLeave = () => {
-    rotateY.set(0);
-    rotateX.set(0);
-  };
-
+  const rotateY = useSpring(0, { stiffness: 110, damping: 22 });
+  const rotateX = useSpring(0, { stiffness: 110, damping: 22 });
+  if (!featured) return null;
+  const change = (direction: number) => setCurrent((value) => (value + direction + products.length) % products.length);
   return (
-    <section className="relative flex min-h-[92svh] items-center overflow-hidden pt-24 pb-16">
-      {/* halo vermelho cinematográfico */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-40 top-1/4 h-[620px] w-[620px] rounded-full opacity-25 blur-[120px]"
-        style={{ background: "radial-gradient(circle, #E32636 0%, transparent 65%)" }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-52 bottom-0 h-[420px] w-[420px] rounded-full opacity-10 blur-[100px]"
-        style={{ background: "radial-gradient(circle, #9F1422 0%, transparent 70%)" }}
-      />
-
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 md:px-6 lg:grid-cols-[45%_55%]">
-        <Reveal>
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-semibold tracking-widest text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            BALACLAVAS SW SPORTS
-          </p>
-          <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl xl:text-6xl">
-            NÃO É SÓ UMA
-            <br />
-            BALACLAVA.
-            <br />
-            <span className="text-brand">É UMA NOVA PERSONALIDADE.</span>
-          </h1>
-          <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-            Estampas realistas e divertidas para quem nasceu para chamar atenção.
-          </p>
-          <p className="mt-4 font-display text-2xl font-bold">
-            A partir de {formatBRL(UNIT_PRICE)}
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
-              href="#colecao"
-              className="inline-flex items-center justify-center rounded-full bg-brand px-7 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_32px_-6px_rgba(227,38,54,0.6)] transition-transform hover:scale-[1.02]"
-            >
-              ESCOLHER MINHA BALACLAVA
-            </a>
-            <a
-              href="#colecao"
-              className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3.5 text-sm font-bold tracking-wide text-foreground transition-colors hover:border-brand hover:text-brand"
-            >
-              EXPLORAR COLEÇÃO
-            </a>
-          </div>
-        </Reveal>
-
-        {/* Apresentação 2.5D — substituível por modelo GLB real no futuro */}
-        <div
-          ref={areaRef}
-          onMouseMove={onMouseMove}
-          onMouseLeave={onMouseLeave}
-          className="relative mx-auto w-full max-w-xl [perspective:1200px]"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-[90px]"
-            style={{ background: "radial-gradient(circle, #E32636 0%, transparent 70%)" }}
-          />
-          <motion.div
-            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-            className="relative"
-          >
-            <motion.div
-              {...(reduce ? {} : { animate: { y: [0, -9, 0] } })}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <img
-                src={featured.image}
-                alt={`Balaclava ${featured.name} da SW Sports`}
-                width={859}
-                height={622}
-                loading="eager"
-                fetchPriority="high"
-                className="mx-auto w-full max-w-lg select-none drop-shadow-[0_40px_60px_rgba(0,0,0,0.7)]"
-              />
-            </motion.div>
-            {/* sombra no chão */}
-            <motion.div
-              aria-hidden
-              {...(reduce ? {} : { animate: { scaleX: [1, 0.94, 1], opacity: [0.5, 0.35, 0.5] } })}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto h-6 w-2/5 rounded-[100%] bg-black/80 blur-md"
-            />
-          </motion.div>
+    <section className="showcase relative isolate overflow-hidden border-b border-border pt-24 pb-8 md:pt-28">
+      <div aria-hidden className="showcase-grid absolute inset-0 -z-10" />
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3 text-xs font-semibold text-muted-foreground">
+          <span>ESTAMPAS REAIS. PERSONALIDADES ÚNICAS.</span>
+          <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-brand" /> COLEÇÃO SW SPORTS</span>
         </div>
+        <motion.div initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="relative z-10 mt-7 text-center">
+          <h1 className="font-display text-4xl font-bold leading-none sm:text-5xl lg:text-7xl">BALACLAVAS <span className="text-brand">SW SPORTS</span></h1>
+          <p className="mt-3 text-sm text-muted-foreground sm:text-base">Não é só uma balaclava. É uma nova personalidade.</p>
+        </motion.div>
+        <div ref={areaRef} className="relative mx-auto mt-2 flex h-[240px] max-w-4xl items-center justify-center sm:h-[300px] lg:h-[360px] [perspective:1200px]"
+          onPointerMove={(event) => {
+            if (reduce || event.pointerType !== "mouse") return;
+            const rect = areaRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            rotateY.set(((event.clientX - rect.left) / rect.width - 0.5) * 28);
+            rotateX.set(-((event.clientY - rect.top) / rect.height - 0.5) * 18);
+          }} onPointerLeave={() => { rotateX.set(0); rotateY.set(0); }}>
+          <span aria-hidden className="absolute left-0 top-10 font-display text-7xl font-bold text-foreground/5 sm:text-9xl">0{current + 1}</span>
+          <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative flex h-full w-full items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.img key={featured.id} src={featured.image} alt={`Balaclava ${featured.name} da SW Sports`} width={859} height={622} loading="eager" fetchPriority="high"
+                initial={reduce ? false : { opacity: 0, rotateY: -45, x: -40 }} animate={{ opacity: 1, rotateY: 0, x: 0, y: reduce ? 0 : [0, -10, 0] }}
+                exit={reduce ? { opacity: 0 } : { opacity: 0, rotateY: 45, x: 40 }} transition={{ duration: 0.5, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }}
+                className="product-cutout h-full w-full max-w-xl select-none object-contain" />
+            </AnimatePresence>
+          </motion.div>
+          <Button variant="outline" size="icon" onClick={() => change(-1)} aria-label="Estampa anterior" title="Estampa anterior" className="absolute left-0 h-10 w-10 rounded-full bg-background/80"><ChevronLeft /></Button>
+          <Button variant="outline" size="icon" onClick={() => change(1)} aria-label="Próxima estampa" title="Próxima estampa" className="absolute right-0 h-10 w-10 rounded-full bg-background/80"><ChevronRight /></Button>
+        </div>
+        <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
+          <div><p className="text-sm font-medium">{featured.name} <span className="mx-2 text-muted-foreground">/</span><span className="font-bold text-brand">{formatBRL(UNIT_PRICE)}</span></p></div>
+          <Button asChild size="lg" className="h-12 rounded-full px-8 font-bold"><a href="#colecao">ESCOLHER MINHA BALACLAVA <ArrowUpRight /></a></Button>
+          <div className="flex gap-2" aria-label="Estampas da coleção">
+            {products.map((product, index) => <Button key={product.id} variant="ghost" size="icon" aria-label={`Mostrar ${product.name}`} aria-pressed={index === current} onClick={() => setCurrent(index)} title={product.name} className="h-7 w-7 rounded-full"><span className={`h-1.5 rounded-full transition-all ${index === current ? "w-5 bg-brand" : "w-1.5 bg-muted-foreground"}`} /></Button>)}
+          </div>
+        </div>
+        <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground"><span>06 MODELOS · {formatBRL(UNIT_PRICE)} CADA</span><a href="#colecao" aria-label="Ver coleção" className="flex items-center gap-2">VER COLEÇÃO <ArrowDown className="h-3.5 w-3.5" /></a></div>
       </div>
-
-      <a
-        href="#colecao"
-        aria-label="Rolar até a coleção"
-        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-muted-foreground md:block"
-      >
-        <motion.span
-          {...(reduce ? {} : { animate: { y: [0, 6, 0] } })}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="block"
-        >
-          <ChevronDown className="h-5 w-5" />
-        </motion.span>
-      </a>
     </section>
   );
 }
