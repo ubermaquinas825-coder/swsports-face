@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { choosePackage, defaultShippingConfig, shippingConfigSchema, validatedTotal } from "@/lib/shipping";
-import { productFor } from "@/lib/products";
+import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/udc_superfrete";
@@ -45,13 +45,18 @@ export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, opti
   const authResponse = await fetch("https://auth.appmax.com.br/oauth2/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }) });
   const auth = z.object({ access_token: z.string().min(1) }).parse(await providerJson(authResponse, "Appmax"));
   const totalCents = validatedTotal(lines, 0, option.priceCents);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const pending = await supabaseAdmin.from("shipping_orders").insert({ items: lines.map((line) => ({ id: line.id, name: productFor(line.id)?.name ?? line.id, qty: line.qty, unit_price_cents: Math.round(UNIT_PRICE * 100) })), subtotal_cents: validatedTotal(lines, 0, 0), freight_cents: option.priceCents, quoted_cep: cep, shipping_service: option, payment_status: "pending", bling_sync_status: "awaiting_payment" }).select("id").single();
+  if (pending.error || !pending.data) throw new Error("Não foi possível registrar o pedido. Tente novamente.");
   const items = lines.map((line) => `${line.qty}x ${productFor(line.id)?.name}`).join("; ");
   const response = await fetch("https://api.appmax.com.br/v1/payment-link", {
     method: "POST", headers: { Authorization: `Bearer ${auth.access_token}`, "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ name: "SW Sports — Balaclavas", value: totalCents, description: `${items}. Frete ${option.company} ${option.name}: R$ ${(option.priceCents / 100).toFixed(2)}. CEP ${cep}.`, product_type: "physical", payments: ["creditcard", "boleto", "pix"], max_installments: 1, fee_transfer_from_installment: 0, allow_multiple_sales: false }),
+    body: JSON.stringify({ name: "SW Sports — Balaclavas", value: totalCents, description: `Pedido SW-${pending.data.id}. ${items}. Frete ${option.company} ${option.name}: R$ ${(option.priceCents / 100).toFixed(2)}. CEP ${cep}.`, product_type: "physical", payments: ["creditcard", "boleto", "pix"], max_installments: 1, fee_transfer_from_installment: 0, allow_multiple_sales: false }),
   });
   const result = z.object({ data: z.object({ id: z.union([z.number(), z.string()]), checkout_url: z.string().url() }) }).parse(await providerJson(response, "Appmax"));
   const url = new URL(result.data.checkout_url);
   if (url.protocol !== "https:" || url.username || url.password) throw new Error("A Appmax retornou um endereço de pagamento inválido.");
+  const saved = await supabaseAdmin.from("shipping_orders").update({ payment_link_id: String(result.data.id) }).eq("id", pending.data.id).select("id").single();
+  if (saved.error || !saved.data) throw new Error("Não foi possível vincular o pagamento ao pedido. Tente novamente.");
   return { checkoutUrl: url.href, totalCents };
 }

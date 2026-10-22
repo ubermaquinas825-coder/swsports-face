@@ -24,6 +24,14 @@ Painel: `/integracoes/bling`, disponível pelo painel Frete e Envios.
 
 Documentação: https://developer.bling.com.br/aplicativos e https://developer.bling.com.br/migracao-jwt
 
-Verificação em 22/10/2026: callback publicado responde HTTP 400 sem state/cookie (não mais 404). Credenciais BLING_CLIENT_ID e BLING_CLIENT_SECRET salvas pelo formulário seguro; não foi possível verificar se o segredo exposto foi regenerado. Nenhum usuário de autenticação existe ainda: criar a conta do proprietário e conceder administração com autorização explícita antes do teste completo.
+Verificação em 22/10/2026: callback publicado responde HTTP 400 sem state/cookie (não mais 404). Credenciais BLING_CLIENT_ID e BLING_CLIENT_SECRET salvas pelo formulário seguro; não foi possível verificar se o segredo exposto foi regenerado. Conta do proprietário identificada via sessão --self e autorizada como administradora; consentimento no Bling ainda pendente.
 
 O botão Conectar Bling gera um state novo de uso único; não usar o state estático de um convite copiado. O destino de autorização é o oficial do Bling com o Client ID salvo. A consulta administrativa usa somente GET /Api/v3/produtos?pagina=1&limite=10, sem criar ou modificar registros. Tokens são renovados automaticamente antes da consulta quando próximos do vencimento. Se a renovação for ambígua, conectar novamente evita reutilizar refresh token rotacionado. Trocar a chave de criptografia exige nova autorização.
+
+## Estoque e pedidos — preparação
+
+- Painel permite selecionar depósito e informar manualmente o SKU correto de cada modelo; confirmação consulta produtos ativos, rejeita ausentes/duplicados e salva IDs existentes, sem criar produtos.
+- Operações verificadas no OpenAPI oficial https://developer.bling.com.br/build/assets/openapi-DA9aa7wN.json: GET /depositos, GET /produtos com codigos[], GET /estoques/saldos com idsProdutos[]. Usar saldoVirtual do depósito selecionado, nunca saldo total.
+- Conferência no checkout é opcional e só pode ser habilitada com os seis vínculos; consulta falha fechada, sem reserva nem baixa. Consulta não garante ausência de venda concorrente até que reservas/pedidos sejam integrados.
+- Pedidos pendentes e IDs de links Appmax são registrados antes do redirecionamento. Criação de link nunca confirma pagamento nem exporta pedido ao Bling.
+- Envio automático NÃO implementado/ativado: faltam contrato validado de confirmação Appmax e associação do cliente/endereço ao link; depósito/mapeamento/consentimento e teste real de pedido com reconciliação também pendentes. Não criar webhook sem validação nem presumir que numeroLoja garante unicidade no ERP.

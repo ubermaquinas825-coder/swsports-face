@@ -74,6 +74,24 @@ export type Database = {
         }
         Relationships: []
       }
+      bling_store_settings: {
+        Row: {
+          config: Json
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shipping_events: {
         Row: {
           created_at: string
@@ -117,6 +135,9 @@ export type Database = {
       }
       shipping_orders: {
         Row: {
+          bling_order_id: number | null
+          bling_sync_error: string | null
+          bling_sync_status: string
           created_at: string
           customer_id: string | null
           delivery_address: Json | null
@@ -125,14 +146,20 @@ export type Database = {
           id: string
           items: Json
           label_url: string | null
+          payment_link_id: string | null
           payment_status: string
           provider_payment_id: string | null
           provider_shipment_id: string | null
+          quoted_cep: string | null
+          shipping_service: Json | null
           shipping_status: string
           subtotal_cents: number
           tracking_code: string | null
         }
         Insert: {
+          bling_order_id?: number | null
+          bling_sync_error?: string | null
+          bling_sync_status?: string
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
@@ -141,14 +168,20 @@ export type Database = {
           id?: string
           items?: Json
           label_url?: string | null
+          payment_link_id?: string | null
           payment_status?: string
           provider_payment_id?: string | null
           provider_shipment_id?: string | null
+          quoted_cep?: string | null
+          shipping_service?: Json | null
           shipping_status?: string
           subtotal_cents?: number
           tracking_code?: string | null
         }
         Update: {
+          bling_order_id?: number | null
+          bling_sync_error?: string | null
+          bling_sync_status?: string
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
@@ -157,9 +190,12 @@ export type Database = {
           id?: string
           items?: Json
           label_url?: string | null
+          payment_link_id?: string | null
           payment_status?: string
           provider_payment_id?: string | null
           provider_shipment_id?: string | null
+          quoted_cep?: string | null
+          shipping_service?: Json | null
           shipping_status?: string
           subtotal_cents?: number
           tracking_code?: string | null
