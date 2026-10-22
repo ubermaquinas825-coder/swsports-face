@@ -135,6 +135,9 @@ export type Database = {
       }
       shipping_orders: {
         Row: {
+          appmax_check_lock_until: string | null
+          appmax_checked_at: string | null
+          appmax_status: string | null
           bling_order_id: number | null
           bling_sync_error: string | null
           bling_sync_status: string
@@ -157,6 +160,9 @@ export type Database = {
           tracking_code: string | null
         }
         Insert: {
+          appmax_check_lock_until?: string | null
+          appmax_checked_at?: string | null
+          appmax_status?: string | null
           bling_order_id?: number | null
           bling_sync_error?: string | null
           bling_sync_status?: string
@@ -179,6 +185,9 @@ export type Database = {
           tracking_code?: string | null
         }
         Update: {
+          appmax_check_lock_until?: string | null
+          appmax_checked_at?: string | null
+          appmax_status?: string | null
           bling_order_id?: number | null
           bling_sync_error?: string | null
           bling_sync_status?: string
@@ -243,6 +252,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_appmax_check: { Args: { _order_id: string }; Returns: boolean }
       consume_bling_oauth_state: {
         Args: { p_browser_hash: string; p_state_hash: string }
         Returns: {

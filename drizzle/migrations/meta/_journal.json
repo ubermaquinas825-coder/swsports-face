@@ -29,6 +29,13 @@
       "when": 1792708333343,
       "tag": "0003_bling_inventory_and_checkout_records",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792710100454,
+      "tag": "0004_appmax_payment_reconciliation",
+      "breakpoints": true
     }
   ]
 }
