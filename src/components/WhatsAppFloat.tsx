@@ -12,7 +12,7 @@ export function WhatsAppFloat() {
       aria-label="Falar com a SW Sports no WhatsApp"
       initial={reduce ? false : { opacity: 0, scale: 0.6, rotateY: -90 }}
       animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-      whileHover={reduce ? undefined : { scale: 1.08, rotateZ: -6 }}
+      whileHover={reduce ? { scale: 1 } : { scale: 1.08, rotateZ: -6 }}
       whileTap={{ scale: 0.94 }}
       transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.6 }}
       className="group fixed bottom-5 left-5 z-30 flex items-center gap-2 rounded-full bg-whatsapp p-3.5 text-whatsapp-foreground shadow-whatsapp md:bottom-7 md:left-7"
