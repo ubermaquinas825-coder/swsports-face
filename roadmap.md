@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
 - [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
 - [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
 - [ ] Ativar pedidos automáticos/estoque real Bling — aguarda consentimento Bling, mapeamento dos produtos/depósito, contrato validado de confirmação/cliente/endereço Appmax, reconciliação segura e teste real; alterações atuais ainda não publicadas
@@ -8,14 +9,14 @@
 - [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
 - [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
 - [x] Solicitar publicação da consulta administrativa de produtos Bling
-- [ ] Bling autorização real e consulta de produtos — conta administrativa liberada; aguarda consentimento no Bling
+- [ ] Bling autorização real e consulta de produtos — proprietário precisa corrigir Link de redirecionamento para https://swsports-face.lovable.app/api/public/bling/callback e autorizar novamente; logs mostram retorno incorreto à raiz
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
 - [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
-- [ ] Verificar painel salvando e relendo dados — aguarda login e identificação da conta administrativa pelo proprietário
+- [x] Verificar painel salvando e relendo dados — corrigido mínimo fracionário do campo capacidade; valores inteiros 1/3/10 salvos e relidos pela conta do proprietário
 - [x] Mostrar cotações SuperFrete no carrinho, selecionar frete e substituir finalização WhatsApp por checkout Appmax com total validado no servidor — cotação real e total R$68,35 relido na página hospedada, sem pagamento
-- [ ] Habilitar frete para múltiplas unidades — aguarda peso real das peças, tara e dimensões/capacidades das embalagens
+- [x] Habilitar frete para múltiplas unidades — cotações reais verificadas até 10; tara/espessura dos envelopes continuam estimativas já informadas, aguardando medidas do proprietário
 - [ ] Testar pagamentos reais, falha de emissão, eventos duplicados e reprocessamento — aguarda adaptadores autorizados
 - [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
