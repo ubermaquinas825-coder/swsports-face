@@ -37,7 +37,7 @@ export async function reconcileAppmaxOrder(orderId: string) {
     const saved = await supabaseAdmin.from("shipping_orders").update({
       appmax_checked_at: new Date().toISOString(), appmax_status: selected?.status ?? "pendente", appmax_check_lock_until: null,
       ...(selected ? { provider_payment_id: String(selected.id), payment_status: selected.state,
-        ...(selected.state === "pending" ? {} : { bling_sync_status: "blocked", bling_sync_error: selected.state === "approved" ? "Pagamento confirmado pela API. Exportação bloqueada: validar endereço final, depósito e configuração Bling." : "Appmax cancelado/estornado ou contestado; não enviar ou baixar estoque." }) } : {}),
+        ...(selected.state === "pending" ? {} : selected.state === "approved" ? (order.bling_order_id || order.bling_sync_status === "synced" || order.bling_sync_status === "processing" ? {} : { bling_sync_status: "queued", bling_sync_error: null }) : { bling_sync_status: "blocked", bling_sync_error: "Appmax cancelado/estornado ou contestado; não enviar ou baixar estoque." }) } : {}),
     }).eq("id", orderId);
     if (saved.error) throw new Error("Não foi possível salvar a conferência Appmax.");
     return { checked: true, status: selected?.status ?? "pendente" };

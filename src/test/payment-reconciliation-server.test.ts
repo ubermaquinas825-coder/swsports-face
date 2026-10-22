@@ -14,12 +14,12 @@ describe("Appmax reconciliation safety", () => {
     rpc.mockResolvedValue({ data: false, error: null }); const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
     expect(await reconcileAppmaxOrder("local")).toEqual({ checked: false }); expect(fetcher).not.toHaveBeenCalled(); expect(update).not.toHaveBeenCalled();
   });
-  it("uses saved link membership and keeps approved payment blocked for ERP fulfillment", async () => {
+  it("uses saved link membership and queues approved payment for Bling export", async () => {
     setup(); const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ data: [{ order: { id: 12 } }], meta: { total_pages: 1 } }))).mockResolvedValueOnce(approved(12)); vi.stubGlobal("fetch", fetcher);
     await reconcileAppmaxOrder("local");
     expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.appmax.com.br/v1/payment-link/link/orders?page=1");
     expect(fetcher.mock.calls[1]?.[0]).toBe("https://api.appmax.com.br/v1/orders/12");
-    expect(update).toHaveBeenCalledWith(expect.objectContaining({ provider_payment_id: "12", payment_status: "approved", bling_sync_status: "blocked" }));
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ provider_payment_id: "12", payment_status: "approved", bling_sync_status: "queued" }));
   });
   it("holds multiple approved orders rather than exporting twice", async () => {
     setup(); vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ data: [{ order: { id: 12 } }, { order: { id: 13 } }], meta: { total_pages: 1 } }))).mockResolvedValueOnce(approved(12)).mockResolvedValueOnce(approved(13)));
