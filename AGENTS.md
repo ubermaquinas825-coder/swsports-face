@@ -20,3 +20,4 @@ Technical decisions for this project:
 - Kit offers are rendered disabled ("EM APROVAÇÃO") until the owner approves the commercial values.
 - Public business identity, address and hours live in `src/lib/business.ts`; sales links remain in `src/lib/products.ts` so listing metadata cannot override checkout contacts.
 - Logistics rules and configuration schemas live in `src/lib/shipping.ts`; authenticated server functions verify a protected `user_roles` admin role and persist configuration in Cloud. Provider calls remain unavailable until official authorization is configured; no checkout migration or label side effects occur in preparation mode.
+- SuperFrete runtime calls must use its linked custom connector gateway; Appmax merchant credentials stay in Cloud secrets for server-only client-credentials exchange because the available custom-connector OAuth setup does not support that grant. Never persist short-lived access tokens or expose credentials to the browser.

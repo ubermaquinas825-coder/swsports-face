@@ -9,8 +9,9 @@
 
 ## Provider authorization blockers
 - SuperFrete advertises own-site API: https://ajuda.superfrete.com/artigo/quais-as-integracoes-disponiveis-da-superfrete-com-plataformas-de-e-commerce/
-- Official reference: https://api.superfrete.com/. Obtain custom-integration access and its credential specification from SuperFrete. Authentication requirements remain unverified; never reuse another platform's token or guess endpoints.
-- Appmax official authorization: https://docs.appmax.com.br/guides/autenticacao and https://docs.appmax.com.br/guides/instalacao. Developer client_id/client_secret differ from installed merchant client_id/client_secret. Confirm account API version and installation requirements before requesting credentials securely through a connector.
+- SuperFrete reference: https://superfrete.readme.io/reference/primeiros-passos. Production base https://api.superfrete.com, Bearer authentication, read-only account endpoint GET /api/v0/user. The private custom connector is linked and its generated-app credential path returned HTTP 200. Use the connector gateway; never store the provider token in source or expose account response data.
+- Appmax official authorization: https://docs.appmax.com.br/guides/autenticacao and https://docs.appmax.com.br/guides/instalacao. Installed merchant credentials were collected securely as APPMAX_CLIENT_ID, APPMAX_CLIENT_SECRET and APPMAX_EXTERNAL_ID. POST https://auth.appmax.com.br/oauth2/token with form-encoded client_credentials returned HTTP 200 with an access token; the token was not printed or persisted. This grant is not supported by the available custom-connector authorization-code setup, so use server-only credential exchange. External ID does not authenticate merchant requests.
+- Appmax payment-link reference: https://docs.appmax.com.br/api-reference/payment-links/criar-link-pagamento. Documented POST /v1/payment-link returns checkout_url; its complete production contract still needs validation before implementation. Authentication success does not establish checkout permission, payment success, or webhook security.
 - Need real product weight, packaging tare and supported package capacities before multi-unit quotations.
 
 ## Not implemented or live-tested
