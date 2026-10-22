@@ -9,7 +9,7 @@ Painel: `/integracoes/bling`, disponível pelo painel Frete e Envios.
 
 1. Bling → Central de Extensões → Área do Integrador → Criar aplicativo → Privado.
 2. Registrar o callback acima como Link de redirecionamento. O Bling usa o endereço registrado mesmo que redirect_uri seja enviado no pedido.
-3. Selecionar somente escopos necessários; nesta etapa não há leitura/sincronização de produtos ou pedidos.
+3. Selecionar permissão de leitura de produtos para a consulta administrativa; não há sincronização nem criação de produtos ou pedidos.
 4. Após cadastro, solicitar pelo formulário seguro BLING_CLIENT_ID e BLING_CLIENT_SECRET. Não colar em mensagens, arquivos ou imagens.
 5. Autorizar a conta administrativa SW Sports antes de clicar Conectar Bling.
 
@@ -24,4 +24,6 @@ Painel: `/integracoes/bling`, disponível pelo painel Frete e Envios.
 
 Documentação: https://developer.bling.com.br/aplicativos e https://developer.bling.com.br/migracao-jwt
 
-Verificação: callback local rejeita pedidos sem state/cookie com HTTP 400 e painel exige login. No domínio publicado o caminho ainda retorna HTTP 404; o host estável de desenvolvimento também retornou HTTP 404 e o preview exige autenticação. Portanto o callback público ainda não está disponível. Publicar com autorização do proprietário e verificar HTTP 400 sem parâmetros antes de iniciar OAuth real. Nenhuma conta administrativa está configurada; autorização administrativa e credenciais ainda são necessárias para o teste completo.
+Verificação em 22/10/2026: callback publicado responde HTTP 400 sem state/cookie (não mais 404). Credenciais BLING_CLIENT_ID e BLING_CLIENT_SECRET salvas pelo formulário seguro; não foi possível verificar se o segredo exposto foi regenerado. Nenhum usuário de autenticação existe ainda: criar a conta do proprietário e conceder administração com autorização explícita antes do teste completo.
+
+O botão Conectar Bling gera um state novo de uso único; não usar o state estático de um convite copiado. O destino de autorização é o oficial do Bling com o Client ID salvo. A consulta administrativa usa somente GET /Api/v3/produtos?pagina=1&limite=10, sem criar ou modificar registros. Tokens são renovados automaticamente antes da consulta quando próximos do vencimento. Se a renovação for ambígua, conectar novamente evita reutilizar refresh token rotacionado. Trocar a chave de criptografia exige nova autorização.

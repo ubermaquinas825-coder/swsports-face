@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BLING_TOKEN_URL, needsBlingRefresh } from "./bling";
+import { BLING_TOKEN_URL, BLING_PRODUCTS_URL, needsBlingRefresh, projectBlingProducts } from "./bling";
 
 const tokensSchema = z.object({ access_token: z.string().min(1).max(20000), refresh_token: z.string().min(1).max(20000), expires_in: z.number().positive().max(31536000), token_type: z.string().refine((v) => v.toLowerCase() === "bearer") });
 type Tokens = z.infer<typeof tokensSchema>;
@@ -64,4 +64,19 @@ export async function getBlingAccessToken() {
     await supabaseAdmin.from("bling_connections").update({ last_error: "Não foi possível renovar o acesso. Conecte o Bling novamente.", refresh_lock_until: new Date(Date.now() + 30 * 86400000).toISOString() }).eq("id", true).eq("revision", connection.revision);
     throw new Error("Não foi possível renovar o acesso. Conecte o Bling novamente.");
   }
+}
+export async function readBlingProducts() {
+  const token = await getBlingAccessToken();
+  const response = await fetch(BLING_PRODUCTS_URL, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) {
+    if (response.status === 403) throw new Error("Bling recusou a leitura de produtos. Verifique a permissão de produtos no aplicativo e autorize novamente.");
+    if (response.status === 401) throw new Error("Bling recusou o acesso. Conecte o Bling novamente.");
+    if (response.status === 429) throw new Error("Limite de consultas Bling atingido. Aguarde antes de tentar novamente.");
+    throw new Error(`Não foi possível consultar produtos no Bling (HTTP ${response.status}).`);
+  }
+  try { return projectBlingProducts(await response.json()); }
+  catch { throw new Error("Bling retornou uma lista de produtos inválida."); }
 }
