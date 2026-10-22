@@ -15,6 +15,9 @@ import { Route as AtacadoRouteImport } from './routes/atacado'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
+import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_authenticated/integracoes/bling'
+import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
+import { Route as ApiPublicBlingStartRouteImport } from './routes/api/public/bling/start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +49,22 @@ const AuthenticatedFreteEnviosRoute =
     path: '/frete-envios',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedIntegracoesBlingRoute =
+  AuthenticatedIntegracoesBlingRouteImport.update({
+    id: '/integracoes/bling',
+    path: '/integracoes/bling',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicBlingCallbackRoute = ApiPublicBlingCallbackRouteImport.update({
+  id: '/api/public/bling/callback',
+  path: '/api/public/bling/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBlingStartRoute = ApiPublicBlingStartRouteImport.update({
+  id: '/api/public/bling/start',
+  path: '/api/public/bling/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +72,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
+  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
+  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -60,6 +82,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
+  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
+  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,12 +94,31 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/_authenticated/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
+  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
+  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/atacado' | '/auth' | '/redefinir-senha' | '/frete-envios'
+  fullPaths:
+    | '/'
+    | '/atacado'
+    | '/auth'
+    | '/redefinir-senha'
+    | '/frete-envios'
+    | '/integracoes/bling'
+    | '/api/public/bling/callback'
+    | '/api/public/bling/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/atacado' | '/auth' | '/redefinir-senha' | '/frete-envios'
+  to:
+    | '/'
+    | '/atacado'
+    | '/auth'
+    | '/redefinir-senha'
+    | '/frete-envios'
+    | '/integracoes/bling'
+    | '/api/public/bling/callback'
+    | '/api/public/bling/start'
   id:
     | '__root__'
     | '/'
@@ -83,6 +127,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/redefinir-senha'
     | '/_authenticated/frete-envios'
+    | '/_authenticated/integracoes/bling'
+    | '/api/public/bling/callback'
+    | '/api/public/bling/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,6 +138,8 @@ export interface RootRouteChildren {
   AtacadoRoute: typeof AtacadoRoute
   AuthRoute: typeof AuthRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
+  ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -137,15 +186,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFreteEnviosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/integracoes/bling': {
+      id: '/_authenticated/integracoes/bling'
+      path: '/integracoes/bling'
+      fullPath: '/integracoes/bling'
+      preLoaderRoute: typeof AuthenticatedIntegracoesBlingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/bling/callback': {
+      id: '/api/public/bling/callback'
+      path: '/api/public/bling/callback'
+      fullPath: '/api/public/bling/callback'
+      preLoaderRoute: typeof ApiPublicBlingCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bling/start': {
+      id: '/api/public/bling/start'
+      path: '/api/public/bling/start'
+      fullPath: '/api/public/bling/start'
+      preLoaderRoute: typeof ApiPublicBlingStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedFreteEnviosRoute: typeof AuthenticatedFreteEnviosRoute
+  AuthenticatedIntegracoesBlingRoute: typeof AuthenticatedIntegracoesBlingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFreteEnviosRoute: AuthenticatedFreteEnviosRoute,
+  AuthenticatedIntegracoesBlingRoute: AuthenticatedIntegracoesBlingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -157,6 +229,8 @@ const rootRouteChildren: RootRouteChildren = {
   AtacadoRoute: AtacadoRoute,
   AuthRoute: AuthRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
+  ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

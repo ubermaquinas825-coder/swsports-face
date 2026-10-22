@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      bling_connections: {
+        Row: {
+          authorized_at: string
+          authorized_by: string
+          encrypted_tokens: string
+          expires_at: string
+          id: boolean
+          last_error: string | null
+          refresh_lock_until: string | null
+          refreshed_at: string | null
+          revision: string
+        }
+        Insert: {
+          authorized_at?: string
+          authorized_by: string
+          encrypted_tokens: string
+          expires_at: string
+          id?: boolean
+          last_error?: string | null
+          refresh_lock_until?: string | null
+          refreshed_at?: string | null
+          revision?: string
+        }
+        Update: {
+          authorized_at?: string
+          authorized_by?: string
+          encrypted_tokens?: string
+          expires_at?: string
+          id?: boolean
+          last_error?: string | null
+          refresh_lock_until?: string | null
+          refreshed_at?: string | null
+          revision?: string
+        }
+        Relationships: []
+      }
+      bling_oauth_states: {
+        Row: {
+          browser_hash: string
+          created_at: string
+          expires_at: string
+          state_hash: string
+          user_id: string
+        }
+        Insert: {
+          browser_hash: string
+          created_at?: string
+          expires_at: string
+          state_hash: string
+          user_id: string
+        }
+        Update: {
+          browser_hash?: string
+          created_at?: string
+          expires_at?: string
+          state_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shipping_events: {
         Row: {
           created_at: string
@@ -147,6 +207,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_bling_oauth_state: {
+        Args: { p_browser_hash: string; p_state_hash: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

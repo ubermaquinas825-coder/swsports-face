@@ -8,6 +8,20 @@
       "when": 1792700281345,
       "tag": "0000_prepare_shipping_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792706849203,
+      "tag": "0001_bling_oauth_infrastructure",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792707020524,
+      "tag": "0002_restrict_bling_oauth_grants",
+      "breakpoints": true
     }
   ]
 }
