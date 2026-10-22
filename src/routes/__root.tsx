@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Balaclavas com estampas realistas e divertidas a partir de R$ 49,90. Escolha sua personalidade e finalize pelo WhatsApp.",
+          "Balaclavas com estampas realistas e divertidas por R$ 49,90. Frete SuperFrete e pagamento no checkout Appmax.",
       },
       { property: "og:title", content: "SW Sports — Balaclavas Divertidas" },
       {

@@ -15,7 +15,7 @@ export function FinalCta() {
             PRONTO PARA TROCAR DE <span className="text-brand">PERSONALIDADE</span>?
           </h2>
           <p className="mx-auto mt-4 max-w-md text-muted-foreground">
-            Escolha a sua balaclava e finalize pelo WhatsApp em segundos.
+            Escolha a sua balaclava e pague no checkout Appmax.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a

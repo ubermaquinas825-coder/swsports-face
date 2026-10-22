@@ -35,4 +35,4 @@ export function labelEligibility(payment: string, shipmentId: string | null, aut
   if (!authorized) return "integration_unavailable";
   return "ready";
 }
-export const quoteUnavailable = () => ({ status: "unavailable" as const, options: [], message: "Cotação automática aguardando integração autorizada. Confirme o frete pelo WhatsApp." });
+export const quoteUnavailable = () => ({ status: "unavailable" as const, options: [], message: "Não foi possível consultar o frete. Tente novamente." });

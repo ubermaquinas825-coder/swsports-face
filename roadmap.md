@@ -5,7 +5,7 @@
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
 - [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
 - [ ] Verificar painel salvando e relendo dados — aguarda login e identificação da conta administrativa pelo proprietário
-- [ ] Integrar cotações e checkout Appmax — credenciais autenticadas; falta implementar adaptadores, validação de frete e confirmação de pagamento
+- [ ] Mostrar cotações SuperFrete no carrinho, selecionar frete e substituir finalização WhatsApp por checkout Appmax com total validado no servidor
 - [ ] Testar pagamentos reais, falha de emissão, eventos duplicados e reprocessamento — aguarda adaptadores autorizados
 - [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
