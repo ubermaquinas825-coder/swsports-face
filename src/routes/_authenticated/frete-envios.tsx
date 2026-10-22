@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getShippingAdmin, saveShippingConfig } from "@/lib/shipping.functions";
 import { shippingConfigSchema, shippingStates } from "@/lib/shipping";
-import logo from "@/assets/sw-sports-logo.jpg.asset.json";
+import logo from "@/assets/sw-sports-logo.png.asset.json";
 const adminQuery = queryOptions({ queryKey: ["shipping-admin"], queryFn: () => getShippingAdmin() });
 export const Route = createFileRoute("/_authenticated/frete-envios")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminQuery),
