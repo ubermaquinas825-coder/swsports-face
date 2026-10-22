@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { products } from "@/lib/products";
 import { emptyBlingInventoryConfig, type BlingInventoryConfig } from "@/lib/bling-inventory";
-import { getBlingInventory, loadBlingWarehouses, saveBlingInventory, testBlingInventory } from "@/lib/bling-inventory.functions";
+import { getBlingInventory, loadBlingWarehouses, saveBlingInventory, testBlingInventory, discoverBlingCatalog } from "@/lib/bling-inventory.functions";
 
 export function BlingInventory({ connected }: { connected: boolean }) {
   const getConfig = useServerFn(getBlingInventory);
@@ -16,6 +16,7 @@ export function BlingInventory({ connected }: { connected: boolean }) {
   const [draft, setDraft] = useState<BlingInventoryConfig | null>(null);
   const config = draft ?? query.data ?? emptyBlingInventoryConfig;
   const load = useServerFn(loadBlingWarehouses); const save = useServerFn(saveBlingInventory); const test = useServerFn(testBlingInventory);
+  const discover = useServerFn(discoverBlingCatalog);
   const [warehouses, setWarehouses] = useState<Array<{ id: number; name: string }>>([]);
   const [stock, setStock] = useState<Array<{ blingId: number; available: number }> | null>(null);
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
@@ -23,6 +24,7 @@ export function BlingInventory({ connected }: { connected: boolean }) {
   return <section className="border-b border-border py-8">
     <h2 className="mb-5 font-display text-xl font-bold">ESTOQUE E VÍNCULOS</h2>
     {query.isError && <p role="alert" className="mb-4 text-destructive">Não foi possível carregar os vínculos.</p>}
+    <Button variant="outline" className="mb-5" disabled={!connected || busy} onClick={() => run(async () => { const mappings = await discover(); setDraft({ ...config, mappings }); setStock(null); setMessage("Seis modelos encontrados pelos nomes no Bling. Selecione o depósito e confirme os vínculos."); })}><RefreshCw /> Identificar modelos no Bling</Button>
     <div className="flex flex-wrap items-end gap-4"><div className="w-full max-w-sm"><label className="mb-2 block text-sm" htmlFor="bling-warehouse">Depósito Bling</label><Select value={config.warehouseId ? String(config.warehouseId) : ""} onValueChange={(value) => setDraft({ ...config, warehouseId: Number(value) })} disabled={!connected || busy}><SelectTrigger id="bling-warehouse"><SelectValue placeholder={config.warehouseId ? `Depósito ${config.warehouseId}` : "Selecione o depósito"} /></SelectTrigger><SelectContent>{warehouses.map((w) => <SelectItem key={w.id} value={String(w.id)}>{w.name}</SelectItem>)}</SelectContent></Select></div><Button variant="outline" disabled={!connected || busy} onClick={() => run(async () => { setWarehouses(await load()); })}><RefreshCw /> Consultar depósitos</Button></div>
     <div className="mt-5 divide-y divide-border">{products.map((product) => { const mapping = config.mappings.find((m) => m.productId === product.id); const balance = stock?.find((s) => s.blingId === mapping?.blingId); return <div key={product.id} className="grid items-center gap-3 py-4 sm:grid-cols-[1fr_1fr_100px]"><label htmlFor={`sku-${product.id}`} className="text-sm">{product.name}</label><Input id={`sku-${product.id}`} aria-label={`SKU ${product.name}`} placeholder="SKU já cadastrado no Bling" value={mapping?.sku ?? ""} disabled={!connected || busy} onChange={(e) => { const others = config.mappings.filter((m) => m.productId !== product.id); setDraft({ ...config, mappings: e.target.value.trim() ? [...others, { productId: product.id, sku: e.target.value, blingId: null }] : others }); setStock(null); }} /><span className="text-sm text-muted-foreground">{balance ? `${balance.available} un.` : "—"}</span></div>; })}</div>
     <label className="my-5 flex items-center gap-3 text-sm"><Switch checked={config.checkAtCheckout} disabled={!connected || busy} onCheckedChange={(checked) => setDraft({ ...config, checkAtCheckout: checked })} /> Conferir estoque antes do pagamento</label>

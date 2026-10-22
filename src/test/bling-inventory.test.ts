@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { assertStockAvailable, blingInventoryConfigSchema, projectWarehouseStock } from "@/lib/bling-inventory";
+import { assertStockAvailable, blingInventoryConfigSchema, projectWarehouseStock, matchBlingCatalog } from "@/lib/bling-inventory";
+import { products } from "@/lib/products";
 describe("Bling stock safeguards", () => {
   const config = { warehouseId: 5, checkAtCheckout: false, mappings: [{ productId: "gato-divertido", sku: "SW-BAL-005", blingId: 101 }] };
   it("uses virtual stock only in the selected warehouse, not other warehouses", () => {
@@ -18,5 +19,14 @@ describe("Bling stock safeguards", () => {
   });
   it("rejects duplicate product or SKU mappings", () => {
     expect(blingInventoryConfigSchema.safeParse({ ...config, mappings: [...config.mappings, ...config.mappings] }).success).toBe(false);
+  });
+  it("matches existing models by returned names rather than SKU order", () => {
+    const rows = products.map((p, i) => ({ id: 100 + i, name: p.name, sku: `SW-BAL-00${i + 1}` })).reverse();
+    expect(matchBlingCatalog(rows).find((m) => m.productId === "gato-divertido")).toEqual({ productId: "gato-divertido", sku: "SW-BAL-005", blingId: 104 });
+  });
+  it("does not assign an ambiguous or missing ERP model", () => {
+    expect(() => matchBlingCatalog([])).toThrow();
+    const rows = products.map((p, i) => ({ id: 100 + i, name: p.name, sku: `SW-BAL-00${i + 1}` }));
+    expect(() => matchBlingCatalog([...rows, { id: 200, name: "Gato Divertido", sku: "another" }])).toThrow();
   });
 });
