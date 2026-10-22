@@ -12,7 +12,7 @@ async function bling(path: string, init: RequestInit = {}) {
 }
 const idList = z.object({ data: z.array(z.object({ id: z.number().int().positive() })) });
 
-async function findOrCreateContact(customer: { name?: string; email?: string; document_number?: string } | null | undefined, orderId: string) {
+async function findOrCreateContact(customer: { name?: string | undefined; email?: string | undefined; document_number?: string | undefined } | null | undefined, orderId: string) {
   const doc = digitsOnly(customer?.document_number);
   if (doc.length === 11 || doc.length === 14) {
     const found = idList.parse(await bling(`contatos?pagina=1&limite=2&numeroDocumento=${doc}`)).data;
