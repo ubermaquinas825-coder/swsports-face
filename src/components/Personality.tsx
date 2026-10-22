@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { formatBRL, products, UNIT_PRICE } from "@/lib/products";
 import { Reveal } from "@/components/Reveal";
 
 export function Personality() {
   const [current, setCurrent] = useState(0);
+  const reduce = useReducedMotion();
   const { add } = useCart();
   const product = products[current];
   if (!product) return null;
@@ -25,26 +28,22 @@ export function Personality() {
         <Reveal>
           <div className="mx-auto grid max-w-4xl items-center gap-8 md:grid-cols-2">
             {/* produto central */}
-            <div className="relative mx-auto flex min-h-[320px] w-full items-center justify-center">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-1/2 h-[85%] w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[80px] transition-all duration-500"
-                style={{
-                  background: `radial-gradient(circle at ${40 + current * 4}% 45%, #E32636 0%, transparent 70%)`,
-                }}
-              />
+            <div className="relative mx-auto flex h-[320px] w-full items-center justify-center [perspective:1000px]">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={product.id}
                   src={product.image}
                   alt={`Balaclava ${product.name}`}
-                  initial={{ opacity: 0, scale: 0.94 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.04 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative w-full max-w-sm drop-shadow-[0_30px_40px_rgba(0,0,0,0.65)]"
+                  style={{ transformPerspective: 1000 }}
+                  initial={reduce ? false : { opacity: 0, rotateY: -70, scale: 0.9 }}
+                  animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, rotateY: 70, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="product-cutout relative h-full w-full max-w-sm object-contain"
                 />
               </AnimatePresence>
+              <Button variant="outline" size="icon" aria-label="Personalidade anterior" title="Personalidade anterior" onClick={() => setCurrent((value) => (value - 1 + products.length) % products.length)} className="absolute left-0 rounded-full"><ChevronLeft /></Button>
+              <Button variant="outline" size="icon" aria-label="Próxima personalidade" title="Próxima personalidade" onClick={() => setCurrent((value) => (value + 1) % products.length)} className="absolute right-0 rounded-full"><ChevronRight /></Button>
             </div>
 
             <div className="text-center md:text-left">
@@ -63,30 +62,33 @@ export function Personality() {
                   <p className="mt-4 font-display text-2xl font-bold text-brand">
                     {formatBRL(UNIT_PRICE)}
                   </p>
-                  <button
+                  <Button
                     onClick={() => add(product.id)}
-                    className="mt-6 rounded-full bg-brand px-7 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_32px_-8px_rgba(227,38,54,0.7)] transition-transform hover:scale-[1.02]"
+                    className="mt-6 h-12 rounded-full px-7 text-sm font-bold"
                   >
+                    <ShoppingBag />
                     QUERO ESSA BALACLAVA
-                  </button>
+                  </Button>
                 </motion.div>
               </AnimatePresence>
 
               {/* miniaturas */}
               <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
                 {products.map((p, i) => (
-                  <button
+                  <Button variant="ghost" size="icon"
                     key={p.id}
                     onClick={() => setCurrent(i)}
                     aria-label={`Ver balaclava ${p.name}`}
-                    className={`h-16 w-16 overflow-hidden rounded-xl border transition-all ${
+                    aria-pressed={i === current}
+                    title={p.name}
+                    className={`h-14 w-14 overflow-hidden rounded-lg border p-0 transition-all ${
                       i === current
-                        ? "border-brand shadow-[0_0_20px_-4px_rgba(227,38,54,0.7)]"
+                        ? "border-brand bg-brand/10"
                         : "border-border opacity-60 hover:opacity-100"
                     }`}
                   >
                     <img src={p.image} alt="" className="h-full w-full bg-background object-cover object-top" />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

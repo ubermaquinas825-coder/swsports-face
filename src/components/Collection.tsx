@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { ShoppingBag, Zap } from "lucide-react";
 import { formatBRL, productFor, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button";
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const { add, openCart } = useCart();
+  const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   const onMouseMove = (e: React.MouseEvent) => {
+    if (reduce) return;
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
     const dx = (e.clientX - rect.left) / rect.width - 0.5;
     const dy = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -dy * 10, y: dx * 10 }); // até ~5 graus visíveis
+    setTilt({ x: -dy * 14, y: dx * 14 });
   };
 
   const buyNow = () => {
@@ -26,36 +28,32 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
   return (
     <Reveal delay={(index % 3) * 0.08}>
-      <div style={{ perspective: "900px" }}>
+      <div style={{ perspective: "1000px" }}>
         <motion.div
           ref={ref}
           onMouseMove={onMouseMove}
           onMouseLeave={() => setTilt({ x: 0, y: 0 })}
           animate={{ rotateX: tilt.x, rotateY: tilt.y }}
+          whileHover={{ y: reduce ? 0 : -8 }}
+          style={{ transformStyle: "preserve-3d" }}
           transition={{ type: "spring", stiffness: 200, damping: 18 }}
-          className="group relative overflow-hidden rounded-3xl border border-border bg-card transition-colors duration-300 hover:border-brand/60"
+          className="group relative h-full rounded-lg border border-border bg-card transition-colors duration-300 hover:border-brand/60"
         >
-          {/* luz radial no hover */}
           <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 30%, rgba(227,38,54,0.14) 0%, transparent 65%)",
-            }}
-          />
-          <div className="relative px-6 pt-8 transition-transform duration-300 group-hover:-translate-y-1.5">
+            className="relative px-6 pt-8 transition-transform duration-500 group-hover:scale-105"
+            style={{ transform: "translateZ(50px)" }}
+          >
             <img
               src={product.image}
               alt={`Balaclava ${product.name}`}
               width={800}
               height={600}
               loading="lazy"
-              className="mx-auto w-full max-w-[300px] drop-shadow-[0_24px_32px_rgba(0,0,0,0.6)]"
+              className="product-cutout mx-auto h-[230px] w-full max-w-[300px] object-contain"
             />
           </div>
           <div className="relative flex flex-col gap-4 p-6 pt-2">
-            <div>
+            <div className="min-h-[90px]">
               <h3 className="font-display text-lg font-bold tracking-tight">{product.name}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{product.description}</p>
             </div>
@@ -88,10 +86,10 @@ export function Collection() {
     <section id="colecao" className="scroll-mt-24 py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <Reveal>
-          <div className="mb-12 max-w-xl">
+          <div className="mb-10 max-w-xl">
             <p className="mb-2 text-xs font-bold tracking-[0.3em] text-brand">COLEÇÃO</p>
             <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              ESCOLHA A SUA
+              SUA PRÓXIMA PERSONALIDADE
             </h2>
             <p className="mt-3 text-muted-foreground">
               Seis personalidades prontas para sair do armário. Todas por {formatBRL(UNIT_PRICE)}.

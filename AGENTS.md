@@ -15,6 +15,7 @@ Technical decisions for this project:
 
 - Product photos are CDN assets: cut transparent from the user's original photos via `/mnt/user-uploads/` + Lovable Assets pointers (`src/assets/*.png.asset.json`). Never replace them with AI-generated images; keep the original stamp colors.
 - Hero uses a 2.5D presentation (CSS perspective tilt + idle float) in `src/components/Hero.tsx`, kept as a standalone component so it can be swapped for a real GLB/GLTF model later. Do not fake a 3D model from the 2D photos.
+- Storefront motion uses Motion with reduced-motion fallbacks; the global WhatsApp contact link sits below the cart overlay so it cannot interfere with payment.
 - Cart state lives in `src/hooks/use-cart.tsx`, with one provider and drawer in the root layout so it remains available across storefront routes; product data and WhatsApp helpers in `src/lib/products.ts` are the single source of truth for prices and links.
 - Retail checkout uses a public validated server function that re-quotes the chosen SuperFrete service and creates an Appmax hosted payment link for the catalog subtotal plus freight; redirect in the same tab without clearing the cart or marking payment complete. WhatsApp is contact/wholesale only.
 - Kit offers are rendered disabled ("EM APROVAÇÃO") until the owner approves the commercial values.

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 const NAV = [
   { label: "Início", to: "/", hash: "" },
   { label: "Coleção", to: "/", hash: "#colecao" },
-  { label: "Kits", to: "/", hash: "#kits" },
+  { label: "Personalidades", to: "/", hash: "#personalidade" },
   { label: "Atacado", to: "/atacado", hash: "" },
 ] as const;
 
@@ -50,7 +50,7 @@ export function SiteHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? "border-b border-border bg-black/70 backdrop-blur-[16px]"
+          ? "border-b border-border bg-background/85 backdrop-blur-[16px]"
           : "border-b border-transparent bg-transparent"
       }`}
     >
@@ -77,7 +77,7 @@ export function SiteHeader() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram da SW Sports"
-            className="hidden h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-white sm:grid"
+            className="hidden h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground sm:grid"
           >
             <Instagram className="h-4 w-4" />
           </a>
@@ -94,7 +94,7 @@ export function SiteHeader() {
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.5, opacity: 0 }}
-                  className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-white"
+                  className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-primary-foreground"
                 >
                   {count}
                 </motion.span>
@@ -103,13 +103,14 @@ export function SiteHeader() {
           </Button>
           <Button
             onClick={() => go("/", "#colecao")}
-            className="hidden rounded-full bg-brand px-4 py-2 text-xs font-bold tracking-wide text-white transition-colors hover:bg-brand-deep md:block"
+            className="hidden rounded-full bg-brand px-4 py-2 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep md:block"
           >
             COMPRAR
           </Button>
           <Button variant="ghost" size="icon"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Abrir menu"
+            aria-expanded={menuOpen}
             className="grid h-9 w-9 place-items-center rounded-full border border-border md:hidden"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -124,7 +125,7 @@ export function SiteHeader() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden border-b border-border bg-black/90 backdrop-blur-[16px] md:hidden"
+            className="overflow-hidden border-b border-border bg-background/95 backdrop-blur-[16px] md:hidden"
           >
             <div className="flex flex-col gap-1 px-4 py-3">
               {NAV.map((item) => (

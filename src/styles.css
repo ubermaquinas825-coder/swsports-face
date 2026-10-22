@@ -43,10 +43,15 @@
   --color-brand: var(--brand);
   --color-brand-deep: var(--brand-deep);
   --color-surface: var(--surface);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-foreground: var(--whatsapp-foreground);
+  --shadow-whatsapp: 0 12px 34px -8px color-mix(in oklab, var(--whatsapp) 70%, transparent);
 }
 
 :root {
   --radius: 0.75rem;
+  --whatsapp: oklch(0.72 0.19 150);
+  --whatsapp-foreground: oklch(0.15 0 0);
   --background: oklch(0.145 0 0);
   --foreground: oklch(1 0 0);
   --card: oklch(0.22 0 0);
@@ -138,4 +143,19 @@
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Dimensional stage, shared asset depth, and restrained interaction surfaces. */
+.showcase { background: var(--background); }
+.showcase-grid {
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 88px 88px;
+  transform: perspective(900px) rotateX(65deg) scale(1.8);
+  transform-origin: center bottom;
+  opacity: 0.3;
+  mask-image: linear-gradient(transparent 20%, var(--foreground));
+}
+.product-cutout { filter: drop-shadow(0 22px 30px color-mix(in oklab, var(--background) 80%, transparent)); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
