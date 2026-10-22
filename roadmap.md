@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Ligar pedidos pagos e estoque ao Bling sem duplicações — preparar controles; ativação aguarda consentimento Bling, mapeamento dos produtos/depósito e contrato oficial de confirmação Appmax
 - [x] Bling etapa 1: infraestrutura OAuth, armazenamento criptografado, renovação e página administrativa; testes locais passaram
 - [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
 - [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
