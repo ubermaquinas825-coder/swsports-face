@@ -1,15 +1,30 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
-import { buildOrderMessage, formatBRL, UNIT_PRICE, waLink } from "@/lib/products";
+import { formatBRL, UNIT_PRICE } from "@/lib/products";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
+import { currentShipping, type ShippingSelection } from "@/lib/checkout";
+import { createAppmaxCheckout } from "@/lib/checkout.functions";
 
 export function CartDrawer() {
   const { lines, count, subtotal, isOpen, closeCart, setQty, remove } = useCart();
-
-  const finish = () => {
-    if (lines.length === 0) return;
-    window.open(waLink(buildOrderMessage(lines)), "_blank", "noopener");
+  const [selection, setSelection] = useState<ShippingSelection | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const checkout = useServerFn(createAppmaxCheckout);
+  const checkoutLines = lines.map((line) => ({ id: line.product.id, qty: line.qty }));
+  const shipping = currentShipping(selection, checkoutLines);
+  const finish = async () => {
+    if (!shipping || busy || !lines.length) return;
+    setBusy(true); setError("");
+    try {
+      const result = await checkout({ data: { lines: checkoutLines, cep: shipping.cep, serviceId: shipping.option.id, quotedPriceCents: shipping.option.priceCents } });
+      window.location.assign(result.checkoutUrl);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível abrir o pagamento. Tente novamente."); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -21,7 +36,7 @@ export function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm"
           />
           <motion.aside
             initial={{ x: "100%" }}
@@ -109,24 +124,25 @@ export function CartDrawer() {
                       </div>
                     </motion.div>
                   ))}
-                  <ShippingCalculator cartKey={lines.map((l) => `${l.product.id}:${l.qty}`).join(",")} />
+                  <ShippingCalculator lines={checkoutLines} selection={shipping} onSelect={setSelection} />
                 </div>
                 <div className="border-t border-border px-5 py-4">
                   <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground">
                     <span>Total dos produtos</span>
-                    <span className="font-display text-xl font-bold text-white">
+                    <span className="font-display text-xl font-bold text-foreground">
                       {formatBRL(subtotal)}
                     </span>
                   </div>
-                  <p className="mb-3 text-xs text-muted-foreground">
-                    Frete confirmado com a equipe no WhatsApp.
-                  </p>
-                  <button
+                  <div className="my-2 flex items-center justify-between text-sm text-muted-foreground"><span>Frete</span><span>{shipping ? formatBRL(shipping.option.priceCents / 100) : "A calcular"}</span></div>
+                  <div className="mb-3 flex items-center justify-between font-semibold"><span>Total</span><span>{formatBRL(subtotal + (shipping ? shipping.option.priceCents / 100 : 0))}</span></div>
+                  {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
+                  <Button
                     onClick={finish}
-                    className="w-full rounded-full bg-brand py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_32px_-8px_rgba(227,38,54,0.7)] transition-transform hover:scale-[1.01]"
+                    disabled={!shipping || busy}
+                    className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold"
                   >
-                    FINALIZAR PELO WHATSAPP
-                  </button>
+                    {busy ? "ABRINDO PAGAMENTO…" : "CONTINUAR PARA APPMAX"}
+                  </Button>
                 </div>
               </>
             )}
