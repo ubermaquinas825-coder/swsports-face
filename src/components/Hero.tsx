@@ -40,7 +40,7 @@ export function Hero() {
             if (!rect) return;
             rotateY.set(((event.clientX - rect.left) / rect.width - 0.5) * 28);
             rotateX.set(-((event.clientY - rect.top) / rect.height - 0.5) * 18);
-          }} onPointerLeave={() => { rotateX.set(0); rotateY.set(0); }}>
+          }} onPointerLeave={() => { rotateX.set(0); rotateY.set(0); setHovered(false); }}>
           <span aria-hidden className="absolute left-0 top-10 font-display text-7xl font-bold text-foreground/5 sm:text-9xl">0{current + 1}</span>
           <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative flex h-full w-full items-center justify-center">
             <AnimatePresence mode="wait">
