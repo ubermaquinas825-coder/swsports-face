@@ -1,6 +1,9 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Preparar área Frete e Envios, dados persistentes e cálculo por CEP sem cotações fictícias
+- [ ] Verificar autorização oficial SuperFrete/Appmax; solicitar credenciais quando necessárias
+- [ ] Validar embalagem, cotação indisponível e barreiras de pagamento/emissão
 - [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
 - [x] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
