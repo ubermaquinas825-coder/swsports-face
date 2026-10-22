@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Solicitação atual: validar depósito Geral, ativar estoque real e implementar confirmação Appmax com exportação automática ao Bling, testes de duplicidade e fluxo completo.
 - [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
 - [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
 - [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
