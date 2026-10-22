@@ -11,6 +11,13 @@ export function Hero() {
   const areaRef = useRef<HTMLDivElement>(null);
   const rotateY = useSpring(0, { stiffness: 110, damping: 22 });
   const rotateX = useSpring(0, { stiffness: 110, damping: 22 });
+  const [hovered, setHovered] = useState(false);
+  // troca automática a cada 10s; pausa com o mouse em cima e para sempre com movimento reduzido
+  useEffect(() => {
+    if (reduce || hovered) return;
+    const id = window.setTimeout(() => setCurrent((value) => (value + 1) % products.length), 10000);
+    return () => window.clearTimeout(id);
+  }, [current, reduce, hovered]);
   if (!featured) return null;
   const change = (direction: number) => setCurrent((value) => (value + direction + products.length) % products.length);
   return (
