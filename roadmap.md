@@ -1,8 +1,8 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
-- [ ] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
-- [ ] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
+- [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
+- [x] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
 
 ## Feito
 - [x] Identidade Dark Motion 3D (tokens, fontes, layout escuro/vermelho)

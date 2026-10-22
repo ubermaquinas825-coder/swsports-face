@@ -139,7 +139,7 @@ function RootComponent() {
         <Outlet />
         <CartDrawer />
       </CartProvider>
-      <Toaster position="bottom-right" theme="dark" richColors />
+      <Toaster position="top-center" theme="dark" richColors />
     </QueryClientProvider>
   );
 }
