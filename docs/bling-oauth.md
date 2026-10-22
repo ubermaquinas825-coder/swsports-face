@@ -1,7 +1,7 @@
 # Bling — etapa 1
 
-Callback HTTPS (ambiente de desenvolvimento estável):
-https://project--45740091-8f59-41fb-957a-c2f263b7b39c-dev.lovable.app/api/public/bling/callback
+Callback HTTPS previsto (exige publicação da infraestrutura antes de autorizar):
+https://swsports-face.lovable.app/api/public/bling/callback
 
 Painel: `/integracoes/bling`, disponível pelo painel Frete e Envios.
 
@@ -24,4 +24,4 @@ Painel: `/integracoes/bling`, disponível pelo painel Frete e Envios.
 
 Documentação: https://developer.bling.com.br/aplicativos e https://developer.bling.com.br/migracao-jwt
 
-Publicação da loja não foi solicitada. Não registrar o callback no domínio da loja publicada antes de publicar essa infraestrutura.
+Verificação: callback local rejeita pedidos sem state/cookie com HTTP 400 e painel exige login. No domínio publicado o caminho ainda retorna HTTP 404; o host estável de desenvolvimento também retornou HTTP 404 e o preview exige autenticação. Portanto o callback público ainda não está disponível. Publicar com autorização do proprietário e verificar HTTP 400 sem parâmetros antes de iniciar OAuth real. Nenhuma conta administrativa está configurada; autorização administrativa e credenciais ainda são necessárias para o teste completo.

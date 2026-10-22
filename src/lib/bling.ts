@@ -1,4 +1,4 @@
-export const BLING_ORIGIN = "https://project--45740091-8f59-41fb-957a-c2f263b7b39c-dev.lovable.app";
+export const BLING_ORIGIN = "https://swsports-face.lovable.app";
 export const BLING_CALLBACK_URL = `${BLING_ORIGIN}/api/public/bling/callback`;
 export const BLING_AUTHORIZE_URL = "https://bling.com.br/Api/v3/oauth/authorize";
 export const BLING_TOKEN_URL = "https://api.bling.com.br/Api/v3/oauth/token";
