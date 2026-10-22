@@ -99,14 +99,14 @@ export function Collection() {
         </Reveal>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { id: "boca-de-beijo" },
-            { id: "velhinho-bigodudo" },
-            { id: "gato-divertido" },
-            { id: "bebe-chupeta" },
-            { id: "vovo-rebelde" },
-            { id: "sorriso-banguela" },
-          ].map((p, i) => (
-            <ProductCard key={p.id} product={null!} index={i} />
+            "boca-de-beijo",
+            "velhinho-bigodudo",
+            "gato-divertido",
+            "bebe-chupeta",
+            "vovo-rebelde",
+            "sorriso-banguela",
+          ].map((id, i) => (
+            <ProductCard key={id} product={productFor(id)!} index={i} />
           ))}
         </div>
       </div>
