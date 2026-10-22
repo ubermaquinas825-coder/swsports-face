@@ -1,9 +1,11 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
-- [ ] Preparar área Frete e Envios, dados persistentes e cálculo por CEP sem cotações fictícias
-- [ ] Verificar autorização oficial SuperFrete/Appmax; solicitar credenciais quando necessárias
-- [ ] Validar embalagem, cotação indisponível e barreiras de pagamento/emissão
+- [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
+- [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
+- [ ] Verificar painel salvando e relendo dados — aguarda login e identificação da conta administrativa pelo proprietário
+- [ ] Integrar cotações e checkout Appmax — aguarda autorização/documentação de credenciais SuperFrete e credenciais de lojista Appmax
+- [ ] Testar pagamentos reais, falha de emissão, eventos duplicados e reprocessamento — aguarda adaptadores autorizados
 - [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
 - [x] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
@@ -19,6 +21,6 @@
 
 ## Pendente (aguarda o usuário / etapa futura)
 - [ ] Kits promocionais: ativar após aprovação comercial (2un R$ 89,90 / 3un R$ 119,90)
-- [ ] Painel administrativo (cadastro de produtos, preços, WhatsApp) — precisa de Lovable Cloud + login
+- [ ] Painel de produtos, preços e WhatsApp — fora da preparação logística atual
 - [ ] Analytics: Google Analytics 4, Meta Pixel, eventos ViewContent/AddToCart/InitiateCheckout/Contact
 - [ ] SEO: sitemap.xml e OG image dedicada
