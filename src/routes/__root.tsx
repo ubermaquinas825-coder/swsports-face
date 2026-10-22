@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/hooks/use-cart";
 import { CartDrawer } from "@/components/CartDrawer";
+import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -148,6 +149,7 @@ function RootComponent() {
       <CartProvider>
         <Outlet />
         <CartDrawer />
+        <WhatsAppFloat />
       </CartProvider>
       <Toaster position="top-center" theme="dark" richColors />
     </QueryClientProvider>

@@ -38,10 +38,11 @@ export function Personality() {
                   key={product.id}
                   src={product.image}
                   alt={`Balaclava ${product.name}`}
-                  initial={{ opacity: 0, scale: 0.94 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.04 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ transformPerspective: 1000 }}
+                  initial={{ opacity: 0, rotateY: -70, scale: 0.9 }}
+                  animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotateY: 70, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative w-full max-w-sm drop-shadow-[0_30px_40px_rgba(0,0,0,0.65)]"
                 />
               </AnimatePresence>

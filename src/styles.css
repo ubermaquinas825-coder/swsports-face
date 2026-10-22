@@ -43,10 +43,15 @@
   --color-brand: var(--brand);
   --color-brand-deep: var(--brand-deep);
   --color-surface: var(--surface);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-foreground: var(--whatsapp-foreground);
+  --shadow-whatsapp: 0 12px 34px -8px color-mix(in oklab, var(--whatsapp) 70%, transparent);
 }
 
 :root {
   --radius: 0.75rem;
+  --whatsapp: oklch(0.72 0.19 150);
+  --whatsapp-foreground: oklch(0.15 0 0);
   --background: oklch(0.145 0 0);
   --foreground: oklch(1 0 0);
   --card: oklch(0.22 0 0);

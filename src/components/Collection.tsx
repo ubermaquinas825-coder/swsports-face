@@ -16,7 +16,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     if (!rect) return;
     const dx = (e.clientX - rect.left) / rect.width - 0.5;
     const dy = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -dy * 10, y: dx * 10 }); // até ~5 graus visíveis
+    setTilt({ x: -dy * 14, y: dx * 14 });
   };
 
   const buyNow = () => {
@@ -26,12 +26,14 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
   return (
     <Reveal delay={(index % 3) * 0.08}>
-      <div style={{ perspective: "900px" }}>
+      <div style={{ perspective: "1000px" }}>
         <motion.div
           ref={ref}
           onMouseMove={onMouseMove}
           onMouseLeave={() => setTilt({ x: 0, y: 0 })}
           animate={{ rotateX: tilt.x, rotateY: tilt.y }}
+          whileHover={{ y: -8 }}
+          style={{ transformStyle: "preserve-3d" }}
           transition={{ type: "spring", stiffness: 200, damping: 18 }}
           className="group relative overflow-hidden rounded-3xl border border-border bg-card transition-colors duration-300 hover:border-brand/60"
         >
@@ -44,7 +46,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 "radial-gradient(circle at 50% 30%, rgba(227,38,54,0.14) 0%, transparent 65%)",
             }}
           />
-          <div className="relative px-6 pt-8 transition-transform duration-300 group-hover:-translate-y-1.5">
+          <div
+            className="relative px-6 pt-8 transition-transform duration-500 group-hover:scale-105"
+            style={{ transform: "translateZ(50px)" }}
+          >
             <img
               src={product.image}
               alt={`Balaclava ${product.name}`}
