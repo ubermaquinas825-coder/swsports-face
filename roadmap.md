@@ -4,12 +4,13 @@
 - [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
 - [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
 - [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
-- [ ] Ativar pedidos automáticos/estoque real Bling — aguarda consentimento Bling, mapeamento dos produtos/depósito, contrato validado de confirmação/cliente/endereço Appmax, reconciliação segura e teste real; alterações atuais ainda não publicadas
+- [ ] Ativar pedidos automáticos/estoque real Bling — OAuth e produtos verificados; consulta de depósitos negada HTTP 403, vínculos/depósito não salvos; faltam confirmação/cliente/endereço Appmax, reconciliação segura e teste real
 - [x] Bling etapa 1: infraestrutura OAuth, armazenamento criptografado, renovação e página administrativa; testes locais passaram
 - [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
 - [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
 - [x] Solicitar publicação da consulta administrativa de produtos Bling
-- [ ] Bling autorização real e consulta de produtos — proprietário precisa corrigir Link de redirecionamento para https://swsports-face.lovable.app/api/public/bling/callback e autorizar novamente; logs mostram retorno incorreto à raiz
+- [x] Bling autorização real e consulta de produtos — callback concluiu HTTP 303 às 22:51 UTC; painel autenticado verificou acesso e retornou os seis SKUs existentes sem alterações
+- [ ] Bling depósitos/estoque — consulta real GET /depositos retorna HTTP 403; proprietário precisa conferir acesso/permissões de depósitos e estoque no aplicativo e autorizar novamente, depois confirmar vínculos e depósito
 - [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
 - [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias

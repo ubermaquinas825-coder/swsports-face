@@ -42,3 +42,12 @@ O botão Conectar Bling gera um state novo de uso único; não usar o state est�
 - Logs publicados mostram início OAuth HTTP 302 seguido de retorno à raiz `/?code=…&state=…`, não ao callback. Não reutilizar esses códigos expirados nem encaminhá-los por suporte/chat.
 - Corrigir no aplicativo Bling o campo **Link de redirecionamento** para `https://swsports-face.lovable.app/api/public/bling/callback`, salvar e iniciar **Conectar Bling** novamente. A documentação oficial associa o retorno ao endereço cadastrado: https://developer.bling.com.br/aplicativos e https://developer.bling.com.br/como-testar.
 - Callback publicado retorna HTTP 400 sem parâmetros, como esperado. Não confirma troca de tokens, permissões ou estoque real.
+
+## Nova verificação de 22/10/2026 22:54 UTC
+
+- O bloqueio de retorno anterior foi resolvido: callback publicado concluiu HTTP 303 e salvou autorização às 22:51:38 UTC, sem last_error; acesso válido até 23/10 04:51:38 UTC.
+- Com a sessão administrativa real, **Verificar acesso** passou e **Consultar produtos** retornou os seis produtos existentes SW-BAL-001 a SW-BAL-006, com nomes correspondentes; nenhum registro ERP criado/alterado.
+- **Consultar depósitos** foi efetivamente executado e retornou HTTP 403. O acesso a depósitos não está liberado para esta autorização; conferir permissões/acesso no aplicativo Bling e autorizar novamente. Nenhum depósito pôde ser selecionado.
+- Nenhuma configuração em bling_store_settings; **Consultar estoque** corretamente exige salvar os vínculos primeiro. Saldos reais e bloqueio de estoque no checkout permanecem não verificados/não ativados.
+- Renovação antecipada possui teste automatizado aprovado, mas não houve refresh real: token ainda válido. Não confundir **Verificar acesso** com forçar renovação.
+- 11 testes Bling passaram; envio automático de pedidos continua não implementado, condicionado à confirmação Appmax, endereço e reconciliação segura.
