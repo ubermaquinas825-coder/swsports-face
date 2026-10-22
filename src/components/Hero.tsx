@@ -33,6 +33,7 @@ export function Hero() {
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">Não é só uma balaclava. É uma nova personalidade.</p>
         </motion.div>
         <div ref={areaRef} className="relative mx-auto mt-2 flex h-[240px] max-w-4xl items-center justify-center sm:h-[300px] lg:h-[360px] [perspective:1200px]"
+          onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(true); }}
           onPointerMove={(event) => {
             if (reduce || event.pointerType !== "mouse") return;
             const rect = areaRef.current?.getBoundingClientRect();
