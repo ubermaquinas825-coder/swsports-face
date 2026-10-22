@@ -18,13 +18,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Balaclavas com estampas realistas e divertidas a partir de R$ 49,90. Escolha sua personalidade e finalize o pedido pelo WhatsApp.",
+          "Balaclavas com estampas realistas e divertidas por R$ 49,90. Consulte o frete SuperFrete e pague no checkout Appmax.",
       },
       { property: "og:title", content: "SW Sports — Balaclavas Divertidas" },
       {
         property: "og:description",
         content:
-          "Não é só uma balaclava. É uma nova personalidade. Estampas realistas a partir de R$ 49,90, pedido pelo WhatsApp.",
+          "Não é só uma balaclava. É uma nova personalidade. Estampas realistas por R$ 49,90, frete SuperFrete e pagamento Appmax.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

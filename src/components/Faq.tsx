@@ -13,11 +13,11 @@ const FAQS = [
   },
   {
     q: "Como faço o pedido?",
-    a: `Monte o carrinho aqui no site e finalize pelo WhatsApp. A mensagem com os itens, quantidades e o total já vai pronta — a equipe confirma disponibilidade e o valor do frete com você.`,
+    a: "Escolha as balaclavas, calcule o frete no carrinho e siga para o checkout Appmax para pagar.",
   },
   {
     q: "Quanto custa o frete?",
-    a: "O valor do frete é confirmado pela equipe da SW Sports no fechamento do pedido pelo WhatsApp.",
+    a: "O frete é consultado pela SuperFrete no carrinho, de acordo com o CEP e os itens do pedido.",
   },
   {
     q: "Vocês vendem no atacado?",
