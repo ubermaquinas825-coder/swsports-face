@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Conectar credenciais SuperFrete e Appmax com coleta segura e validar acesso oficial ao checkout
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
 - [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
 - [ ] Verificar painel salvando e relendo dados — aguarda login e identificação da conta administrativa pelo proprietário
