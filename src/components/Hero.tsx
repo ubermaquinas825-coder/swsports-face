@@ -92,7 +92,7 @@ export function Hero() {
             className="relative"
           >
             <motion.div
-              animate={reduce ? undefined : { y: [0, -9, 0] }}
+              {...(reduce ? {} : { animate: { y: [0, -9, 0] } })}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
               <img
