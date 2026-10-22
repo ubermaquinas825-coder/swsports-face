@@ -26,3 +26,5 @@
 - [ ] Painel de produtos, preços e WhatsApp — fora da preparação logística atual
 - [ ] Analytics: Google Analytics 4, Meta Pixel, eventos ViewContent/AddToCart/InitiateCheckout/Contact
 - [ ] SEO: sitemap.xml e OG image dedicada
+
+- [x] Embalagens para várias unidades configuradas (100 g/un., envelopes 26×36 e 32×40)
