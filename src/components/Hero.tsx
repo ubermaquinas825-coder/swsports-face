@@ -108,7 +108,7 @@ export function Hero() {
             {/* sombra no chão */}
             <motion.div
               aria-hidden
-              animate={reduce ? undefined : { scaleX: [1, 0.94, 1], opacity: [0.5, 0.35, 0.5] }}
+              {...(reduce ? {} : { animate: { scaleX: [1, 0.94, 1], opacity: [0.5, 0.35, 0.5] } })}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="mx-auto h-6 w-2/5 rounded-[100%] bg-black/80 blur-md"
             />
@@ -122,7 +122,7 @@ export function Hero() {
         className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-muted-foreground md:block"
       >
         <motion.span
-          animate={reduce ? undefined : { y: [0, 6, 0] }}
+          {...(reduce ? {} : { animate: { y: [0, 6, 0] } })}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="block"
         >
