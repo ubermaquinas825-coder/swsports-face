@@ -5,7 +5,8 @@
 - [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
 - [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
 - [ ] Verificar painel salvando e relendo dados — aguarda login e identificação da conta administrativa pelo proprietário
-- [ ] Mostrar cotações SuperFrete no carrinho, selecionar frete e substituir finalização WhatsApp por checkout Appmax com total validado no servidor
+- [x] Mostrar cotações SuperFrete no carrinho, selecionar frete e substituir finalização WhatsApp por checkout Appmax com total validado no servidor — cotação real e total R$68,35 relido na página hospedada, sem pagamento
+- [ ] Habilitar frete para múltiplas unidades — aguarda peso real das peças, tara e dimensões/capacidades das embalagens
 - [ ] Testar pagamentos reais, falha de emissão, eventos duplicados e reprocessamento — aguarda adaptadores autorizados
 - [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
@@ -17,7 +18,7 @@
 - [x] Hero cinematográfico com apresentação 2.5D (tilt + flutuação)
 - [x] Seção "Escolha sua personalidade"
 - [x] Kits (desativados até aprovação comercial)
-- [x] Carrinho lateral com localStorage + checkout pelo WhatsApp
+- [x] Carrinho lateral com localStorage + checkout Appmax e frete SuperFrete
 - [x] Página /atacado com formulário via WhatsApp
 
 ## Pendente (aguarda o usuário / etapa futura)
