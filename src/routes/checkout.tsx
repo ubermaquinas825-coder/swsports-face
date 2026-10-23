@@ -7,14 +7,12 @@ import { useCart } from "@/hooks/use-cart";
 import { checkoutCartKey, type ShippingSelection } from "@/lib/checkout";
 import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { deliveryAddressSchema } from "@/lib/delivery-address";
-import { formatBRL } from "@/lib/products";
+import { formatBRL, UNIT_PRICE } from "@/lib/products";
 
 const CHECKOUT_SHIPPING_KEY = "swsports-checkout-shipping-v1";
 
 type ViaCepResult = {
-  cep?: string;
   logradouro?: string;
-  complemento?: string;
   bairro?: string;
   localidade?: string;
   uf?: string;
@@ -160,7 +158,7 @@ function CheckoutPage() {
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Seu frete já foi escolhido. Preenchemos o endereço automaticamente pelo CEP para você informar apenas o que falta.</p>
           </div>
 
-          <form onSubmit={submit} className="space-y-5">
+          <form id="checkout-order-form" onSubmit={submit} className="space-y-5">
             <div className="rounded-3xl border border-border bg-card p-5 md:p-6">
               <div className="mb-5 flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-brand"><MapPin className="h-4 w-4" /></div><div><h2 className="font-display text-lg font-bold">Dados de entrega</h2><p className="text-xs text-muted-foreground">CEP {shipping.cep}</p></div></div>
 
@@ -204,7 +202,7 @@ function CheckoutPage() {
               {lines.map(({ product, qty }) => (
                 <div key={product.id} className="flex items-center gap-3">
                   <img src={product.image} alt="" loading="lazy" decoding="async" className="h-14 w-14 rounded-xl bg-background object-cover object-top" />
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{product.name}</p><p className="text-xs text-muted-foreground">{qty}x · {formatBRL(product.price ?? 49.9)}</p></div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{product.name}</p><p className="text-xs text-muted-foreground">{qty}x · {formatBRL(UNIT_PRICE)}</p></div>
                 </div>
               ))}
             </div>
@@ -214,11 +212,10 @@ function CheckoutPage() {
               <div className="flex justify-between text-muted-foreground"><span>Produtos</span><span>{formatBRL(subtotal)}</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Frete</span><span>{formatBRL(shipping.option.priceCents / 100)}</span></div>
               <div className="flex justify-between gap-4 text-muted-foreground"><span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5" /> {shipping.option.company} · {shipping.option.name}</span>{shipping.option.deliveryDays !== null && <span className="shrink-0">{shipping.option.deliveryDays} dias úteis</span>}</div>
-              <div className="pt-2 flex items-center justify-between font-semibold"><span>Total</span><span className="font-display text-2xl font-bold">{formatBRL(total)}</span></div>
+              <div className="flex items-center justify-between pt-2 font-semibold"><span>Total</span><span className="font-display text-2xl font-bold">{formatBRL(total)}</span></div>
             </div>
 
-            <Button type="submit" form="checkout-order-form" disabled className="hidden" />
-            <Button type="button" disabled={busy || addressBusy} onClick={() => document.querySelector<HTMLFormElement>("form")?.requestSubmit()} className="mt-5 hidden h-14 w-full rounded-2xl text-sm font-bold md:flex">
+            <Button type="submit" form="checkout-order-form" disabled={busy || addressBusy} className="mt-5 hidden h-14 w-full rounded-2xl text-sm font-bold md:flex">
               <LockKeyhole className="h-4 w-4" /> {busy ? "ABRINDO MERCADO PAGO…" : "REALIZAR PAGAMENTO"}
             </Button>
             <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">O pagamento é concluído no ambiente seguro do Mercado Pago. O valor do frete é validado novamente antes da cobrança.</p>
