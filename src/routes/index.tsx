@@ -18,13 +18,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Balaclavas com estampas realistas e divertidas por R$ 49,90. Consulte o frete SuperFrete e pague no checkout Appmax.",
+          "Balaclavas com estampas realistas e divertidas por R$ 49,90. Consulte o frete SuperFrete e pague com segurança pelo Mercado Pago.",
       },
       { property: "og:title", content: "SW Sports — Balaclavas Divertidas" },
       {
         property: "og:description",
         content:
-          "Não é só uma balaclava. É uma nova personalidade. Estampas realistas por R$ 49,90, frete SuperFrete e pagamento Appmax.",
+          "Não é só uma balaclava. É uma nova personalidade. Estampas realistas por R$ 49,90, frete SuperFrete e pagamento Mercado Pago.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -73,12 +73,12 @@ function Home() {
       <main>
         <Hero />
         <Collection />
-        <Personality />
-        <Kits />
-        <Benefits />
-        <WholesaleStrip />
-        <Faq />
-        <FinalCta />
+        <div className="render-later"><Personality /></div>
+        <div className="render-later"><Kits /></div>
+        <div className="render-later"><Benefits /></div>
+        <div className="render-later"><WholesaleStrip /></div>
+        <div className="render-later"><Faq /></div>
+        <div className="render-later"><FinalCta /></div>
       </main>
       <SiteFooter />
     </>
