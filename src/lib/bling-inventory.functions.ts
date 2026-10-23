@@ -13,11 +13,15 @@ export const getBlingInventory = createServerFn({ method: "GET" }).middleware([r
   return result.data ? blingInventoryConfigSchema.parse(result.data.config) : emptyBlingInventoryConfig;
 });
 export const loadBlingWarehouses = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   return readBlingWarehouses();
 });
 export const saveBlingInventory = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data: unknown) => blingInventoryConfigSchema.parse(data)).handler(async ({ data, context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const verified = await verifyBlingMappings(data);
@@ -27,11 +31,15 @@ export const saveBlingInventory = createServerFn({ method: "POST" }).middleware(
   return { config: verified, stock };
 });
 export const discoverBlingCatalog = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   return matchBlingCatalog(await readBlingProducts());
 });
 export const testBlingInventory = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const result = await context.supabase.from("bling_store_settings").select("config").eq("id", true).maybeSingle();

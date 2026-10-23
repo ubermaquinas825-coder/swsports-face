@@ -1,3 +1,4 @@
+import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { z } from "zod";
 import { choosePackage, defaultShippingConfig, shippingConfigSchema, validatedTotal } from "@/lib/shipping";
 import { productFor, UNIT_PRICE } from "@/lib/products";
@@ -47,6 +48,7 @@ export async function authenticateAppmax() {
   return auth.access_token;
 }
 export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, option: ShippingOption) {
+  assertFinancialOperationsEnabled();
   const accessToken = await authenticateAppmax();
   const totalCents = validatedTotal(lines, 0, option.priceCents);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

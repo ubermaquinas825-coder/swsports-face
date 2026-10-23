@@ -17,6 +17,8 @@ export const getShippingAdmin = createServerFn({ method: "GET" }).middleware([re
   return { allowed: true as const, config: settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig, orders: orders.data ?? [], events: events.data ?? [] };
 });
 export const saveShippingConfig = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data: unknown) => shippingConfigSchema.parse(data)).handler(async ({ data, context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const result = await context.supabase.from("shipping_settings").upsert({ id: true, config: data, updated_at: new Date().toISOString() });
@@ -24,6 +26,8 @@ export const saveShippingConfig = createServerFn({ method: "POST" }).middleware(
   return { saved: true };
 });
 export const verifyShippingIntegrations = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const check = async (operation: () => Promise<string>) => {
@@ -38,6 +42,8 @@ export const verifyShippingIntegrations = createServerFn({ method: "POST" }).mid
 });
 // Public read-only quote for guest shoppers; never creates or pays for labels.
 export const requestShippingQuote = createServerFn({ method: "POST" }).inputValidator((data: unknown) => shippingRequestSchema.parse(data)).handler(async ({ data }) => {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
   const options = await quoteFreight(data.cep, data.lines);
   return { options, message: options.length ? "" : "Nenhuma opção de entrega disponível para este CEP." };
 });
