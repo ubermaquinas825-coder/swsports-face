@@ -19,6 +19,7 @@ import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_aut
 import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
 import { Route as ApiPublicBlingStartRouteImport } from './routes/api/public/bling/start'
 import { Route as ApiPublicCronSyncOrdersRouteImport } from './routes/api/public/cron/sync-orders'
+import { Route as ApiPublicWebhooksAppmaxRouteImport } from './routes/api/public/webhooks/appmax'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,11 @@ const ApiPublicCronSyncOrdersRoute = ApiPublicCronSyncOrdersRouteImport.update({
   path: '/api/public/cron/sync-orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksAppmaxRoute = ApiPublicWebhooksAppmaxRouteImport.update({
+  id: '/api/public/webhooks/appmax',
+  path: '/api/public/webhooks/appmax',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/webhooks/appmax': typeof ApiPublicWebhooksAppmaxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/webhooks/appmax': typeof ApiPublicWebhooksAppmaxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/webhooks/appmax': typeof ApiPublicWebhooksAppmaxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/webhooks/appmax'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/webhooks/appmax'
   id:
     | '__root__'
     | '/'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/webhooks/appmax'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
   ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
   ApiPublicCronSyncOrdersRoute: typeof ApiPublicCronSyncOrdersRoute
+  ApiPublicWebhooksAppmaxRoute: typeof ApiPublicWebhooksAppmaxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -227,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/appmax': {
+      id: '/api/public/webhooks/appmax'
+      path: '/api/public/webhooks/appmax'
+      fullPath: '/api/public/webhooks/appmax'
+      preLoaderRoute: typeof ApiPublicWebhooksAppmaxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
   ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
   ApiPublicCronSyncOrdersRoute: ApiPublicCronSyncOrdersRoute,
+  ApiPublicWebhooksAppmaxRoute: ApiPublicWebhooksAppmaxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
