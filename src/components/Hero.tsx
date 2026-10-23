@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion, useSpring } from "motion/rea
 import { ArrowDown, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { products, UNIT_PRICE, formatBRL } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+import TechText from "@/components/TechText";
 
 export function Hero() {
   const reduce = useReducedMotion();
@@ -29,7 +30,23 @@ export function Hero() {
           <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-brand" /> COLEÇÃO SW SPORTS</span>
         </div>
         <motion.div initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="relative z-10 mt-7 text-center">
-          <h1 className="font-display text-4xl font-bold leading-none sm:text-5xl lg:text-7xl">BALACLAVAS <span className="text-brand">SW SPORTS</span></h1>
+          <h1 className="font-display text-4xl font-bold leading-none sm:text-5xl lg:text-7xl">
+            {reduce ? (
+              <>BALACLAVAS <span className="text-brand">SW SPORTS</span></>
+            ) : (
+              <>
+                <span className="sr-only">BALACLAVAS SW SPORTS</span>
+                <span aria-hidden="true" className="mx-auto grid h-20 max-w-5xl grid-cols-[1.2fr_1fr] sm:h-24 lg:h-32">
+                  <span className="block min-w-0">
+                    <TechText text="BALACLAVAS" fontFamily="Space Grotesk, Inter, ui-sans-serif, sans-serif" fontWeight={700} fontSize={72} letterSpacing={0} color="currentColor" accentColor="currentColor" reveal="letter" intro="none" />
+                  </span>
+                  <span className="block min-w-0 text-brand">
+                    <TechText text="SW SPORTS" fontFamily="Space Grotesk, Inter, ui-sans-serif, sans-serif" fontWeight={700} fontSize={72} letterSpacing={0} color="currentColor" accentColor="currentColor" reveal="letter" intro="none" />
+                  </span>
+                </span>
+              </>
+            )}
+          </h1>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">Não é só uma balaclava. É uma nova personalidade.</p>
         </motion.div>
         <div ref={areaRef} className="relative mx-auto mt-2 flex h-[240px] max-w-4xl items-center justify-center sm:h-[300px] lg:h-[360px] [perspective:1200px]"

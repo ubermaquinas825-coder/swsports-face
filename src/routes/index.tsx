@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Hero } from "@/components/Hero";
+import TechText from "@/components/TechText";
 import { Collection } from "@/components/Collection";
 import { Personality } from "@/components/Personality";
 import { Kits } from "@/components/Kits";
@@ -72,6 +73,38 @@ function Home() {
       <SiteHeader />
       <main>
         <Hero />
+        <section aria-label="React Bits" className="border-b border-border">
+          <div style={{ width: "100%", height: "480px", position: "relative" }}>
+            <TechText
+              text="React Bits"
+              fontWeight={600}
+              fontSize={150}
+              reveal="letter"
+              dashLength={4}
+              dashGap={2}
+              specks={15}
+              intro="none"
+              introDuration={2}
+              clickKick
+              guides={false}
+              fontFamily=""
+              letterSpacing={-0.05}
+              accentColor="currentColor"
+              reach={200}
+              softness={0.7}
+              lineStyle="dashed"
+              strokeWidth={1.5}
+              speed={1}
+              bounce={0.4}
+              selection
+              labels
+              color="currentColor"
+              align="center"
+              draggable
+              sweep
+            />
+          </div>
+        </section>
         <Collection />
         <Personality />
         <Kits />
