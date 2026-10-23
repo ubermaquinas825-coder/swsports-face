@@ -49,6 +49,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               width={800}
               height={600}
               loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               className="product-cutout mx-auto h-[230px] w-full max-w-[300px] object-contain"
             />
           </div>
