@@ -13,6 +13,8 @@
 
 Technical decisions for this project:
 
+- Advertising base tags are centralized in a browser-only effect with regional advertising consent, versioned visitor choice history and cross-tab withdrawal; only public storefront paths are measured, never admin/auth or checkout personal data. No matching, purchase reporting or Google conversion labels are inferred from base tag IDs.
+
 - Product photos are CDN assets: cut transparent from the user's original photos via `/mnt/user-uploads/` + Lovable Assets pointers (`src/assets/*.png.asset.json`). Never replace them with AI-generated images; keep the original stamp colors.
 - Hero uses a 2.5D presentation (CSS perspective tilt + idle float) in `src/components/Hero.tsx`, kept as a standalone component so it can be swapped for a real GLB/GLTF model later. Do not fake a 3D model from the 2D photos.
 - Storefront motion uses Motion with reduced-motion fallbacks; the global WhatsApp contact link sits below the cart overlay so it cannot interfere with payment.
