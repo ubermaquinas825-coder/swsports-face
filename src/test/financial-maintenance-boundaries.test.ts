@@ -22,6 +22,7 @@ import { inspectHeldBlingOrder, recoverStaleBlingOrders } from "@/lib/bling-reco
 import { Route as cron } from "@/routes/api/public/cron/sync-orders";
 import { Route as oauthStart } from "@/routes/api/public/bling/start";
 import { Route as oauthCallback } from "@/routes/api/public/bling/callback";
+import { Route as appmaxWebhook } from "@/routes/api/public/webhooks/appmax";
 
 // Exercise handlers directly with simulated auth. Separate existing tests cover
 // authentication/authorization; this suite proves the maintenance side-effect fence.
@@ -59,7 +60,7 @@ describe("Maintenance fences before database/provider side effects", () => {
     expect(database).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled();
   });
 
-  it.each([["cron", cron, "POST"], ["OAuth start", oauthStart, "GET"], ["OAuth callback", oauthCallback, "GET"]] as const)("returns maintenance for %s without side effects", async (_name, route, method) => {
+  it.each([["cron", cron, "POST"], ["OAuth start", oauthStart, "GET"], ["OAuth callback", oauthCallback, "GET"], ["Appmax webhook", appmaxWebhook, "POST"]] as const)("returns maintenance for %s without side effects", async (_name, route, method) => {
     const response = await invokeRoute(route, method);
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({ maintenance: true });
