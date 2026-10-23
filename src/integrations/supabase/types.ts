@@ -205,6 +205,10 @@ export type Database = {
           freight_cents: number | null
           id: string
           items: Json
+          label_error: string | null
+          label_price_cents: number | null
+          label_processing_started_at: string | null
+          label_status: string
           label_url: string | null
           payment_link_id: string | null
           payment_status: string
@@ -237,6 +241,10 @@ export type Database = {
           freight_cents?: number | null
           id?: string
           items?: Json
+          label_error?: string | null
+          label_price_cents?: number | null
+          label_processing_started_at?: string | null
+          label_status?: string
           label_url?: string | null
           payment_link_id?: string | null
           payment_status?: string
@@ -269,6 +277,10 @@ export type Database = {
           freight_cents?: number | null
           id?: string
           items?: Json
+          label_error?: string | null
+          label_price_cents?: number | null
+          label_processing_started_at?: string | null
+          label_status?: string
           label_url?: string | null
           payment_link_id?: string | null
           payment_status?: string
@@ -383,6 +395,10 @@ export type Database = {
           freight_cents: number | null
           id: string
           items: Json
+          label_error: string | null
+          label_price_cents: number | null
+          label_processing_started_at: string | null
+          label_status: string
           label_url: string | null
           payment_link_id: string | null
           payment_status: string
@@ -452,6 +468,10 @@ export type Database = {
           freight_cents: number | null
           id: string
           items: Json
+          label_error: string | null
+          label_price_cents: number | null
+          label_processing_started_at: string | null
+          label_status: string
           label_url: string | null
           payment_link_id: string | null
           payment_status: string
