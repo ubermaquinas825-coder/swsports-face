@@ -8,6 +8,7 @@ vi.mock("@/lib/payment-reconciliation.server", () => ({ reconcileAppmaxOrder: re
 vi.mock("@/lib/bling.server", () => ({ getBlingAccessToken: token }));
 vi.mock("@/lib/checkout.server", () => ({ authenticateAppmax: vi.fn() }));
 vi.mock("@/lib/bling-recovery.server", () => ({ recoverStaleBlingOrders: recover }));
+vi.mock("@/lib/labels.server", () => ({ issuePendingLabels: vi.fn().mockResolvedValue({ issued: 0, errors: [] }) }));
 import { exportOrderToBling, syncPaidOrders } from "@/lib/bling-orders.server";
 
 // Preserve the complete filter chain so tests verify both outcome and fencing.
@@ -33,11 +34,11 @@ describe("Sync database failures", () => {
   it("reports individual reconciliation failures explicitly", async () => {
     from.mockReturnValueOnce(query({ data: [{ id: "order" }], error: null })).mockReturnValueOnce(query({ data: [], error: null }));
     reconcile.mockRejectedValue(new Error("reconciliation write failed"));
-    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: ["reconciliation write failed"], retryableFailures: 0, recovered: 0 });
+    await expect(syncPaidOrders()).resolves.toEqual({ labels: 0, checked: 0, exported: 0, errors: ["reconciliation write failed"], retryableFailures: 0, recovered: 0 });
   });
   it("distinguishes a legitimate empty queue from a database failure", async () => {
     from.mockReturnValue(query({ data: [], error: null }));
-    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: [], retryableFailures: 0, recovered: 0 });
+    await expect(syncPaidOrders()).resolves.toEqual({ labels: 0, checked: 0, exported: 0, errors: [], retryableFailures: 0, recovered: 0 });
   });
   it("classifies safe read retries separately from manual review failures", async () => {
     from.mockReturnValueOnce(query({ data: [{ id: "order" }], error: null })).mockReturnValueOnce(query({ data: [], error: null }));

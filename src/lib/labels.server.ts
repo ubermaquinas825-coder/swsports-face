@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { buildSuperFreteCart, deliveryAddressSchema, labelPriceAcceptable } from "./delivery";
 import { choosePackage, defaultShippingConfig, shippingConfigSchema } from "./shipping";
@@ -26,7 +27,7 @@ export async function issueLabel(orderId: string) {
     .eq("id", orderId).eq("label_status", "awaiting").eq("payment_status", "approved").is("provider_shipment_id", null).select("*").maybeSingle();
   if (claim.error || !claim.data) return { issued: false };
   const order = claim.data;
-  const save = (patch: Record<string, unknown>) => supabaseAdmin.from("shipping_orders").update(patch).eq("id", orderId).eq("label_status", "processing");
+  const save = (patch: Database["public"]["Tables"]["shipping_orders"]["Update"]) => supabaseAdmin.from("shipping_orders").update(patch).eq("id", orderId).eq("label_status", "processing");
   try {
     const address = deliveryAddressSchema.parse(order.delivery_address);
     const service = z.object({ id: z.string(), priceCents: z.number().int() }).parse(order.shipping_service);
