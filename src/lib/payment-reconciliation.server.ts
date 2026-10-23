@@ -70,7 +70,7 @@ export async function reconcileAppmaxOrder(orderId: string) {
     const flagged = await supabaseAdmin.rpc("commit_appmax_check", {
       _order_id: orderId, _expected_revision: revision, _payment_state: null,
       _provider_payment_id: null, _appmax_status: null, _inconclusive: true,
-    });
+    } as never);
     if (flagged.error) throw new Error("A conferência falhou e não foi possível registrar a revisão manual.", { cause: error });
     if (!flagged.data) throw new Error("A conferência falhou após mudança ou expiração da trava do pedido. Nenhum estado foi sobrescrito.", { cause: error });
     throw error;
@@ -81,7 +81,7 @@ export async function reconcileAppmaxOrder(orderId: string) {
     _order_id: orderId, _expected_revision: revision, _payment_state: selected?.state ?? null,
     _provider_payment_id: selected ? String(selected.id) : null,
     _appmax_status: selected?.status ?? "pendente", _inconclusive: false,
-  });
+  } as never);
   if (saved.error) throw new RetryableSyncError("Não foi possível salvar a conferência Appmax.");
   if (!saved.data) throw new Error("Conferência não aplicada: pedido alterado, trava expirada ou transição financeira bloqueada.");
   return { checked: true, status: selected?.status ?? "pendente" };

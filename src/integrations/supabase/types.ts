@@ -133,18 +133,75 @@ export type Database = {
           },
         ]
       }
+      shipping_hold_resolutions: {
+        Row: {
+          action: string
+          actor_id: string
+          applied_revision: string | null
+          created_at: string
+          evidence: string
+          expected_revision: string
+          id: string
+          order_id: string
+          previous_reason: string | null
+          previous_status: string
+          reason: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          applied_revision?: string | null
+          created_at?: string
+          evidence: string
+          expected_revision: string
+          id?: string
+          order_id: string
+          previous_reason?: string | null
+          previous_status: string
+          reason: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          applied_revision?: string | null
+          created_at?: string
+          evidence?: string
+          expected_revision?: string
+          id?: string
+          order_id?: string
+          previous_reason?: string | null
+          previous_status?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_hold_resolutions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipping_orders: {
         Row: {
+          appmax_check_failures: number
           appmax_check_lock_until: string | null
+          appmax_check_started_at: string | null
           appmax_checked_at: string | null
+          appmax_next_check_at: string | null
+          appmax_payment_verified_at: string | null
           appmax_status: string | null
+          bling_export_token: string | null
           bling_order_id: number | null
+          bling_processing_started_at: string | null
           bling_sync_error: string | null
           bling_sync_status: string
           created_at: string
           customer_id: string | null
           delivery_address: Json | null
           discount_cents: number
+          financial_revision: string
           freight_cents: number | null
           id: string
           items: Json
@@ -160,16 +217,23 @@ export type Database = {
           tracking_code: string | null
         }
         Insert: {
+          appmax_check_failures?: number
           appmax_check_lock_until?: string | null
+          appmax_check_started_at?: string | null
           appmax_checked_at?: string | null
+          appmax_next_check_at?: string | null
+          appmax_payment_verified_at?: string | null
           appmax_status?: string | null
+          bling_export_token?: string | null
           bling_order_id?: number | null
+          bling_processing_started_at?: string | null
           bling_sync_error?: string | null
           bling_sync_status?: string
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
+          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -185,16 +249,23 @@ export type Database = {
           tracking_code?: string | null
         }
         Update: {
+          appmax_check_failures?: number
           appmax_check_lock_until?: string | null
+          appmax_check_started_at?: string | null
           appmax_checked_at?: string | null
+          appmax_next_check_at?: string | null
+          appmax_payment_verified_at?: string | null
           appmax_status?: string | null
+          bling_export_token?: string | null
           bling_order_id?: number | null
+          bling_processing_started_at?: string | null
           bling_sync_error?: string | null
           bling_sync_status?: string
           created_at?: string
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
+          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -210,6 +281,41 @@ export type Database = {
           tracking_code?: string | null
         }
         Relationships: []
+      }
+      shipping_recovery_checks: {
+        Row: {
+          bling_order_id: number | null
+          financial_revision: string
+          id: string
+          observed_at: string
+          order_id: string
+          outcome: string
+        }
+        Insert: {
+          bling_order_id?: number | null
+          financial_revision: string
+          id?: string
+          observed_at?: string
+          order_id: string
+          outcome: string
+        }
+        Update: {
+          bling_order_id?: number | null
+          financial_revision?: string
+          id?: string
+          observed_at?: string
+          order_id?: string
+          outcome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_recovery_checks_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shipping_settings: {
         Row: {
@@ -253,11 +359,68 @@ export type Database = {
     }
     Functions: {
       claim_appmax_check: { Args: { _order_id: string }; Returns: boolean }
+      claim_appmax_check_v2: { Args: { _order_id: string }; Returns: string }
+      claim_bling_export: {
+        Args: { _order_id: string }
+        Returns: {
+          appmax_check_failures: number
+          appmax_check_lock_until: string | null
+          appmax_check_started_at: string | null
+          appmax_checked_at: string | null
+          appmax_next_check_at: string | null
+          appmax_payment_verified_at: string | null
+          appmax_status: string | null
+          bling_export_token: string | null
+          bling_order_id: number | null
+          bling_processing_started_at: string | null
+          bling_sync_error: string | null
+          bling_sync_status: string
+          created_at: string
+          customer_id: string | null
+          delivery_address: Json | null
+          discount_cents: number
+          financial_revision: string
+          freight_cents: number | null
+          id: string
+          items: Json
+          label_url: string | null
+          payment_link_id: string | null
+          payment_status: string
+          provider_payment_id: string | null
+          provider_shipment_id: string | null
+          quoted_cep: string | null
+          shipping_service: Json | null
+          shipping_status: string
+          subtotal_cents: number
+          tracking_code: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "shipping_orders"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      commit_appmax_check: {
+        Args: {
+          _appmax_status: string
+          _expected_revision: string
+          _inconclusive: boolean
+          _order_id: string
+          _payment_state: string
+          _provider_payment_id: string
+        }
+        Returns: boolean
+      }
       consume_bling_oauth_state: {
         Args: { p_browser_hash: string; p_state_hash: string }
         Returns: {
           user_id: string
         }[]
+      }
+      defer_appmax_check: {
+        Args: { _expected_revision: string; _order_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -265,6 +428,70 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      quarantine_stale_bling_orders: {
+        Args: never
+        Returns: {
+          appmax_check_failures: number
+          appmax_check_lock_until: string | null
+          appmax_check_started_at: string | null
+          appmax_checked_at: string | null
+          appmax_next_check_at: string | null
+          appmax_payment_verified_at: string | null
+          appmax_status: string | null
+          bling_export_token: string | null
+          bling_order_id: number | null
+          bling_processing_started_at: string | null
+          bling_sync_error: string | null
+          bling_sync_status: string
+          created_at: string
+          customer_id: string | null
+          delivery_address: Json | null
+          discount_cents: number
+          financial_revision: string
+          freight_cents: number | null
+          id: string
+          items: Json
+          label_url: string | null
+          payment_link_id: string | null
+          payment_status: string
+          provider_payment_id: string | null
+          provider_shipment_id: string | null
+          quoted_cep: string | null
+          shipping_service: Json | null
+          shipping_status: string
+          subtotal_cents: number
+          tracking_code: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "shipping_orders"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      record_bling_recovery: {
+        Args: {
+          _bling_order_id: number
+          _expected_revision: string
+          _order_id: string
+          _outcome: string
+        }
+        Returns: boolean
+      }
+      renew_appmax_check: {
+        Args: { _expected_revision: string; _order_id: string }
+        Returns: string
+      }
+      resolve_shipping_order_hold: {
+        Args: {
+          _action: string
+          _evidence: string
+          _expected_revision: string
+          _order_id: string
+          _reason: string
+        }
+        Returns: string
       }
     }
     Enums: {
