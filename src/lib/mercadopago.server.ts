@@ -55,6 +55,12 @@ function centsFromMoney(value: string | number) {
 }
 
 function publicSiteUrl() {
+  // Preview checkouts must return to the same preview deployment instead of the
+  // production domain. Production continues to use the canonical public URL.
+  if (process.env["VERCEL_ENV"] === "preview" && process.env["VERCEL_URL"]) {
+    const preview = new URL(`https://${process.env["VERCEL_URL"]}`);
+    if (preview.protocol === "https:" && !preview.username && !preview.password) return preview.origin;
+  }
   const raw = process.env["VITE_PUBLIC_SITE_URL"] || "https://www.balaclavaswsports.com.br";
   const url = new URL(raw);
   if (url.protocol !== "https:" || url.username || url.password) throw new Error("URL pública da loja inválida para o retorno do pagamento.");
@@ -132,7 +138,8 @@ export function validateMercadoPagoWebhookSignature(request: Request, dataId: st
 }
 
 export async function processMercadoPagoWebhook(providerOrderId: string) {
-  assertFinancialOperationsEnabled();
+  // Incoming provider reconciliation must remain available even if checkout is
+  // temporarily paused. A payment can settle after maintenance is enabled.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const lookup = await supabaseAdmin.from("shipping_orders").select("id,payment_link_id,subtotal_cents,discount_cents,freight_cents,payment_status,bling_sync_status,provider_payment_id")
     .eq("payment_link_id", `${MP_LINK_PREFIX}${providerOrderId}`).maybeSingle();
