@@ -1,3 +1,4 @@
+import { RetryableSyncError } from "@/lib/financial-errors";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { sync, authenticate } = vi.hoisted(() => ({ sync: vi.fn(), authenticate: vi.fn() }));
@@ -12,18 +13,31 @@ afterEach(() => vi.resetAllMocks());
 describe("Order synchronization cron", () => {
   it("returns non-success for partial failures without exposing internal errors", async () => {
     authenticate.mockResolvedValue(null);
-    sync.mockResolvedValue({ checked: 1, exported: 0, errors: ["database write failed"] });
+    sync.mockResolvedValue({ checked: 1, exported: 0, errors: ["database write failed"], retryableFailures: 1, recovered: 0 });
     const response = await handler({ request: new Request("https://local.invalid/api/public/cron/sync-orders", { method: "POST" }) });
     expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ checked: 1, exported: 0, failures: 1 });
+    expect(await response.json()).toEqual({ checked: 1, exported: 0, recovered: 0, failures: 1, retryableFailures: 1, manualReviewFailures: 0, ok: false });
   });
   it("does not convert a database exception into successful counters", async () => {
     authenticate.mockResolvedValue(null); sync.mockRejectedValue(new Error("database read failed"));
     await expect(handler({ request: new Request("https://local.invalid", { method: "POST" }) })).rejects.toThrow("database read failed");
   });
   it("returns success when the cycle completes without failures", async () => {
-    authenticate.mockResolvedValue(null); sync.mockResolvedValue({ checked: 0, exported: 0, errors: [] });
+    authenticate.mockResolvedValue(null); sync.mockResolvedValue({ checked: 0, exported: 0, errors: [], retryableFailures: 0, recovered: 0 });
     expect((await handler({ request: new Request("https://local.invalid", { method: "POST" }) })).status).toBe(200);
+  });
+  it("does not request scheduler retries for manual-only failures", async () => {
+    authenticate.mockResolvedValue(null);
+    sync.mockResolvedValue({ checked: 0, exported: 0, recovered: 1, errors: ["manual review required"], retryableFailures: 0 });
+    const response = await handler({ request: new Request("https://local.invalid", { method: "POST" }) });
+    expect(response.status).toBe(207); expect(response.headers.get("Retry-After")).toBeNull();
+    expect(await response.json()).toMatchObject({ ok: false, failures: 1, retryableFailures: 0, manualReviewFailures: 1 });
+  });
+  it("requests bounded retries for a temporary batch query failure", async () => {
+    authenticate.mockResolvedValue(null); sync.mockRejectedValue(new RetryableSyncError("database unavailable"));
+    const response = await handler({ request: new Request("https://local.invalid", { method: "POST" }) });
+    expect(response.status).toBe(503); expect(response.headers.get("Retry-After")).toBe("60");
+    expect(await response.json()).toEqual({ ok: false, failures: 1, retryableFailures: 1 });
   });
   it("preserves cron authentication before any synchronization", async () => {
     authenticate.mockResolvedValue(new Response("Unauthorized", { status: 401 }));

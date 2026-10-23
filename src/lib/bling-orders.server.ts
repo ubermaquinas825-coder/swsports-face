@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { RetryableSyncError } from "./financial-errors";
+import { recoverStaleBlingOrders } from "./bling-recovery.server";
 import { getBlingAccessToken } from "./bling.server";
 import { authenticateAppmax } from "./checkout.server";
 import { blingInventoryConfigSchema } from "./bling-inventory";
@@ -28,8 +30,8 @@ async function findOrCreateContact(customer: { name?: string | undefined; email?
 /** Exports one Appmax-approved order to Bling once. Lock = conditional status transition queued -> processing. */
 export async function exportOrderToBling(orderId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const claim = await supabaseAdmin.from("shipping_orders").update({ bling_sync_status: "processing", bling_sync_error: null }).eq("id", orderId).eq("bling_sync_status", "queued").eq("payment_status", "approved").is("bling_order_id", null).select("*").maybeSingle();
-  if (claim.error) throw new Error("Não foi possível adquirir o pedido para envio ao Bling.");
+  const claim = await supabaseAdmin.rpc("claim_bling_export", { _order_id: orderId }).maybeSingle();
+  if (claim.error) throw new RetryableSyncError("Não foi possível adquirir o pedido para envio ao Bling.");
   if (!claim.data) return { exported: false };
   const order = claim.data;
   try {
@@ -39,6 +41,7 @@ export async function exportOrderToBling(orderId: string) {
     const config = blingInventoryConfigSchema.parse(settings.data.config);
     // Duplicate guard: an earlier attempt may have created the order before failing to save its id.
     const existing = idList.parse(await bling(`pedidos/vendas?pagina=1&limite=2&numerosLojas[]=${encodeURIComponent(order.id)}`)).data;
+    if (existing.length > 1) throw new Error("Mais de um pedido Bling para a mesma venda. Revisão manual necessária.");
     let blingOrderId = existing[0]?.id;
     if (!blingOrderId) {
       const appmaxId = order.provider_payment_id;
@@ -70,13 +73,19 @@ export async function exportOrderToBling(orderId: string) {
 export async function syncPaidOrders() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { reconcileAppmaxOrder } = await import("./payment-reconciliation.server");
+  const recovery = await recoverStaleBlingOrders();
   const since = new Date(Date.now() - 3 * 86400000).toISOString();
-  const pending = await supabaseAdmin.from("shipping_orders").select("id").not("payment_link_id", "is", null).eq("payment_status", "pending").gt("created_at", since).order("appmax_checked_at", { ascending: true, nullsFirst: true }).limit(5);
-  if (pending.error) throw new Error("Não foi possível consultar os pagamentos pendentes.");
-  let checked = 0, exported = 0; const errors: string[] = [];
-  for (const row of pending.data ?? []) { try { if ((await reconcileAppmaxOrder(row.id)).checked) checked++; } catch (e) { errors.push(e instanceof Error ? e.message : "erro"); } }
+  const pending = await supabaseAdmin.from("shipping_orders").select("id").not("payment_link_id", "is", null).eq("payment_status", "pending").not("bling_sync_status", "in", "(blocked,reconciliation_required)").or(`appmax_next_check_at.is.null,appmax_next_check_at.lte.${new Date().toISOString()}`).gt("created_at", since).order("appmax_checked_at", { ascending: true, nullsFirst: true }).limit(5);
+  if (pending.error) throw new RetryableSyncError("Não foi possível consultar os pagamentos pendentes.");
+  let checked = 0, exported = 0, retryableFailures = 0;
+  const errors: string[] = [...recovery.errors];
+  const recordError = (error: unknown) => {
+    errors.push(error instanceof Error ? error.message : "erro");
+    if (error instanceof RetryableSyncError) retryableFailures++;
+  };
+  for (const row of pending.data ?? []) { try { if ((await reconcileAppmaxOrder(row.id)).checked) checked++; } catch (e) { recordError(e); } }
   const queued = await supabaseAdmin.from("shipping_orders").select("id").eq("bling_sync_status", "queued").limit(5);
-  if (queued.error) throw new Error("Não foi possível consultar a fila de pedidos Bling.");
-  for (const row of queued.data ?? []) { try { if ((await exportOrderToBling(row.id)).exported) exported++; } catch (e) { errors.push(e instanceof Error ? e.message : "erro"); } }
-  return { checked, exported, errors };
+  if (queued.error) throw new RetryableSyncError("Não foi possível consultar a fila de pedidos Bling.");
+  for (const row of queued.data ?? []) { try { if ((await exportOrderToBling(row.id)).exported) exported++; } catch (e) { recordError(e); } }
+  return { checked, exported, errors, retryableFailures, recovered: recovery.inspected };
 }

@@ -1,19 +1,22 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { RetryableSyncError } from "@/lib/financial-errors";
 
-const { from, reconcile, token } = vi.hoisted(() => ({ from: vi.fn(), reconcile: vi.fn(), token: vi.fn() }));
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from } }));
+const { from, rpc, recover, reconcile, token } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), recover: vi.fn(), reconcile: vi.fn(), token: vi.fn() }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from, rpc } }));
 vi.mock("@/lib/payment-reconciliation.server", () => ({ reconcileAppmaxOrder: reconcile }));
 vi.mock("@/lib/bling.server", () => ({ getBlingAccessToken: token }));
 vi.mock("@/lib/checkout.server", () => ({ authenticateAppmax: vi.fn() }));
+vi.mock("@/lib/bling-recovery.server", () => ({ recoverStaleBlingOrders: recover }));
 import { exportOrderToBling, syncPaidOrders } from "@/lib/bling-orders.server";
 
 // Preserve the complete filter chain so tests verify both outcome and fencing.
 function query(result: unknown) {
-  const q = { select: vi.fn(), update: vi.fn(), eq: vi.fn(), is: vi.fn(), not: vi.fn(), gt: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn() };
-  for (const key of ["select", "update", "eq", "is", "not", "gt", "order"] as const) q[key].mockReturnValue(q);
+  const q = { select: vi.fn(), update: vi.fn(), eq: vi.fn(), is: vi.fn(), not: vi.fn(), or: vi.fn(), gt: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn() };
+  for (const key of ["select", "update", "eq", "is", "not", "or", "gt", "order"] as const) q[key].mockReturnValue(q);
   q.limit.mockResolvedValue(result); q.maybeSingle.mockResolvedValue(result);
   return q;
 }
+beforeEach(() => recover.mockResolvedValue({ inspected: 0, errors: [] }));
 afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
 
 describe("Sync database failures", () => {
@@ -29,11 +32,21 @@ describe("Sync database failures", () => {
   it("reports individual reconciliation failures explicitly", async () => {
     from.mockReturnValueOnce(query({ data: [{ id: "order" }], error: null })).mockReturnValueOnce(query({ data: [], error: null }));
     reconcile.mockRejectedValue(new Error("reconciliation write failed"));
-    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: ["reconciliation write failed"] });
+    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: ["reconciliation write failed"], retryableFailures: 0, recovered: 0 });
   });
   it("distinguishes a legitimate empty queue from a database failure", async () => {
     from.mockReturnValue(query({ data: [], error: null }));
-    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: [] });
+    await expect(syncPaidOrders()).resolves.toEqual({ checked: 0, exported: 0, errors: [], retryableFailures: 0, recovered: 0 });
+  });
+  it("classifies safe read retries separately from manual review failures", async () => {
+    from.mockReturnValueOnce(query({ data: [{ id: "order" }], error: null })).mockReturnValueOnce(query({ data: [], error: null }));
+    reconcile.mockRejectedValue(new RetryableSyncError("temporary provider failure"));
+    await expect(syncPaidOrders()).resolves.toMatchObject({ checked: 0, exported: 0, retryableFailures: 1, errors: ["temporary provider failure"] });
+  });
+  it("does not classify recovered ambiguous creations as automatically retryable", async () => {
+    recover.mockResolvedValue({ inspected: 1, errors: ["held for review"] });
+    from.mockReturnValue(query({ data: [], error: null }));
+    await expect(syncPaidOrders()).resolves.toMatchObject({ retryableFailures: 0, recovered: 1, errors: ["held for review"] });
   });
 });
 
@@ -43,7 +56,8 @@ describe("Bling export state fencing", () => {
     const claim = query({ data: order, error: null });
     const settings = query({ data: { config: { warehouseId: 1, checkAtCheckout: false, mappings: [] } }, error: null });
     const final = query(finalResult);
-    from.mockReturnValueOnce(claim).mockReturnValueOnce(settings).mockReturnValueOnce(final);
+    rpc.mockReturnValueOnce(claim);
+    from.mockReturnValueOnce(settings).mockReturnValueOnce(final);
     token.mockResolvedValue("fixture-token");
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [{ id: 42 }] })));
     vi.stubGlobal("fetch", fetcher);
@@ -56,12 +70,12 @@ describe("Bling export state fencing", () => {
     expect(q.is).toHaveBeenCalledWith("bling_order_id", null);
   }
   it("throws when claiming the export fails in the database", async () => {
-    from.mockReturnValue(query({ data: null, error: { message: "db unavailable" } }));
+    rpc.mockReturnValue(query({ data: null, error: { message: "db unavailable" } }));
     await expect(exportOrderToBling("order")).rejects.toThrow("adquirir o pedido");
     expect(token).not.toHaveBeenCalled();
   });
   it("does not export when another worker owns the order", async () => {
-    from.mockReturnValue(query({ data: null, error: null }));
+    rpc.mockReturnValue(query({ data: null, error: null }));
     await expect(exportOrderToBling("order")).resolves.toEqual({ exported: false });
     expect(token).not.toHaveBeenCalled();
   });
@@ -85,7 +99,14 @@ describe("Bling export state fencing", () => {
     await expect(exportOrderToBling("order")).rejects.toThrow("registrar o número");
   });
   it("surfaces a database failure while recording manual review", async () => {
-    from.mockReturnValueOnce(query({ data: order, error: null })).mockReturnValueOnce(query({ data: null, error: { message: "read failed" } })).mockReturnValueOnce(query({ data: null, error: { message: "flag failed" } }));
+    rpc.mockReturnValueOnce(query({ data: order, error: null }));
+    from.mockReturnValueOnce(query({ data: null, error: { message: "read failed" } })).mockReturnValueOnce(query({ data: null, error: { message: "flag failed" } }));
     await expect(exportOrderToBling("order")).rejects.toThrow("registrar a revisão manual");
+  });
+  it("does not select the first of multiple existing ERP orders or issue another creation", async () => {
+    const { final, fetcher } = existingOrder({ data: { id: "order" }, error: null });
+    fetcher.mockResolvedValue(new Response(JSON.stringify({ data: [{ id: 42 }, { id: 43 }] })));
+    await expect(exportOrderToBling("order")).rejects.toThrow("Mais de um pedido Bling");
+    expect(fetcher).toHaveBeenCalledOnce(); expect(final.update).toHaveBeenCalledWith(expect.objectContaining({ bling_sync_status: "reconciliation_required" }));
   });
 });

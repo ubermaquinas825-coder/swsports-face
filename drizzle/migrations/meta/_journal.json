@@ -43,6 +43,13 @@
       "when": 1792756800000,
       "tag": "0005_financial_transition_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792757400000,
+      "tag": "0006_financial_recovery_and_access",
+      "breakpoints": true
     }
   ]
 }

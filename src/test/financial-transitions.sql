@@ -34,7 +34,7 @@ SELECT pg_temp.assert_ok(NOT public.commit_appmax_check('00000000-0000-4000-8000
 SELECT pg_temp.assert_ok(public.commit_appmax_check('00000000-0000-4000-8000-000000000001', :'lease', NULL, NULL, NULL, true), 'an inconclusive observation records review safely');
 SELECT pg_temp.assert_ok((SELECT payment_status = 'failed' AND bling_sync_status = 'blocked' AND bling_sync_error LIKE 'Appmax cancelado%' FROM public.shipping_orders), 'inconclusive observation preserves existing block and reason');
 
-TRUNCATE public.shipping_orders, public.shipping_events;
+TRUNCATE public.shipping_orders, public.shipping_events, public.shipping_recovery_checks, public.shipping_hold_resolutions;
 INSERT INTO public.shipping_orders (id, payment_link_id, bling_sync_status, bling_sync_error)
 VALUES ('00000000-0000-4000-8000-000000000001', 'fixture-link', 'reconciliation_required', 'owner hold');
 SELECT public.claim_appmax_check_v2('00000000-0000-4000-8000-000000000001') AS lease \gset
@@ -63,7 +63,7 @@ SELECT public.claim_appmax_check_v2('00000000-0000-4000-8000-000000000002') AS b
 SELECT pg_temp.assert_ok(public.commit_appmax_check('00000000-0000-4000-8000-000000000002', :'blocked_lease', 'approved', '102', 'aprovado', false), 'approval can be observed on an operationally blocked order');
 SELECT pg_temp.assert_ok((SELECT payment_status = 'approved' AND bling_sync_status = 'blocked' AND bling_sync_error = 'operational hold' FROM public.shipping_orders WHERE id = '00000000-0000-4000-8000-000000000002'), 'approval preserves operational block and its reason');
 
-TRUNCATE public.shipping_orders, public.shipping_events;
+TRUNCATE public.shipping_orders, public.shipping_events, public.shipping_recovery_checks, public.shipping_hold_resolutions;
 INSERT INTO public.shipping_orders (id, payment_link_id, payment_status, provider_payment_id, bling_sync_status)
 VALUES ('00000000-0000-4000-8000-000000000001', 'fixture-link', 'approved', '101', 'processing');
 SELECT financial_revision AS export_revision FROM public.shipping_orders \gset
