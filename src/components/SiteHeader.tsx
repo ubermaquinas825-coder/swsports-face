@@ -29,10 +29,12 @@ export function SiteHeader() {
 
   const go = (to: "/" | "/atacado", hash: string) => {
     setMenuOpen(false);
+
     if (to !== "/") {
       navigate({ to });
       return;
     }
+
     if (hash) {
       const el = document.querySelector(hash);
       if (el) {
@@ -40,9 +42,11 @@ export function SiteHeader() {
         return;
       }
     }
+
     if (window.location.pathname === "/" && !hash) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+
     navigate({ to: "/", hash: hash.replace(/^#/, "") });
   };
 
@@ -50,21 +54,28 @@ export function SiteHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? "border-b border-border bg-background/85 backdrop-blur-[16px]"
+          ? "border-b border-border bg-background/90 backdrop-blur-[14px]"
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:h-[76px] md:px-6">
-        <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <img src={logoAsset.url} alt="SW Sports Uniformes" width={453} height={255} className="h-12 w-28 object-contain md:h-16 md:w-36" />
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 md:h-[76px] md:px-6">
+        <Link to="/" className="flex min-h-11 items-center gap-2 font-display text-lg font-bold tracking-tight">
+          <img
+            src={logoAsset.url}
+            alt="SW Sports"
+            width={453}
+            height={255}
+            className="h-12 w-28 object-contain md:h-16 md:w-36"
+          />
         </Link>
 
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex" aria-label="Navegação principal">
           {NAV.map((item) => (
-            <Button variant="ghost"
+            <Button
+              variant="ghost"
               key={item.label}
               onClick={() => go(item.to, item.hash)}
-              className="px-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
+              className="min-h-11 px-1 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
             >
               {item.label}
             </Button>
@@ -77,14 +88,17 @@ export function SiteHeader() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram da SW Sports"
-            className="hidden h-9 w-9 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground sm:grid"
+            className="hidden h-11 w-11 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground sm:grid"
           >
             <Instagram className="h-4 w-4" />
           </a>
-          <Button variant="ghost" size="icon"
+
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={openCart}
             aria-label="Abrir carrinho"
-            className="relative grid h-9 w-9 place-items-center rounded-full border border-border transition-colors hover:border-brand hover:text-brand"
+            className="relative grid h-11 w-11 place-items-center rounded-full border border-border transition-colors hover:border-brand hover:text-brand"
           >
             <ShoppingBag className="h-4 w-4" />
             <AnimatePresence>
@@ -94,24 +108,28 @@ export function SiteHeader() {
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.5, opacity: 0 }}
-                  className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-primary-foreground"
+                  className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-primary-foreground"
                 >
                   {count}
                 </motion.span>
               )}
             </AnimatePresence>
           </Button>
+
           <Button
             onClick={() => go("/", "#colecao")}
-            className="hidden rounded-full bg-brand px-4 py-2 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep md:block"
+            className="hidden min-h-11 rounded-full bg-brand px-5 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep md:inline-flex"
           >
             COMPRAR
           </Button>
-          <Button variant="ghost" size="icon"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Abrir menu"
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMenuOpen((value) => !value)}
+            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={menuOpen}
-            className="grid h-9 w-9 place-items-center rounded-full border border-border md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full border border-border md:hidden"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
@@ -124,15 +142,17 @@ export function SiteHeader() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden border-b border-border bg-background/95 backdrop-blur-[16px] md:hidden"
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-b border-border bg-background/95 backdrop-blur-[14px] md:hidden"
+            aria-label="Navegação mobile"
           >
             <div className="flex flex-col gap-1 px-4 py-3">
               {NAV.map((item) => (
-                <Button variant="ghost"
+                <Button
+                  variant="ghost"
                   key={item.label}
                   onClick={() => go(item.to, item.hash)}
-                  className="justify-start rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                  className="min-h-11 justify-start rounded-lg px-3 text-left text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                 >
                   {item.label}
                 </Button>

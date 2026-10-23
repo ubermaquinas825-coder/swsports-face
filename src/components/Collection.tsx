@@ -18,7 +18,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     if (!rect) return;
     const dx = (e.clientX - rect.left) / rect.width - 0.5;
     const dy = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -dy * 14, y: dx * 14 });
+    setTilt({ x: -dy * 7, y: dx * 7 });
   };
 
   const buyNow = () => {
@@ -27,21 +27,21 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   };
 
   return (
-    <Reveal delay={(index % 3) * 0.08}>
+    <Reveal delay={(index % 3) * 0.06}>
       <div style={{ perspective: "1000px" }}>
         <motion.div
           ref={ref}
           onMouseMove={onMouseMove}
           onMouseLeave={() => setTilt({ x: 0, y: 0 })}
           animate={{ rotateX: tilt.x, rotateY: tilt.y }}
-          whileHover={{ y: reduce ? 0 : -8 }}
+          whileHover={{ y: reduce ? 0 : -4 }}
           style={{ transformStyle: "preserve-3d" }}
-          transition={{ type: "spring", stiffness: 200, damping: 18 }}
-          className="group relative h-full rounded-lg border border-border bg-card transition-colors duration-300 hover:border-brand/60"
+          transition={{ type: "spring", stiffness: 220, damping: 22 }}
+          className="group relative h-full rounded-2xl border border-border bg-card transition-colors duration-300 hover:border-brand/60"
         >
           <div
-            className="relative px-6 pt-8 transition-transform duration-500 group-hover:scale-105"
-            style={{ transform: "translateZ(50px)" }}
+            className="relative px-6 pt-8 transition-transform duration-300 md:group-hover:scale-[1.03]"
+            style={{ transform: "translateZ(32px)" }}
           >
             <img
               src={product.image}
@@ -54,25 +54,29 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               className="product-cutout mx-auto h-[230px] w-full max-w-[300px] object-contain"
             />
           </div>
+
           <div className="relative flex flex-col gap-4 p-6 pt-2">
             <div className="min-h-[90px]">
               <h3 className="font-display text-lg font-bold tracking-tight">{product.name}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{product.description}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
             </div>
-            <p className="font-display text-2xl font-bold text-brand">{formatBRL(UNIT_PRICE)}</p>
-            <div className="flex gap-2">
-              <Button variant="outline"
+
+            <p className="font-display text-3xl font-bold text-brand">{formatBRL(UNIT_PRICE)}</p>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                variant="outline"
                 onClick={() => add(product.id)}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
+                className="min-h-11 rounded-full text-xs font-bold tracking-wide"
               >
-                <ShoppingBag className="h-3.5 w-3.5" />
+                <ShoppingBag className="h-4 w-4" />
                 ADICIONAR
               </Button>
               <Button
                 onClick={buyNow}
-                className="inline-flex h-auto min-h-10 flex-1 items-center justify-center gap-2 whitespace-normal rounded-full bg-brand px-4 py-2.5 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep"
+                className="min-h-11 whitespace-normal rounded-full bg-brand text-xs font-bold tracking-wide text-primary-foreground hover:bg-brand-deep"
               >
-                <Zap className="h-3.5 w-3.5" />
+                <Zap className="h-4 w-4" />
                 COMPRAR AGORA
               </Button>
             </div>
@@ -91,13 +95,14 @@ export function Collection() {
           <div className="mb-10 max-w-xl">
             <p className="mb-2 text-xs font-bold tracking-[0.3em] text-brand">COLEÇÃO</p>
             <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              SUA PRÓXIMA PERSONALIDADE
+              ESCOLHA SUA PRÓXIMA PERSONALIDADE
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Seis personalidades prontas para sair do armário. Todas por {formatBRL(UNIT_PRICE)}.
+              Seis estampas exclusivas. Todas por {formatBRL(UNIT_PRICE)}.
             </p>
           </div>
         </Reveal>
+
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             "boca-de-beijo",

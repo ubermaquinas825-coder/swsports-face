@@ -1,25 +1,37 @@
 import { motion, useReducedMotion } from "motion/react";
+import { useRouterState } from "@tanstack/react-router";
 import { MessageCircle } from "lucide-react";
 import { waLink } from "@/lib/products";
 
+const HIDDEN_PREFIXES = [
+  "/checkout",
+  "/auth",
+  "/redefinir-senha",
+  "/frete-envios",
+  "/integracoes",
+];
+
 export function WhatsAppFloat() {
   const reduce = useReducedMotion();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  if (HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
+
   return (
     <motion.a
       href={waLink("Olá, equipe SW Sports! Gostaria de tirar uma dúvida.")}
       target="_blank"
       rel="noreferrer"
-      aria-label="Falar com a SW Sports no WhatsApp"
-      initial={reduce ? false : { opacity: 0, scale: 0.6, rotateY: -90 }}
-      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-      whileHover={reduce ? { scale: 1 } : { scale: 1.08, rotateZ: -6 }}
-      whileTap={{ scale: 0.94 }}
-      transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.6 }}
-      className="group fixed bottom-5 left-5 z-30 flex items-center gap-2 rounded-full bg-whatsapp p-3.5 text-whatsapp-foreground shadow-whatsapp md:bottom-7 md:left-7"
+      aria-label="Precisa de ajuda? Fale com a SW Sports no WhatsApp"
+      initial={reduce ? false : { opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={reduce ? undefined : { scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.25 }}
+      className="group fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-[max(1.25rem,env(safe-area-inset-left))] z-30 flex min-h-11 items-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-whatsapp-foreground shadow-whatsapp"
     >
-      {!reduce && <span aria-hidden className="absolute inset-0 -z-10 animate-ping rounded-full bg-whatsapp opacity-30" />}
-      <MessageCircle className="h-6 w-6" />
-      <span className="hidden pr-1 text-sm font-bold sm:inline">WhatsApp</span>
+      <MessageCircle className="h-5 w-5" />
+      <span className="hidden pr-1 text-sm font-bold sm:inline">Precisa de ajuda?</span>
     </motion.a>
   );
 }
