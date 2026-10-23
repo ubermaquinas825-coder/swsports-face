@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
@@ -8,6 +8,8 @@ import { formatBRL, UNIT_PRICE } from "@/lib/products";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { currentShipping, type ShippingSelection } from "@/lib/checkout";
 import { createAppmaxCheckout } from "@/lib/checkout.functions";
+import { DeliveryAddressFields } from "@/components/DeliveryAddressFields";
+import { deliveryAddressSchema } from "@/lib/delivery-address";
 
 export function CartDrawer() {
   const { lines, count, subtotal, isOpen, closeCart, setQty, remove } = useCart();
@@ -17,11 +19,17 @@ export function CartDrawer() {
   const checkout = useServerFn(createAppmaxCheckout);
   const checkoutLines = lines.map((line) => ({ id: line.product.id, qty: line.qty }));
   const shipping = currentShipping(selection, checkoutLines);
-  const finish = async () => {
+  const finish = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!shipping || busy || !lines.length) return;
+    const parsed = deliveryAddressSchema.safeParse(Object.fromEntries(new FormData(event.currentTarget)));
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Confira os dados de entrega.");
+      return;
+    }
     setBusy(true); setError("");
     try {
-      const result = await checkout({ data: { lines: checkoutLines, cep: shipping.cep, serviceId: shipping.option.id, quotedPriceCents: shipping.option.priceCents } });
+      const result = await checkout({ data: { lines: checkoutLines, cep: shipping.cep, serviceId: shipping.option.id, quotedPriceCents: shipping.option.priceCents, deliveryAddress: parsed.data } });
       window.location.assign(result.checkoutUrl);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível abrir o pagamento. Tente novamente."); }
     finally { setBusy(false); }
@@ -125,6 +133,9 @@ export function CartDrawer() {
                     </motion.div>
                   ))}
                   <ShippingCalculator lines={checkoutLines} selection={shipping} onSelect={setSelection} />
+                  {shipping && <form id="cart-delivery-checkout" onSubmit={finish}>
+                    <DeliveryAddressFields postalCode={shipping.cep} disabled={busy} />
+                  </form>}
                 </div>
                 <div className="border-t border-border px-5 py-4">
                   <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground">
@@ -137,7 +148,8 @@ export function CartDrawer() {
                   <div className="mb-3 flex items-center justify-between font-semibold"><span>Total</span><span>{formatBRL(subtotal + (shipping ? shipping.option.priceCents / 100 : 0))}</span></div>
                   {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
                   <Button
-                    onClick={finish}
+                    type="submit"
+                    form="cart-delivery-checkout"
                     disabled={!shipping || busy}
                     className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold"
                   >

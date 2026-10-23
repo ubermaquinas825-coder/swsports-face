@@ -3,6 +3,7 @@ import { z } from "zod";
 import { choosePackage, defaultShippingConfig, shippingConfigSchema, validatedTotal } from "@/lib/shipping";
 import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
+import { validateDeliveryAddress, type DeliveryAddress } from "./delivery-address";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/udc_superfrete";
 async function providerJson(response: Response, service: string) {
@@ -13,7 +14,8 @@ async function providerJson(response: Response, service: string) {
   }
   return response.json() as Promise<unknown>;
 }
-const serviceSchema = z.object({ id: z.union([z.string(), z.number()]), name: z.string(), price: z.coerce.number().finite().nonnegative(), delivery_time: z.coerce.number().int().nonnegative().optional(), company: z.object({ name: z.string() }).optional(), has_error: z.boolean().optional(), error: z.unknown().optional() });
+const quotedPackageSchema = z.object({ dimensions: z.object({ height: z.coerce.number().positive(), width: z.coerce.number().positive(), length: z.coerce.number().positive() }), weight: z.coerce.number().positive() });
+const serviceSchema = z.object({ id: z.union([z.string(), z.number()]), name: z.string(), price: z.coerce.number().finite().nonnegative(), delivery_time: z.coerce.number().int().nonnegative().optional(), company: z.object({ name: z.string() }).optional(), has_error: z.boolean().optional(), packages: z.array(quotedPackageSchema).optional(), error: z.unknown().optional() });
 export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<ShippingOption[]> {
   // Privileged read of store-owned operational settings only; never return the settings or orders publicly.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -35,7 +37,8 @@ export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<
     const parsed = serviceSchema.safeParse(row);
     if (!parsed.success || parsed.data.has_error || parsed.data.error) return [];
     const service = parsed.data;
-    return [{ id: String(service.id), name: service.name, company: service.company?.name ?? "", priceCents: Math.round(service.price * 100), deliveryDays: service.delivery_time ?? null }];
+    const pkg = service.packages?.length === 1 ? service.packages[0] : undefined;
+    return [{ originCep: config.originCep, ...(pkg ? { package: { ...pkg.dimensions, weight: pkg.weight } } : {}), id: String(service.id), name: service.name, company: service.company?.name ?? "", priceCents: Math.round(service.price * 100), deliveryDays: service.delivery_time ?? null }];
   }).sort((a, b) => a.priceCents - b.priceCents);
 }
 
@@ -47,12 +50,13 @@ export async function authenticateAppmax() {
   const auth = z.object({ access_token: z.string().min(1) }).parse(await providerJson(authResponse, "Appmax"));
   return auth.access_token;
 }
-export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, option: ShippingOption) {
+export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, option: ShippingOption, address: DeliveryAddress) {
   assertFinancialOperationsEnabled();
+  const deliveryAddress = validateDeliveryAddress(address, cep);
   const accessToken = await authenticateAppmax();
   const totalCents = validatedTotal(lines, 0, option.priceCents);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const pending = await supabaseAdmin.from("shipping_orders").insert({ items: lines.map((line) => ({ id: line.id, name: productFor(line.id)?.name ?? line.id, qty: line.qty, unit_price_cents: Math.round(UNIT_PRICE * 100) })), subtotal_cents: validatedTotal(lines, 0, 0), freight_cents: option.priceCents, quoted_cep: cep, shipping_service: option, payment_status: "pending", bling_sync_status: "awaiting_payment" }).select("id").single();
+  const pending = await supabaseAdmin.from("shipping_orders").insert({ delivery_address: deliveryAddress, items: lines.map((line) => ({ id: line.id, name: productFor(line.id)?.name ?? line.id, qty: line.qty, unit_price_cents: Math.round(UNIT_PRICE * 100) })), subtotal_cents: validatedTotal(lines, 0, 0), freight_cents: option.priceCents, quoted_cep: cep, shipping_service: option, payment_status: "pending", bling_sync_status: "awaiting_payment" }).select("id").single();
   if (pending.error || !pending.data) throw new Error("Não foi possível registrar o pedido. Tente novamente.");
   const items = lines.map((line) => `${line.qty}x ${productFor(line.id)?.name}`).join("; ");
   try {

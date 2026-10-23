@@ -11,11 +11,14 @@ export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: {
   const { syncPaidOrders } = await import("@/lib/bling-orders.server");
   try {
     const result = await syncPaidOrders();
+    const { syncShippingLabels } = await import("@/lib/shipping-labels.server");
+    const labels = await syncShippingLabels();
     const retryable = result.retryableFailures;
-    return Response.json({ checked: result.checked, exported: result.exported, recovered: result.recovered,
-      failures: result.errors.length, retryableFailures: retryable, manualReviewFailures: result.errors.length - retryable,
-      ok: result.errors.length === 0 }, {
-      status: retryable ? 503 : result.errors.length ? 207 : 200,
+    const failures = result.errors.length + labels.errors.length;
+    return Response.json({ checked: result.checked, exported: result.exported, recovered: result.recovered, labelsIssued: labels.issued,
+      failures, retryableFailures: retryable, manualReviewFailures: failures - retryable,
+      ok: failures === 0 }, {
+      status: retryable ? 503 : failures ? 207 : 200,
       headers: retryable ? { "Retry-After": "60" } : {},
     });
   } catch (error) {

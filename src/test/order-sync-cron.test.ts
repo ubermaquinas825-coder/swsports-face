@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const { sync, authenticate } = vi.hoisted(() => ({ sync: vi.fn(), authenticate: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({ createFileRoute: () => (options: unknown) => options }));
 vi.mock("@/lib/bling-orders.server", () => ({ syncPaidOrders: sync }));
+vi.mock("@/lib/shipping-labels.server", () => ({ syncShippingLabels: async () => ({ issued: 0, errors: [] }) }));
 vi.mock("@/integrations/supabase/cron-auth", () => ({ authenticateCronRequest: authenticate }));
 import { Route } from "@/routes/api/public/cron/sync-orders";
 
@@ -17,7 +18,7 @@ describe("Order synchronization cron", () => {
     sync.mockResolvedValue({ checked: 1, exported: 0, errors: ["database write failed"], retryableFailures: 1, recovered: 0 });
     const response = await handler({ request: new Request("https://local.invalid/api/public/cron/sync-orders", { method: "POST" }) });
     expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ checked: 1, exported: 0, recovered: 0, failures: 1, retryableFailures: 1, manualReviewFailures: 0, ok: false });
+    expect(await response.json()).toEqual({ checked: 1, exported: 0, recovered: 0, labelsIssued: 0, failures: 1, retryableFailures: 1, manualReviewFailures: 0, ok: false });
   });
   it("does not convert a database exception into successful counters", async () => {
     authenticate.mockResolvedValue(null); sync.mockRejectedValue(new Error("database read failed"));

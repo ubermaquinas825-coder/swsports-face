@@ -48,7 +48,7 @@ describe("Maintenance fences before database/provider side effects", () => {
   });
 
   it.each([
-    ["checkout persistence", () => appmaxPaymentLink([], "", {} as Parameters<typeof appmaxPaymentLink>[2])],
+    ["checkout persistence", () => appmaxPaymentLink([], "", {} as Parameters<typeof appmaxPaymentLink>[2], {} as Parameters<typeof appmaxPaymentLink>[3])],
     ["batch synchronization", () => syncPaidOrders()],
     ["single export", () => exportOrderToBling("order")],
     ["payment reconciliation", () => reconcileAppmaxOrder("order")],

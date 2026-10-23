@@ -57,6 +57,13 @@
       "when": 1792771072379,
       "tag": "0007_apply_existing_0005_0006_marker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792772517669,
+      "tag": "0008_automatic_superfrete_labels",
+      "breakpoints": true
     }
   ]
 }

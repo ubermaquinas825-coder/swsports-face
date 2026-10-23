@@ -3,9 +3,22 @@ import { productFor, UNIT_PRICE } from "@/lib/products";
 
 export const cepSchema = z.string().transform((v) => v.replace(/\D/g, "")).refine((v) => /^\d{8}$/.test(v) && !/^(\d)\1{7}$/.test(v), "Informe um CEP válido com 8 dígitos.");
 export const packageSchema = z.object({ name: z.string().min(1), weightKg: z.number().positive(), lengthCm: z.number().positive(), widthCm: z.number().positive(), heightCm: z.number().positive(), capacity: z.number().int().positive(), packagingWeightKg: z.number().nonnegative().nullable() });
-export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable() });
+export const labelSenderSchema = z.object({
+  name: z.string().trim().min(3).max(50).refine((v) => v.split(/\s+/).length > 1, "Informe nome e sobrenome ou nome da loja."),
+  address: z.string().trim().min(1).max(50), number: z.string().trim().max(10),
+  complement: z.string().trim().max(20), district: z.string().trim().min(1).max(50),
+  city: z.string().trim().min(1).max(50), state_abbr: z.string().regex(/^(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/),
+  postal_code: cepSchema, email: z.string().trim().email().max(200),
+});
+export const labelAutomationSchema = z.object({ enabled: z.boolean(), sender: labelSenderSchema.nullable() }).superRefine((value, ctx) => {
+  if (value.enabled && !value.sender) ctx.addIssue({ code: "custom", message: "Preencha os dados do remetente antes de ativar etiquetas automáticas." });
+});
+export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable(), labelAutomation: labelAutomationSchema.default({ enabled: false, sender: null }) }).superRefine((value, ctx) => {
+  if (value.labelAutomation.enabled && value.labelAutomation.sender?.postal_code !== value.originCep) ctx.addIssue({ code: "custom", message: "O CEP do remetente deve ser igual ao CEP de origem do frete." });
+});
 export type ShippingConfig = z.infer<typeof shippingConfigSchema>;
 export const defaultShippingConfig: ShippingConfig = {
+  labelAutomation: { enabled: false, sender: null },
   originCep: "38408562", senderAddress: "Rua Álvares de Azevedo, 994 — Carajás, Uberlândia — MG, CEP 38408-562",
   productWeightKg: 0.1,
   packages: [
