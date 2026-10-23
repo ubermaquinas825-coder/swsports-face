@@ -4,12 +4,24 @@ import {
   mercadoPagoOrderIdFromLink,
   processMercadoPagoWebhook,
 } from "@/lib/mercadopago.server";
+import { runPostPaymentAutomation } from "@/lib/post-payment.server";
 
 const paymentStatusRequestSchema = z.object({
   orderId: z.string().uuid(),
 });
 
 type PublicPaymentState = "approved" | "failed" | "pending" | "unknown";
+
+async function triggerPostPaymentAutomation() {
+  try {
+    await runPostPaymentAutomation();
+  } catch (error) {
+    console.error(
+      "Mercado Pago return post-payment automation failed",
+      error instanceof Error ? error.message : "unknown_error",
+    );
+  }
+}
 
 // Public checkout return endpoint. It only exposes a minimal payment state for an
 // unguessable order UUID and never returns customer, address, amount or provider data.
@@ -29,12 +41,16 @@ export const getMercadoPagoOrderStatus = createServerFn({ method: "POST" })
     const providerOrderId = mercadoPagoOrderIdFromLink(lookup.data.payment_link_id);
     if (!providerOrderId) return { state: "unknown" };
 
-    if (lookup.data.payment_status === "approved") return { state: "approved" };
+    if (lookup.data.payment_status === "approved") {
+      await triggerPostPaymentAutomation();
+      return { state: "approved" };
+    }
     if (lookup.data.payment_status === "failed") return { state: "failed" };
 
     try {
       const reconciled = await processMercadoPagoWebhook(providerOrderId);
       if (!reconciled.found || reconciled.state === "ignored") return { state: "unknown" };
+      if (reconciled.state === "approved") await triggerPostPaymentAutomation();
       return { state: reconciled.state };
     } catch (error) {
       console.error(

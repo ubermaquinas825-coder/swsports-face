@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { processMercadoPagoWebhook, validateMercadoPagoWebhookSignature } from "@/lib/mercadopago.server";
+import { runPostPaymentAutomation } from "@/lib/post-payment.server";
 
 async function handleWebhook({ request }: { request: Request }) {
   const url = new URL(request.url);
@@ -11,6 +12,16 @@ async function handleWebhook({ request }: { request: Request }) {
       return Response.json({ ok: false, error: "invalid_signature" }, { status: 401 });
     }
     const result = await processMercadoPagoWebhook(dataId);
+    if (result.found && result.state === "approved") {
+      try {
+        await runPostPaymentAutomation();
+      } catch (automationError) {
+        console.error(
+          "Mercado Pago post-payment automation failed",
+          automationError instanceof Error ? automationError.message : "unknown_error",
+        );
+      }
+    }
     return Response.json({ ok: true, ...result }, { status: 200 });
   } catch (error) {
     console.error("Mercado Pago webhook processing failed");

@@ -64,6 +64,13 @@
       "when": 1792772517669,
       "tag": "0008_automatic_superfrete_labels",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792799000000,
+      "tag": "0009_mercadopago_shipping_labels",
+      "breakpoints": true
     }
   ]
 }
