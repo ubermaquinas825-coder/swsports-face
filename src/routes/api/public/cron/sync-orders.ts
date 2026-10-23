@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 import { RetryableSyncError } from "@/lib/financial-errors";
 
-export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: { handlers: { POST: async ({ request }) => {
+async function synchronize({ request }: { request: Request }) {
   const denied = await authenticateCronRequest(request);
   if (denied) return denied;
   const { financialMaintenanceResponse, FinancialMaintenanceError } = await import("@/lib/financial-maintenance.server");
@@ -26,4 +26,6 @@ export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: {
     if (!(error instanceof RetryableSyncError)) throw error;
     return Response.json({ ok: false, failures: 1, retryableFailures: 1 }, { status: 503, headers: { "Retry-After": "60" } });
   }
-} } } });
+}
+
+export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: { handlers: { GET: synchronize, POST: synchronize } } });

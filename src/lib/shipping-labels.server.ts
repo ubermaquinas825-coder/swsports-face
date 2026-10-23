@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled, FinancialMaintenanceError } from "./financial-maintenance.server";
 import { defaultShippingConfig, shippingConfigSchema } from "./shipping";
 import { buildLabelPayload, officialLabelUrl, verifyLabelInfo } from "./shipping-labels";
-import { superfreteRequest } from "./superfrete.server";
+import { superfreteConfigured, superfreteRequest } from "./superfrete.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -23,7 +23,7 @@ export async function issueShippingLabel(orderId: string) {
   const config = settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig;
   const sender = config.labelAutomation.sender;
   if (!config.labelAutomation.enabled || !sender) return { issued: false };
-  if (!process.env["LOVABLE_API_KEY"] || !process.env["UDC_SUPERFRETE_API_KEY"]) throw new Error("Conector SuperFrete indisponível; nenhuma etiqueta criada.");
+  if (!superfreteConfigured()) throw new Error("Integração SuperFrete indisponível; nenhuma etiqueta criada.");
   // A previous approved snapshot, or a webhook, cannot authorize a new debit.
   const checked = await reconcileAppmaxOrder(orderId);
   if (!checked.checked) return { issued: false };

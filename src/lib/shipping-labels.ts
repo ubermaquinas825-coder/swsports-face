@@ -2,6 +2,7 @@ import { z } from "zod";
 import { validateDeliveryAddress } from "./delivery-address";
 import { orderItemsSchema } from "./bling-orders";
 import { labelSenderSchema } from "./shipping";
+import { SITE_ORIGIN } from "./site";
 
 export const volumeSchema = z.object({ height: z.coerce.number().positive(), width: z.coerce.number().positive(), length: z.coerce.number().positive(), weight: z.coerce.number().positive() });
 export const savedServiceSchema = z.object({ id: z.string().regex(/^\d+$/), originCep: z.string().regex(/^\d{8}$/), package: volumeSchema });
@@ -22,7 +23,7 @@ export function buildLabelPayload(input: { orderId: string; address: unknown; ce
     service: Number(service.id), volumes: service.package,
     products: items.map((row) => ({ name: row.name, quantity: String(row.qty), unitary_value: (row.unit_price_cents / 100).toFixed(2) })),
     options: { non_commercial: true, insurance_value: input.subtotalCents / 100, own_hand: false, receipt: false,
-      tags: [{ tag: input.orderId, url: "https://swsports-face.lovable.app" }] },
+      tags: [{ tag: input.orderId, url: SITE_ORIGIN }] },
     platform: "SW Sports",
   };
 }

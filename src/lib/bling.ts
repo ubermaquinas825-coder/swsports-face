@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { SITE_ORIGIN } from "./site";
 
-export const BLING_ORIGIN = "https://swsports-face.lovable.app";
+export const BLING_ORIGIN = SITE_ORIGIN;
 export const BLING_CALLBACK_URL = `${BLING_ORIGIN}/api/public/bling/callback`;
 export const BLING_AUTHORIZE_URL = "https://bling.com.br/Api/v3/oauth/authorize";
 export const BLING_TOKEN_URL = "https://api.bling.com.br/Api/v3/oauth/token";

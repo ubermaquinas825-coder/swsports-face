@@ -4,7 +4,7 @@ import { defaultShippingConfig } from "@/lib/shipping";
 
 const { from, rpc, provider, reconcile } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), provider: vi.fn(), reconcile: vi.fn() }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from, rpc } }));
-vi.mock("@/lib/superfrete.server", () => ({ superfreteRequest: provider }));
+vi.mock("@/lib/superfrete.server", () => ({ superfreteRequest: provider, superfreteConfigured: () => true }));
 vi.mock("@/lib/payment-reconciliation.server", () => ({ reconcileAppmaxOrder: reconcile }));
 import { issueShippingLabel, syncShippingLabels } from "@/lib/shipping-labels.server";
 

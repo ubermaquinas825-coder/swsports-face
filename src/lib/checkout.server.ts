@@ -5,7 +5,7 @@ import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
 import { validateDeliveryAddress, type DeliveryAddress } from "./delivery-address";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/udc_superfrete";
+import { superfreteRequest } from "./superfrete.server";
 async function providerJson(response: Response, service: string) {
   if (!response.ok) {
     // Authentication errors can echo credentials; never log provider bodies.
@@ -24,14 +24,11 @@ export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<
   const config = settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig;
   const packaging = choosePackage(lines.reduce((sum, line) => sum + line.qty, 0), config);
   if (!packaging) throw new Error("A embalagem para esta quantidade ainda não foi cadastrada pela loja.");
-  const key = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["UDC_SUPERFRETE_API_KEY"];
-  if (!key || !connectionKey) throw new Error("SuperFrete indisponível no momento.");
-  const response = await fetch(`${GATEWAY_URL}/api/v0/calculator`, {
-    method: "POST", signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${key}`, "X-Connection-Api-Key": connectionKey, "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ from: { postal_code: config.originCep }, to: { postal_code: cep }, services: config.carriers.length ? config.carriers.join(",") : "1,2,17,3,33", options: { own_hand: false, receipt: false, insurance_value: validatedTotal(lines, 0, 0) / 100, use_insurance_value: true }, package: { weight: packaging.weightKg, height: packaging.heightCm, width: packaging.widthCm, length: packaging.lengthCm } }),
+  const body = await superfreteRequest("calculator", config.labelAutomation.sender?.email, {
+    from: { postal_code: config.originCep }, to: { postal_code: cep }, services: config.carriers.length ? config.carriers.join(",") : "1,2,17,3,33",
+    options: { own_hand: false, receipt: false, insurance_value: validatedTotal(lines, 0, 0) / 100, use_insurance_value: true },
+    package: { weight: packaging.weightKg, height: packaging.heightCm, width: packaging.widthCm, length: packaging.lengthCm },
   });
-  const body = await providerJson(response, "SuperFrete");
   if (!Array.isArray(body)) throw new Error("A SuperFrete retornou uma cotação inválida.");
   return body.flatMap((row) => {
     const parsed = serviceSchema.safeParse(row);

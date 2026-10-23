@@ -5,8 +5,12 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { NitroConfig } from "nitro/types";
+
+const vercelNitro = { preset: "vercel", vercel: { functions: { maxDuration: 300 } } } satisfies NitroConfig;
 
 export default defineConfig({
+  ...(process.env["VERCEL"] === "1" ? { nitro: vercelNitro } : {}),
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

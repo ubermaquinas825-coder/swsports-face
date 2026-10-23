@@ -2,8 +2,9 @@
 export async function authenticateCronRequest(
   request: Request,
 ): Promise<Response | null> {
-  const currentSecret = process.env['LOVABLE_CRON_SECRET']
-  const previousSecret = process.env['LOVABLE_CRON_SECRET_PREVIOUS']
+  const standalone = process.env['VERCEL'] === '1'
+  const currentSecret = standalone ? process.env['CRON_SECRET'] : process.env['LOVABLE_CRON_SECRET']
+  const previousSecret = standalone ? undefined : process.env['LOVABLE_CRON_SECRET_PREVIOUS']
 
   if (!currentSecret) {
     return new Response('Server configuration error', { status: 500 })

@@ -10,11 +10,18 @@ export const Route = createFileRoute("/auth")({
   component: Auth,
 });
 function Auth() {
+  const standalone = import.meta.env["VITE_STANDALONE_AUTH"] === "true";
   const navigate = useNavigate();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
   useEffect(() => { supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/frete-envios" }); }); }, [navigate]);
   const social = async (provider: "google" | "lovable") => {
+    if (standalone) {
+      if (provider !== "google") return;
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth` } });
+      if (error) setMessage("Não foi possível entrar com Google. Confira a configuração do provedor no Supabase.");
+      return;
+    }
     const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/auth` });
     if (result.error) setMessage("Não foi possível entrar. Tente novamente.");
     else if (!result.redirected) navigate({ to: "/frete-envios" });
@@ -28,7 +35,7 @@ function Auth() {
       <Button type="submit" disabled={busy} className="w-full">{busy ? "Entrando…" : "Entrar"}</Button>
     </form>
     <Button variant="outline" onClick={() => social("google")}>Entrar com Google</Button>
-    <Button className="lovable-auth-button" onClick={() => social("lovable")}>Sign in with Lovable</Button>
+    {!standalone && <Button className="lovable-auth-button" onClick={() => social("lovable")}>Sign in with Lovable</Button>}
     <Button variant="link" onClick={async () => { if (!email) { setMessage("Informe seu e-mail para recuperar a senha."); return; } const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/redefinir-senha` }); setMessage(error ? "Não foi possível enviar o e-mail." : "Confira seu e-mail para redefinir a senha."); }}>Esqueci minha senha</Button>
     {message && <p role="status" className="text-sm text-muted-foreground">{message}</p>}
     <Link to="/" className="text-sm text-muted-foreground">Voltar à loja</Link>
