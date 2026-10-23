@@ -22,7 +22,7 @@ describe("advertising consent", () => {
     const accepted = saveChoice(true, "BR"); const withdrawn = saveChoice(false, "BR");
     expect(withdrawn.visitorId).toBe(accepted.visitorId); expect(withdrawn.noticeText).toBe(NOTICE_TEXT);
     expect(withdrawn.history.map((entry) => entry.accepted)).toEqual([true, false]);
-    expect(Number.isFinite(Date.parse(withdrawn.history[0].at))).toBe(true);
+    expect(Number.isFinite(Date.parse(withdrawn.history[0]?.at ?? ""))).toBe(true);
     expect(advertisingAllowed("BR", readConsent()?.history.at(-1))).toBe(false);
   });
   it("invalid stored evidence does not authorize advertising", () => {

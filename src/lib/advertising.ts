@@ -54,7 +54,7 @@ export function applyAdvertisingPermission(allowed: boolean) {
     window.fbq = pixel; window._fbq = pixel;
     pixel("set", "autoConfig", false, META_PIXEL_ID);
     pixel("init", META_PIXEL_ID, {}, { agent: "lovable" });
-    for (const [id, src] of [["sw-google-ads", `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`], ["sw-meta-pixel", "https://connect.facebook.net/en_US/fbevents.js"]]) {
+    for (const [id, src] of [["sw-google-ads", `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`], ["sw-meta-pixel", "https://connect.facebook.net/en_US/fbevents.js"]] as const) {
       if (document.getElementById(id)) continue;
       const script = document.createElement("script"); script.id = id; script.async = true; script.src = src; document.head.append(script);
     }
