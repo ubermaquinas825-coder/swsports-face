@@ -3,6 +3,7 @@ import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, Phone } from "l
 import { INSTAGRAM_URL, WHATSAPP_NUMBER, waLink } from "@/lib/products";
 import { business } from "@/lib/business";
 import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
+import { Button } from "@/components/ui/button";
 
 export function SiteFooter() {
   return (
@@ -63,6 +64,8 @@ export function SiteFooter() {
       <div className="mx-auto mt-10 max-w-7xl border-t border-border px-4 pt-6 text-xs text-muted-foreground md:px-6">
         © {new Date().getFullYear()} SW Sports. Todos os direitos reservados.
         <Link to="/frete-envios" className="ml-4 inline-block transition-colors hover:text-foreground">Área administrativa</Link>
+        <Link to="/privacidade" className="ml-4 inline-block transition-colors hover:text-foreground">Privacidade</Link>
+        <Button variant="link" size="sm" onClick={() => window.dispatchEvent(new Event("sw-cookie-settings"))}>Configurações de cookies</Button>
       </div>
     </footer>
   );

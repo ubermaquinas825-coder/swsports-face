@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import { CartProvider } from "@/hooks/use-cart";
 import { CartDrawer } from "@/components/CartDrawer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { AdvertisingConsent } from "@/components/AdvertisingConsent";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -150,6 +151,7 @@ function RootComponent() {
         <Outlet />
         <CartDrawer />
         <WhatsAppFloat />
+        <AdvertisingConsent />
       </CartProvider>
       <Toaster position="top-center" theme="dark" richColors />
     </QueryClientProvider>
