@@ -26,6 +26,10 @@
 - [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
 - [x] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
 
+- [x] Etiquetas automáticas SuperFrete após pagamento aprovado + endereço no checkout do site + aviso Appmax restaurado (164 testes)
+- [ ] Teste real: compra de 1 unidade — aguarda o proprietário (saldo SuperFrete + Apphook na Appmax)
+- [ ] Marketing: Meta Pixel/GA4 — aguarda IDs do proprietário
+
 ## Feito
 - [x] Identidade Dark Motion 3D (tokens, fontes, layout escuro/vermelho)
 - [x] Catálogo com as 6 fotos originais do usuário (recorte transparente)
