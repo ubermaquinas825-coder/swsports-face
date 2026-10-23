@@ -8,20 +8,23 @@ import { formatBRL, UNIT_PRICE } from "@/lib/products";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { currentShipping, type ShippingSelection } from "@/lib/checkout";
 import { createAppmaxCheckout } from "@/lib/checkout.functions";
+import { DeliveryForm } from "@/components/DeliveryForm";
+import type { DeliveryAddress } from "@/lib/delivery";
 
 export function CartDrawer() {
   const { lines, count, subtotal, isOpen, closeCart, setQty, remove } = useCart();
   const [selection, setSelection] = useState<ShippingSelection | null>(null);
+  const [address, setAddress] = useState<DeliveryAddress | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const checkout = useServerFn(createAppmaxCheckout);
   const checkoutLines = lines.map((line) => ({ id: line.product.id, qty: line.qty }));
   const shipping = currentShipping(selection, checkoutLines);
   const finish = async () => {
-    if (!shipping || busy || !lines.length) return;
+    if (!shipping || !address || busy || !lines.length) return;
     setBusy(true); setError("");
     try {
-      const result = await checkout({ data: { lines: checkoutLines, cep: shipping.cep, serviceId: shipping.option.id, quotedPriceCents: shipping.option.priceCents } });
+      const result = await checkout({ data: { lines: checkoutLines, cep: shipping.cep, serviceId: shipping.option.id, quotedPriceCents: shipping.option.priceCents, address } });
       window.location.assign(result.checkoutUrl);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Não foi possível abrir o pagamento. Tente novamente."); }
     finally { setBusy(false); }
@@ -125,6 +128,7 @@ export function CartDrawer() {
                     </motion.div>
                   ))}
                   <ShippingCalculator lines={checkoutLines} selection={shipping} onSelect={setSelection} />
+                  {shipping && <DeliveryForm key={shipping.cep} cep={shipping.cep} onChange={setAddress} />}
                 </div>
                 <div className="border-t border-border px-5 py-4">
                   <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground">
@@ -138,7 +142,7 @@ export function CartDrawer() {
                   {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
                   <Button
                     onClick={finish}
-                    disabled={!shipping || busy}
+                    disabled={!shipping || !address || busy}
                     className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold"
                   >
                     {busy ? "ABRINDO PAGAMENTO…" : "CONTINUAR PARA APPMAX"}
