@@ -203,6 +203,7 @@ export async function mercadoPagoPaymentLink(lines: CheckoutLine[], cep: string,
   if (pending.error || !pending.data) throw new Error("Não foi possível registrar o pedido. Tente novamente.");
 
   const origin = publicSiteUrl();
+  const orderReference = encodeURIComponent(pending.data.id);
   const items = lines.map((line) => ({ title: productFor(line.id)?.name ?? line.id, quantity: line.qty, unit_price: moneyFromCents(Math.round(UNIT_PRICE * 100)) }));
   if (option.priceCents > 0) items.push({ title: `Frete ${[option.company, option.name].filter(Boolean).join(" ") || "entrega"}`, quantity: 1, unit_price: moneyFromCents(option.priceCents) });
 
@@ -214,7 +215,14 @@ export async function mercadoPagoPaymentLink(lines: CheckoutLine[], cep: string,
       body: JSON.stringify({
         type: "online", processing_mode: "manual", capture_mode: "automatic_async", total_amount: moneyFromCents(totalCents), external_reference: pending.data.id,
         payer: { email: deliveryAddress.email }, items,
-        config: { online: { success_url: `${origin}/pagamento?resultado=sucesso`, pending_url: `${origin}/pagamento?resultado=pendente`, failure_url: `${origin}/pagamento?resultado=falha`, auto_return: "all" } },
+        config: {
+          online: {
+            success_url: `${origin}/pagamento?resultado=sucesso&external_reference=${orderReference}`,
+            pending_url: `${origin}/pagamento?resultado=pendente&external_reference=${orderReference}`,
+            failure_url: `${origin}/pagamento?resultado=falha&external_reference=${orderReference}`,
+            auto_return: "all",
+          },
+        },
       }),
     });
     const result = mercadoPagoCreatedOrderSchema.parse(await mercadoPagoJson(response));
