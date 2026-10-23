@@ -10,13 +10,16 @@ async function readAppmax(path: string, token: string) {
 }
 export async function reconcileAppmaxOrder(orderId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const claim = await supabaseAdmin.rpc("claim_appmax_check", { _order_id: orderId });
+  const claim = await supabaseAdmin.rpc("claim_appmax_check_v2", { _order_id: orderId });
   if (claim.error) throw new Error("Não foi possível iniciar a conferência.");
   if (!claim.data) return { checked: false };
+  const revision = claim.data;
+  let selected: { id: number; state: "pending" | "approved" | "failed"; status: string } | undefined;
   try {
     const result = await supabaseAdmin.from("shipping_orders").select("*").eq("id", orderId).single();
     if (result.error || !result.data?.payment_link_id) throw new Error("Pedido sem vínculo Appmax verificável.");
     const order = result.data;
+    if (order.financial_revision !== revision) throw new Error("O pedido mudou durante a conferência. Nenhum estado foi sobrescrito.");
     const token = await authenticateAppmax();
     const path = `payment-link/${encodeURIComponent(order.payment_link_id ?? "")}/orders`;
     const ids = new Set<number>();
@@ -32,17 +35,25 @@ export async function reconcileAppmaxOrder(orderId: string) {
     const paid = checks.filter((c) => c.state === "approved");
     if (paid.length > 1) throw new Error("Mais de um pedido pago no mesmo link: não exportar automaticamente.");
     const associated = checks.find((c) => String(c.id) === order.provider_payment_id);
-    const selected = order.provider_payment_id ? associated : paid[0];
+    selected = order.provider_payment_id ? associated : paid[0];
     if (order.provider_payment_id && (!associated || paid.some((c) => String(c.id) !== order.provider_payment_id))) throw new Error("Associação Appmax divergente: conferência manual necessária.");
-    const saved = await supabaseAdmin.from("shipping_orders").update({
-      appmax_checked_at: new Date().toISOString(), appmax_status: selected?.status ?? "pendente", appmax_check_lock_until: null,
-      ...(selected ? { provider_payment_id: String(selected.id), payment_status: selected.state,
-        ...(selected.state === "pending" ? {} : selected.state === "approved" ? (order.bling_order_id || order.bling_sync_status === "synced" || order.bling_sync_status === "processing" ? {} : { bling_sync_status: "queued", bling_sync_error: null }) : { bling_sync_status: "blocked", bling_sync_error: "Appmax cancelado/estornado ou contestado; não enviar ou baixar estoque." }) } : {}),
-    }).eq("id", orderId);
-    if (saved.error) throw new Error("Não foi possível salvar a conferência Appmax.");
-    return { checked: true, status: selected?.status ?? "pendente" };
   } catch (error) {
-    await supabaseAdmin.from("shipping_orders").update({ appmax_checked_at: new Date().toISOString(), appmax_check_lock_until: null, bling_sync_status: "reconciliation_required", bling_sync_error: "Conferência Appmax inconclusiva. Não enviar ou baixar estoque antes da revisão." }).eq("id", orderId);
+    const flagged = await supabaseAdmin.rpc("commit_appmax_check", {
+      _order_id: orderId, _expected_revision: revision, _payment_state: null,
+      _provider_payment_id: null, _appmax_status: null, _inconclusive: true,
+    });
+    if (flagged.error) throw new Error("A conferência falhou e não foi possível registrar a revisão manual.", { cause: error });
+    if (!flagged.data) throw new Error("A conferência falhou após mudança ou expiração da trava do pedido. Nenhum estado foi sobrescrito.", { cause: error });
     throw error;
   }
+  // Commit outside the catch: an uncertain database result must not trigger a
+  // second write. The RPC checks revision, live lease and transition atomically.
+  const saved = await supabaseAdmin.rpc("commit_appmax_check", {
+    _order_id: orderId, _expected_revision: revision, _payment_state: selected?.state ?? null,
+    _provider_payment_id: selected ? String(selected.id) : null,
+    _appmax_status: selected?.status ?? "pendente", _inconclusive: false,
+  });
+  if (saved.error) throw new Error("Não foi possível salvar a conferência Appmax.");
+  if (!saved.data) throw new Error("Conferência não aplicada: pedido alterado, trava expirada ou transição financeira bloqueada.");
+  return { checked: true, status: selected?.status ?? "pendente" };
 }

@@ -6,5 +6,5 @@ export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: {
   if (denied) return denied;
   const { syncPaidOrders } = await import("@/lib/bling-orders.server");
   const result = await syncPaidOrders();
-  return Response.json({ checked: result.checked, exported: result.exported, failures: result.errors.length });
+  return Response.json({ checked: result.checked, exported: result.exported, failures: result.errors.length }, { status: result.errors.length ? 503 : 200 });
 } } } });

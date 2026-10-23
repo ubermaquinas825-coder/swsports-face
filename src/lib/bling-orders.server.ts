@@ -29,9 +29,11 @@ async function findOrCreateContact(customer: { name?: string | undefined; email?
 export async function exportOrderToBling(orderId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const claim = await supabaseAdmin.from("shipping_orders").update({ bling_sync_status: "processing", bling_sync_error: null }).eq("id", orderId).eq("bling_sync_status", "queued").eq("payment_status", "approved").is("bling_order_id", null).select("*").maybeSingle();
-  if (claim.error || !claim.data) return { exported: false };
+  if (claim.error) throw new Error("Não foi possível adquirir o pedido para envio ao Bling.");
+  if (!claim.data) return { exported: false };
   const order = claim.data;
   try {
+    if (!order.financial_revision) throw new Error("A migração de segurança financeira é necessária antes de exportar pedidos.");
     const settings = await supabaseAdmin.from("bling_store_settings").select("config").eq("id", true).maybeSingle();
     if (settings.error || !settings.data) throw new Error("Vínculos Bling não configurados.");
     const config = blingInventoryConfigSchema.parse(settings.data.config);
@@ -50,13 +52,16 @@ export async function exportOrderToBling(orderId: string) {
       const payload = buildBlingSaleOrder({ orderId: order.id, contactId, date: new Date().toISOString().slice(0, 10), items: orderItemsSchema.parse(order.items), freightCents: order.freight_cents ?? 0, config, appmaxOrderId: appmaxId, serviceName: [service?.company, service?.name].filter(Boolean).join(" "), cep: order.quoted_cep ?? "" });
       blingOrderId = z.object({ data: z.object({ id: z.number().int().positive() }) }).parse(await bling("pedidos/vendas", { method: "POST", body: JSON.stringify(payload) })).data.id;
     }
-    const saved = await supabaseAdmin.from("shipping_orders").update({ bling_order_id: blingOrderId, bling_sync_status: "synced", bling_sync_error: null }).eq("id", orderId);
+    const saved = await supabaseAdmin.from("shipping_orders").update({ bling_order_id: blingOrderId, bling_sync_status: "synced", bling_sync_error: null }).eq("id", orderId).eq("financial_revision", order.financial_revision).eq("bling_sync_status", "processing").eq("payment_status", "approved").is("bling_order_id", null).select("id").maybeSingle();
     if (saved.error) throw new Error("Pedido criado no Bling, mas não foi possível registrar o número.");
+    if (!saved.data) throw new Error("O pedido mudou durante o envio ao Bling. Conferência manual necessária; nenhum estado foi sobrescrito.");
     return { exported: true, blingOrderId };
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 300) : "Falha desconhecida.";
     // Ambiguous failures (timeouts, 5xx after POST) go to manual review; the numeroLoja lookup prevents duplicates on retry.
-    await supabaseAdmin.from("shipping_orders").update({ bling_sync_status: "reconciliation_required", bling_sync_error: `Envio ao Bling falhou: ${message}` }).eq("id", orderId);
+    const flagged = await supabaseAdmin.from("shipping_orders").update({ bling_sync_status: "reconciliation_required", bling_sync_error: `Envio ao Bling falhou: ${message}` }).eq("id", orderId).eq("financial_revision", order.financial_revision).eq("bling_sync_status", "processing").eq("payment_status", "approved").is("bling_order_id", null).select("id").maybeSingle();
+    if (flagged.error) throw new Error("Envio ao Bling falhou e não foi possível registrar a revisão manual.", { cause: error });
+    if (!flagged.data) throw new Error("Envio ao Bling inconclusivo após mudança do pedido. Nenhum estado foi sobrescrito; confira o pedido no ERP.", { cause: error });
     throw error;
   }
 }
@@ -67,9 +72,11 @@ export async function syncPaidOrders() {
   const { reconcileAppmaxOrder } = await import("./payment-reconciliation.server");
   const since = new Date(Date.now() - 3 * 86400000).toISOString();
   const pending = await supabaseAdmin.from("shipping_orders").select("id").not("payment_link_id", "is", null).eq("payment_status", "pending").gt("created_at", since).order("appmax_checked_at", { ascending: true, nullsFirst: true }).limit(5);
+  if (pending.error) throw new Error("Não foi possível consultar os pagamentos pendentes.");
   let checked = 0, exported = 0; const errors: string[] = [];
   for (const row of pending.data ?? []) { try { if ((await reconcileAppmaxOrder(row.id)).checked) checked++; } catch (e) { errors.push(e instanceof Error ? e.message : "erro"); } }
   const queued = await supabaseAdmin.from("shipping_orders").select("id").eq("bling_sync_status", "queued").limit(5);
+  if (queued.error) throw new Error("Não foi possível consultar a fila de pedidos Bling.");
   for (const row of queued.data ?? []) { try { if ((await exportOrderToBling(row.id)).exported) exported++; } catch (e) { errors.push(e instanceof Error ? e.message : "erro"); } }
   return { checked, exported, errors };
 }

@@ -145,6 +145,7 @@ export type Database = {
           customer_id: string | null
           delivery_address: Json | null
           discount_cents: number
+          financial_revision: string
           freight_cents: number | null
           id: string
           items: Json
@@ -170,6 +171,7 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
+          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -195,6 +197,7 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
+          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -253,6 +256,18 @@ export type Database = {
     }
     Functions: {
       claim_appmax_check: { Args: { _order_id: string }; Returns: boolean }
+      claim_appmax_check_v2: { Args: { _order_id: string }; Returns: string | null }
+      commit_appmax_check: {
+        Args: {
+          _order_id: string
+          _expected_revision: string
+          _payment_state: string | null
+          _provider_payment_id: string | null
+          _appmax_status: string | null
+          _inconclusive: boolean
+        }
+        Returns: boolean
+      }
       consume_bling_oauth_state: {
         Args: { p_browser_hash: string; p_state_hash: string }
         Returns: {
