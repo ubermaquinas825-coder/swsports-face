@@ -47,10 +47,9 @@ export const verifyShippingIntegrations = createServerFn({ method: "POST" }).mid
   ]);
   return { superfrete, appmax, checkedAt: new Date().toISOString() };
 });
-// Public read-only quote for guest shoppers; never creates or pays for labels.
+// Public read-only quote for guest shoppers. This must stay available during
+// financial maintenance because it neither creates orders nor charges/pays labels.
 export const requestShippingQuote = createServerFn({ method: "POST" }).inputValidator((data: unknown) => shippingRequestSchema.parse(data)).handler(async ({ data }) => {
-  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
-  assertFinancialOperationsEnabled();
   const options = await quoteFreight(data.cep, data.lines);
   return { options, message: options.length ? "" : "Nenhuma opção de entrega disponível para este CEP." };
 });

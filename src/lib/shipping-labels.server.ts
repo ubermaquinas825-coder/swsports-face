@@ -5,6 +5,7 @@ import { defaultShippingConfig, shippingConfigSchema } from "./shipping";
 import { buildLabelPayload, officialLabelUrl, verifyLabelInfo } from "./shipping-labels";
 import { superfreteConfigured, superfreteRequest } from "./superfrete.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
+import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["shipping_orders"]["Row"];
@@ -15,7 +16,6 @@ async function rpc<T>(name: string, args: Record<string, unknown> = {}): Promise
   return result.data as T;
 }
 
-/** One durable attempt only. Uncertain creation/payment never becomes a new POST on the next cycle. */
 export async function issueShippingLabel(orderId: string) {
   assertFinancialOperationsEnabled();
   const settings = await supabaseAdmin.from("shipping_settings").select("config").eq("id", true).maybeSingle();
@@ -24,18 +24,28 @@ export async function issueShippingLabel(orderId: string) {
   const sender = config.labelAutomation.sender;
   if (!config.labelAutomation.enabled || !sender) return { issued: false };
   if (!superfreteConfigured()) throw new Error("Integração SuperFrete indisponível; nenhuma etiqueta criada.");
-  // A previous approved snapshot, or a webhook, cannot authorize a new debit.
-  const checked = await reconcileAppmaxOrder(orderId);
-  if (!checked.checked) return { issued: false };
-  const result = await supabaseAdmin.from("shipping_orders").select("*").eq("id", orderId).single();
+
+  let result = await supabaseAdmin.from("shipping_orders").select("*").eq("id", orderId).single();
   if (result.error || !result.data) throw new Error("Não foi possível ler o pedido.");
+
+  if (mercadoPagoOrderIdFromLink(result.data.payment_link_id)) {
+    const verified = await verifyMercadoPagoStoredOrder(result.data);
+    if (verified.state !== "approved" || !verified.providerPaymentId || verified.providerPaymentId !== result.data.provider_payment_id) {
+      throw new Error("Pagamento Mercado Pago não está aprovado e vinculado para emissão automática.");
+    }
+  } else {
+    const checked = await reconcileAppmaxOrder(orderId);
+    if (!checked.checked) return { issued: false };
+    result = await supabaseAdmin.from("shipping_orders").select("*").eq("id", orderId).single();
+    if (result.error || !result.data) throw new Error("Não foi possível reler o pedido após a conferência Appmax.");
+  }
+
   const order = result.data;
   if (order.payment_status !== "approved" || order.bling_sync_status !== "synced" || order.provider_shipment_id) return { issued: false };
   if (!order.quoted_cep || order.freight_cents === null || order.discount_cents !== 0) throw new Error("Frete ou valor declarado requer conferência manual.");
   const payload = buildLabelPayload({ orderId, address: order.delivery_address, cep: order.quoted_cep,
     service: order.shipping_service, items: order.items, subtotalCents: order.subtotal_cents, sender });
   const call = (path: string, body?: unknown) => { assertFinancialOperationsEnabled(); return superfreteRequest(path, sender.email, body); };
-  // Requote the saved service and provider-returned volume, never a later edited package.
   const quotes = z.array(z.object({ id: z.union([z.string(), z.number()]), price: z.coerce.number().finite().nonnegative(), has_error: z.boolean().optional(), error: z.unknown().optional() }))
     .parse(await call("calculator", { from: { postal_code: sender.postal_code }, to: { postal_code: order.quoted_cep },
       services: String(payload.service), package: payload.volumes,
@@ -53,7 +63,6 @@ export async function issueShippingLabel(orderId: string) {
   try {
     const rawCreated = await call("cart", payload);
     const identity = z.object({ id: z.string().min(1).max(200) }).parse(rawCreated);
-    // Persist external identity before any further call or validation can fail.
     await advance("creating", "created", { _shipment_id: identity.id });
     const created = z.object({ id: z.string(), status: z.string(), price: z.coerce.number().finite().nonnegative() }).parse(rawCreated);
     if (created.status !== "pending" || Math.round(created.price * 100) !== order.freight_cents) throw new Error("Etiqueta criada com valor ou estado divergente; não pagar automaticamente.");
@@ -73,7 +82,6 @@ export async function issueShippingLabel(orderId: string) {
   } catch (error) {
     await rpc("fail_shipping_label", { _order_id: orderId, _token: token });
     if (error instanceof FinancialMaintenanceError) throw error;
-    // No retries here, including HTTP 5xx, timeouts and uncertain DB responses.
     throw new Error("Emissão interrompida. Confira o pedido e o saldo na SuperFrete antes de qualquer nova tentativa.");
   }
 }

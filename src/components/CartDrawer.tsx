@@ -7,7 +7,7 @@ import { useCart } from "@/hooks/use-cart";
 import { formatBRL, UNIT_PRICE } from "@/lib/products";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { currentShipping, type ShippingSelection } from "@/lib/checkout";
-import { createAppmaxCheckout } from "@/lib/checkout.functions";
+import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { DeliveryAddressFields } from "@/components/DeliveryAddressFields";
 import { deliveryAddressSchema } from "@/lib/delivery-address";
 
@@ -16,7 +16,7 @@ export function CartDrawer() {
   const [selection, setSelection] = useState<ShippingSelection | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const checkout = useServerFn(createAppmaxCheckout);
+  const checkout = useServerFn(createMercadoPagoCheckout);
   const checkoutLines = lines.map((line) => ({ id: line.product.id, qty: line.qty }));
   const shipping = currentShipping(selection, checkoutLines);
   const finish = async (event: FormEvent<HTMLFormElement>) => {
@@ -91,7 +91,7 @@ export function CartDrawer() {
                       key={product.id}
                       layout
                       initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
                       exit={{ opacity: 0 }}
                       className="flex gap-3 rounded-2xl border border-border bg-card p-3"
                     >
@@ -106,54 +106,24 @@ export function CartDrawer() {
                           {formatBRL(UNIT_PRICE)} / un.
                         </p>
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setQty(product.id, qty - 1)}
-                            aria-label={`Diminuir quantidade de ${product.name}`}
-                            className="grid h-7 w-7 place-items-center rounded-full border border-border"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
+                          <button onClick={() => setQty(product.id, qty - 1)} aria-label={`Diminuir quantidade de ${product.name}`} className="grid h-7 w-7 place-items-center rounded-full border border-border"><Minus className="h-3 w-3" /></button>
                           <span className="w-6 text-center text-sm font-bold">{qty}</span>
-                          <button
-                            onClick={() => setQty(product.id, qty + 1)}
-                            aria-label={`Aumentar quantidade de ${product.name}`}
-                            className="grid h-7 w-7 place-items-center rounded-full border border-border"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
-                          <button
-                            onClick={() => remove(product.id)}
-                            aria-label={`Remover ${product.name}`}
-                            className="ml-auto grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition-colors hover:text-brand"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          <button onClick={() => setQty(product.id, qty + 1)} aria-label={`Aumentar quantidade de ${product.name}`} className="grid h-7 w-7 place-items-center rounded-full border border-border"><Plus className="h-3 w-3" /></button>
+                          <button onClick={() => remove(product.id)} aria-label={`Remover ${product.name}`} className="ml-auto grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition-colors hover:text-brand"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                   <ShippingCalculator lines={checkoutLines} selection={shipping} onSelect={setSelection} />
-                  {shipping && <form id="cart-delivery-checkout" onSubmit={finish}>
-                    <DeliveryAddressFields postalCode={shipping.cep} disabled={busy} />
-                  </form>}
+                  {shipping && <form id="cart-delivery-checkout" onSubmit={finish}><DeliveryAddressFields postalCode={shipping.cep} disabled={busy} /></form>}
                 </div>
                 <div className="border-t border-border px-5 py-4">
-                  <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Total dos produtos</span>
-                    <span className="font-display text-xl font-bold text-foreground">
-                      {formatBRL(subtotal)}
-                    </span>
-                  </div>
+                  <div className="mb-1 flex items-center justify-between text-sm text-muted-foreground"><span>Total dos produtos</span><span className="font-display text-xl font-bold text-foreground">{formatBRL(subtotal)}</span></div>
                   <div className="my-2 flex items-center justify-between text-sm text-muted-foreground"><span>Frete</span><span>{shipping ? formatBRL(shipping.option.priceCents / 100) : "A calcular"}</span></div>
                   <div className="mb-3 flex items-center justify-between font-semibold"><span>Total</span><span>{formatBRL(subtotal + (shipping ? shipping.option.priceCents / 100 : 0))}</span></div>
                   {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
-                  <Button
-                    type="submit"
-                    form="cart-delivery-checkout"
-                    disabled={!shipping || busy}
-                    className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold"
-                  >
-                    {busy ? "ABRINDO PAGAMENTO…" : "CONTINUAR PARA APPMAX"}
+                  <Button type="submit" form="cart-delivery-checkout" disabled={!shipping || busy} className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold">
+                    {busy ? "ABRINDO PAGAMENTO…" : "FINALIZAR COMPRA"}
                   </Button>
                 </div>
               </>
