@@ -71,3 +71,17 @@ só cria migrações novas, o que geraria duplicatas, e por isso não foi usada.
 - Restaurar para: **public**.
 - Neste plano, um site privado só aceita pessoas convidadas uma a uma. Por isso a ferramenta
   do agente recusa a mudança automática, e o proprietário precisa fazê-la em Publish → Invite only.
+
+## Verificação externa após "Invite only" (15:45 UTC, sem login, sem criar pedidos)
+Visibilidade efetiva: private, audience custom/named_only.
+| Rota | Resposta | Quem respondeu |
+|---|---|---|
+| GET / , /frete-envios, /integracoes/bling, assets JS | 401 | bloqueio da plataforma |
+| POST /_serverFn/* (checkout, cotação e ações admin) | 401 | bloqueio da plataforma |
+| POST /api/public/cron/sync-orders | 401 | **app** (autenticação do cron; cabeçalho diferente) |
+| GET/POST /api/public/bling/start, /callback | 400 / 200 | **app** (o código da loja executou) |
+Conclusão: as rotas `/api/public/*` não passam pelo bloqueio de visibilidade e chegam ao código
+publicado, protegidas só pela autenticação da própria aplicação. A contenção está
+**incompleta** pelo critério do operador. As migrações NÃO foram aplicadas.
+Observação: o deployment-id mudou de `psr2.908c5127…` para `psr2.4bb369f9…` depois da troca de
+visibilidade. Não foi feita nenhuma publicação pelo agente.
