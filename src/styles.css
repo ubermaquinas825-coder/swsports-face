@@ -145,6 +145,12 @@
   }
 }
 
+/* Let the browser postpone layout/paint for sections that are well below the fold. */
+.render-later {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+
 /* Dimensional stage, shared asset depth, and restrained interaction surfaces. */
 .showcase { background: var(--background); }
 .showcase-grid {
