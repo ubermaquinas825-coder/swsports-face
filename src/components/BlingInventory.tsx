@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { products } from "@/lib/products";
 import { emptyBlingInventoryConfig, type BlingInventoryConfig } from "@/lib/bling-inventory";
 import { getBlingInventory, loadBlingWarehouses, saveBlingInventory, testBlingInventory, discoverBlingCatalog } from "@/lib/bling-inventory.functions";
-import { checkAppmaxPayments } from "@/lib/payment-reconciliation.functions";
+import { checkPayments } from "@/lib/payment-reconciliation.functions";
 
 export function BlingInventory({ connected }: { connected: boolean }) {
   const getConfig = useServerFn(getBlingInventory);
@@ -18,7 +18,7 @@ export function BlingInventory({ connected }: { connected: boolean }) {
   const config = draft ?? query.data ?? emptyBlingInventoryConfig;
   const load = useServerFn(loadBlingWarehouses); const save = useServerFn(saveBlingInventory); const test = useServerFn(testBlingInventory);
   const discover = useServerFn(discoverBlingCatalog);
-  const checkPayments = useServerFn(checkAppmaxPayments);
+  const checkPaymentsNow = useServerFn(checkPayments);
   const [warehouses, setWarehouses] = useState<Array<{ id: number; name: string }>>([]);
   const [stock, setStock] = useState<Array<{ blingId: number; available: number }> | null>(null);
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState("");
@@ -32,6 +32,6 @@ export function BlingInventory({ connected }: { connected: boolean }) {
     <label className="my-5 flex items-center gap-3 text-sm"><Switch checked={config.checkAtCheckout} disabled={!connected || busy} onCheckedChange={(checked) => setDraft({ ...config, checkAtCheckout: checked })} /> Conferir estoque antes do pagamento</label>
     <div className="flex flex-wrap gap-3"><Button disabled={!connected || busy || query.isPending || query.isError} onClick={() => run(async () => { const result = await save({ data: config }); setDraft(result.config); setStock(result.stock); await query.refetch(); setMessage("Vínculos confirmados e estoque consultado."); })}><Save /> Confirmar vínculos</Button><Button variant="outline" disabled={!connected || busy} onClick={() => run(async () => { setStock(await test()); setMessage("Estoque atualizado."); })}><RefreshCw /> Consultar estoque</Button></div>
     <p role="status" className="mt-4 text-sm text-muted-foreground">{message}</p>
-    <div className="mt-8 border-t border-border pt-6"><h3 className="font-display font-bold">PEDIDOS AUTOMÁTICOS</h3><Button variant="outline" className="mt-4" disabled={busy} onClick={() => run(async () => { const result = await checkPayments(); setMessage(`${result.checked} pagamento(s) conferido(s), ${result.exported} pedido(s) enviado(s) ao Bling.${result.errors.length ? ` Atenção: ${result.errors.join(" ")}` : ""}`); })}><RefreshCw /> Conferir pagamentos e enviar ao Bling agora</Button><p className="mt-3 text-sm text-muted-foreground">A cada 5 minutos, pagamentos aprovados na Appmax viram pedidos de venda no Bling, uma única vez por compra.</p></div>
+    <div className="mt-8 border-t border-border pt-6"><h3 className="font-display font-bold">PEDIDOS AUTOMÁTICOS</h3><Button variant="outline" className="mt-4" disabled={busy} onClick={() => run(async () => { const result = await checkPaymentsNow(); setMessage(`${result.checked} pagamento(s) conferido(s), ${result.exported} pedido(s) enviado(s) ao Bling.${result.errors.length ? ` Atenção: ${result.errors.join(" ")}` : ""}`); })}><RefreshCw /> Conferir pagamentos e enviar ao Bling agora</Button><p className="mt-3 text-sm text-muted-foreground">A cada 5 minutos, pagamentos pendentes do Mercado Pago são conferidos com segurança e os pedidos aprovados seguem para o Bling, uma única vez por compra.</p></div>
   </section>;
 }
