@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AtacadoRouteImport } from './routes/atacado'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
 import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_authenticated/integracoes/bling'
@@ -37,6 +38,11 @@ const AtacadoRoute = AtacadoRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/_authenticated/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/atacado'
     | '/auth'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/frete-envios'
     | '/integracoes/bling'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/atacado'
     | '/auth'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/frete-envios'
     | '/integracoes/bling'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/atacado'
     | '/auth'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/_authenticated/frete-envios'
     | '/_authenticated/integracoes/bling'
@@ -149,6 +161,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AtacadoRoute: typeof AtacadoRoute
   AuthRoute: typeof AuthRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
   ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
@@ -183,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/redefinir-senha': {
@@ -248,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AtacadoRoute: AtacadoRoute,
   AuthRoute: AuthRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
   ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
