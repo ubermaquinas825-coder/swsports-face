@@ -91,5 +91,8 @@ export async function syncPaidOrders() {
   const queued = await supabaseAdmin.from("shipping_orders").select("id").eq("bling_sync_status", "queued").limit(5);
   if (queued.error) throw new RetryableSyncError("Não foi possível consultar a fila de pedidos Bling.");
   for (const row of queued.data ?? []) { try { if ((await exportOrderToBling(row.id)).exported) exported++; } catch (e) { recordError(e); } }
-  return { checked, exported, errors, retryableFailures, recovered: recovery.inspected };
+  const { issuePendingLabels } = await import("./labels.server");
+  const labels = await issuePendingLabels();
+  errors.push(...labels.errors);
+  return { checked, exported, labels: labels.issued, errors, retryableFailures, recovered: recovery.inspected };
 }

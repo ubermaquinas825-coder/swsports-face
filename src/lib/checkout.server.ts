@@ -3,6 +3,7 @@ import { z } from "zod";
 import { choosePackage, defaultShippingConfig, shippingConfigSchema, validatedTotal } from "@/lib/shipping";
 import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
+import type { DeliveryAddress } from "@/lib/delivery";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/udc_superfrete";
 async function providerJson(response: Response, service: string) {
@@ -47,12 +48,12 @@ export async function authenticateAppmax() {
   const auth = z.object({ access_token: z.string().min(1) }).parse(await providerJson(authResponse, "Appmax"));
   return auth.access_token;
 }
-export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, option: ShippingOption) {
+export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, option: ShippingOption, address?: DeliveryAddress) {
   assertFinancialOperationsEnabled();
   const accessToken = await authenticateAppmax();
   const totalCents = validatedTotal(lines, 0, option.priceCents);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const pending = await supabaseAdmin.from("shipping_orders").insert({ items: lines.map((line) => ({ id: line.id, name: productFor(line.id)?.name ?? line.id, qty: line.qty, unit_price_cents: Math.round(UNIT_PRICE * 100) })), subtotal_cents: validatedTotal(lines, 0, 0), freight_cents: option.priceCents, quoted_cep: cep, shipping_service: option, payment_status: "pending", bling_sync_status: "awaiting_payment" }).select("id").single();
+  const pending = await supabaseAdmin.from("shipping_orders").insert({ items: lines.map((line) => ({ id: line.id, name: productFor(line.id)?.name ?? line.id, qty: line.qty, unit_price_cents: Math.round(UNIT_PRICE * 100) })), subtotal_cents: validatedTotal(lines, 0, 0), freight_cents: option.priceCents, quoted_cep: cep, shipping_service: option, payment_status: "pending", bling_sync_status: "awaiting_payment", ...(address ? { delivery_address: address, label_status: "awaiting" } : {}) }).select("id").single();
   if (pending.error || !pending.data) throw new Error("Não foi possível registrar o pedido. Tente novamente.");
   const items = lines.map((line) => `${line.qty}x ${productFor(line.id)?.name}`).join("; ");
   try {
