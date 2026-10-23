@@ -65,7 +65,7 @@ export function SiteFooter() {
         © {new Date().getFullYear()} SW Sports. Todos os direitos reservados.
         <Link to="/frete-envios" className="ml-4 inline-block transition-colors hover:text-foreground">Área administrativa</Link>
         <Link to="/privacidade" className="ml-4 inline-block transition-colors hover:text-foreground">Privacidade</Link>
-        <Button variant="link" size="sm" onClick={() => window.dispatchEvent(new Event("sw-cookie-settings")))}>Configurações de cookies</Button>
+        <Button variant="link" size="sm" onClick={() => window.dispatchEvent(new Event("sw-cookie-settings"))}>Configurações de cookies</Button>
       </div>
     </footer>
   );
