@@ -14,38 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      shipping_recovery_checks: {
-        Row: {
-          id: string
-          order_id: string
-          financial_revision: string
-          outcome: string
-          bling_order_id: number | null
-          observed_at: string
-        }
-        // Protected append-only evidence is written through the server RPC only.
-        Insert: never
-        Update: never
-        Relationships: [{ foreignKeyName: "shipping_recovery_checks_order_id_fkey"; columns: ["order_id"]; isOneToOne: false; referencedRelation: "shipping_orders"; referencedColumns: ["id"] }]
-      }
-      shipping_hold_resolutions: {
-        Row: {
-          id: string
-          order_id: string
-          actor_id: string
-          expected_revision: string
-          applied_revision: string | null
-          action: string
-          previous_status: string
-          previous_reason: string | null
-          reason: string
-          evidence: string
-          created_at: string
-        }
-        Insert: never
-        Update: never
-        Relationships: [{ foreignKeyName: "shipping_hold_resolutions_order_id_fkey"; columns: ["order_id"]; isOneToOne: false; referencedRelation: "shipping_orders"; referencedColumns: ["id"] }]
-      }
       bling_connections: {
         Row: {
           authorized_at: string
@@ -168,12 +136,6 @@ export type Database = {
       shipping_orders: {
         Row: {
           appmax_check_lock_until: string | null
-          appmax_payment_verified_at: string | null
-          appmax_check_started_at: string | null
-          appmax_next_check_at: string | null
-          appmax_check_failures: number
-          bling_processing_started_at: string | null
-          bling_export_token: string | null
           appmax_checked_at: string | null
           appmax_status: string | null
           bling_order_id: number | null
@@ -183,7 +145,6 @@ export type Database = {
           customer_id: string | null
           delivery_address: Json | null
           discount_cents: number
-          financial_revision: string
           freight_cents: number | null
           id: string
           items: Json
@@ -200,12 +161,6 @@ export type Database = {
         }
         Insert: {
           appmax_check_lock_until?: string | null
-          appmax_payment_verified_at?: string | null
-          appmax_check_started_at?: string | null
-          appmax_next_check_at?: string | null
-          appmax_check_failures?: number
-          bling_processing_started_at?: string | null
-          bling_export_token?: string | null
           appmax_checked_at?: string | null
           appmax_status?: string | null
           bling_order_id?: number | null
@@ -215,7 +170,6 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
-          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -232,12 +186,6 @@ export type Database = {
         }
         Update: {
           appmax_check_lock_until?: string | null
-          appmax_payment_verified_at?: string | null
-          appmax_check_started_at?: string | null
-          appmax_next_check_at?: string | null
-          appmax_check_failures?: number
-          bling_processing_started_at?: string | null
-          bling_export_token?: string | null
           appmax_checked_at?: string | null
           appmax_status?: string | null
           bling_order_id?: number | null
@@ -247,7 +195,6 @@ export type Database = {
           customer_id?: string | null
           delivery_address?: Json | null
           discount_cents?: number
-          financial_revision?: string
           freight_cents?: number | null
           id?: string
           items?: Json
@@ -306,24 +253,6 @@ export type Database = {
     }
     Functions: {
       claim_appmax_check: { Args: { _order_id: string }; Returns: boolean }
-      claim_appmax_check_v2: { Args: { _order_id: string }; Returns: string | null }
-      commit_appmax_check: {
-        Args: {
-          _order_id: string
-          _expected_revision: string
-          _payment_state: string | null
-          _provider_payment_id: string | null
-          _appmax_status: string | null
-          _inconclusive: boolean
-        }
-        Returns: boolean
-      }
-      renew_appmax_check: { Args: { _order_id: string; _expected_revision: string }; Returns: string | null }
-      defer_appmax_check: { Args: { _order_id: string; _expected_revision: string }; Returns: boolean }
-      claim_bling_export: { Args: { _order_id: string }; Returns: Database["public"]["Tables"]["shipping_orders"]["Row"][] }
-      quarantine_stale_bling_orders: { Args: Record<string, never>; Returns: Database["public"]["Tables"]["shipping_orders"]["Row"][] }
-      record_bling_recovery: { Args: { _order_id: string; _expected_revision: string; _outcome: string; _bling_order_id: number | null }; Returns: boolean }
-      resolve_shipping_order_hold: { Args: { _order_id: string; _expected_revision: string; _action: string; _reason: string; _evidence: string }; Returns: string }
       consume_bling_oauth_state: {
         Args: { p_browser_hash: string; p_state_hash: string }
         Returns: {
