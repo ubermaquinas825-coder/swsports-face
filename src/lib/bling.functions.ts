@@ -12,8 +12,8 @@ export const getBlingAdmin = createServerFn({ method: "GET" }).middleware([requi
   return { allowed: true, configured: blingConfigured(), connected: Boolean(result.data) && !result.data?.last_error, callbackUrl: BLING_CALLBACK_URL, authorizedAt: result.data?.authorized_at ?? null, error: result.data?.last_error ?? null };
 });
 export const startBlingOAuth = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
-  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
-  assertFinancialOperationsEnabled();
+  const { assertBlingConnectionAllowed } = await import("./financial-maintenance.server");
+  assertBlingConnectionAllowed();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   if (!blingConfigured()) throw new Error("Aguardando credenciais do aplicativo Bling.");
@@ -24,16 +24,16 @@ export const startBlingOAuth = createServerFn({ method: "POST" }).middleware([re
   return { url: `${BLING_ORIGIN}/api/public/bling/start?state=${state}` };
 });
 export const renewBlingOAuth = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
-  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
-  assertFinancialOperationsEnabled();
+  const { assertBlingConnectionAllowed } = await import("./financial-maintenance.server");
+  assertBlingConnectionAllowed();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   await getBlingAccessToken();
   return { checked: true };
 });
 export const testBlingProducts = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
-  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
-  assertFinancialOperationsEnabled();
+  const { assertBlingConnectionAllowed } = await import("./financial-maintenance.server");
+  assertBlingConnectionAllowed();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
   const products = await readBlingProducts();

@@ -79,4 +79,30 @@ describe("Maintenance fences before database/provider side effects", () => {
     expect(from).toHaveBeenCalledWith("bling_store_settings");
     expect(request).not.toHaveBeenCalled();
   });
+
+  it.each(Object.entries(functions).filter(([name]) => !["startBlingOAuth", "renewBlingOAuth", "testBlingProducts"].includes(name)))("Bling setup permission still blocks financial entry %s", async (_name, fn) => {
+    vi.stubEnv("VERCEL", "1"); vi.stubEnv("SWSPORTS_BLING_SETUP_ENABLED", "true");
+    await expect(invoke(fn)).rejects.toThrow("manutenção");
+    expect(database).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled();
+  });
+
+  it.each([startBlingOAuth, renewBlingOAuth, testBlingProducts])("Bling setup still requires an administrative role", async (fn) => {
+    vi.stubEnv("VERCEL", "1"); vi.stubEnv("SWSPORTS_BLING_SETUP_ENABLED", "true");
+    const role = vi.fn().mockResolvedValue({ data: false, error: null });
+    await expect((fn as unknown as (input: unknown) => Promise<unknown>)({ context: { userId: "not-admin", supabase: { rpc: role } } })).rejects.toThrow("administrativo");
+    expect(role).toHaveBeenCalledWith("has_role", { _user_id: "not-admin", _role: "admin" });
+    expect(database).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled();
+  });
+
+  it.each([oauthStart, oauthCallback])("Bling setup does not bypass OAuth state or browser binding", async (route) => {
+    vi.stubEnv("VERCEL", "1"); vi.stubEnv("SWSPORTS_BLING_SETUP_ENABLED", "true");
+    expect((await invokeRoute(route, "GET")).status).toBe(400);
+    expect(database).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled();
+  });
+
+  it("keeps the cron paused while Bling setup is enabled", async () => {
+    vi.stubEnv("VERCEL", "1"); vi.stubEnv("SWSPORTS_BLING_SETUP_ENABLED", "true");
+    expect((await invokeRoute(cron, "POST")).status).toBe(503);
+    expect(database).not.toHaveBeenCalled(); expect(request).not.toHaveBeenCalled();
+  });
 });

@@ -29,6 +29,13 @@ de requisição, cookie, localStorage ou configuração enviada pelo navegador.
 O código lê a variável em cada admissão; o host ainda pode exigir reinício ou nova
 publicação para propagar alterações. Esse comportamento precisa ser confirmado.
 
+Exceção explícita para a migração Vercel: `SWSPORTS_BLING_SETUP_ENABLED=true`,
+somente com `VERCEL=1`, permite as três ações administrativas de conexão OAuth,
+renovação e leitura de produtos Bling e suas rotas start/callback. Esse flag é
+server-only, desabilitado por padrão, e não altera os bloqueios de checkout,
+pedidos, estoque, etiquetas ou cron. Sem a exceção, mantém-se o bloqueio total
+de OAuth e diagnósticos descrito abaixo. Desativar o flag depois da conexão.
+
 Quando habilitado, o controle recusa antes dos acessos operacionais:
 
 - Checkout público e cotação pública.

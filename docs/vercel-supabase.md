@@ -71,6 +71,30 @@ para a URL de teste e, depois, o domínio final. Google OAuth requer o aplicativ
 Google e sua callback do Supabase. Registrar a callback `/api/public/bling/callback`
 da nova origem no Bling e reautorizar quando necessário.
 
+### Conectar Bling enquanto o checkout fica em manutenção
+
+O proprietário confirmou que `bling_connections` está vazio no novo Supabase.
+Criar uma nova `BLING_TOKEN_ENCRYPTION_KEY` aleatória com pelo menos 32 caracteres
+e guardá-la como Secret em Production na Vercel. Não reutilizar CRON_SECRET nem
+substituir essa chave depois de salvar a conexão sem um plano de reautorização.
+
+Manter `SWSPORTS_FINANCIAL_MAINTENANCE=true` e definir temporariamente
+`SWSPORTS_BLING_SETUP_ENABLED=true` como Config em Production. Esta exceção só
+vale com `VERCEL=1` e habilita a autorização OAuth, renovação da conexão e consulta
+administrativa de produtos. Login e role admin, ticket de uso único, cookie e
+verificação de state continuam obrigatórios. Não habilita checkout, cron,
+exportação de pedidos, alterações de estoque, etiquetas ou suas cobranças.
+
+Após redeploy, conferir que a origem mostrada no painel Integrações/Bling é a
+Vercel e cadastrar no aplicativo Bling a callback exata
+`https://swsports-face-cg8c.vercel.app/api/public/bling/callback`. Verificar que a
+rota implantada responde à solicitação sem state com erro de autorização (400),
+sem criar registros nem iniciar OAuth. Só então iniciar a autorização pelo painel
+logado do site. Não abrir a callback manualmente com code/state reais nem copiá-los
+para chats ou logs. Após conectar e testar a leitura de produtos, definir
+`SWSPORTS_BLING_SETUP_ENABLED=false` e fazer novo deploy enquanto o checkout
+continua em manutenção para a troca de provedor.
+
 ## Agendamento e virada
 
 Nenhum agendador novo é ativado por esta configuração: evitar dois servidores
