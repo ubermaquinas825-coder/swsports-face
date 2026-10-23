@@ -65,3 +65,9 @@ só cria migrações novas, o que geraria duplicatas, e por isso não foi usada.
   banco em 0004 (commits automáticos `10befcd` e `9fe9b00`). As duas vezes ele foi restaurado
   byte a byte para a versão `2cc771d`. Diff final contra `2cc771d`: vazio.
 - `docs/deployment-evidence-2026-10-23.md`: este arquivo (novo).
+
+## Visibilidade da publicação antes da contenção (15:40 UTC)
+- is_published=true, publish_visibility=public, effective=public, audience_tier=public.
+- Restaurar para: **public**.
+- Neste plano, um site privado só aceita pessoas convidadas uma a uma. Por isso a ferramenta
+  do agente recusa a mudança automática, e o proprietário precisa fazê-la em Publish → Invite only.
