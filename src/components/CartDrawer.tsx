@@ -123,7 +123,7 @@ export function CartDrawer() {
                   <div className="mb-3 flex items-center justify-between font-semibold"><span>Total</span><span>{formatBRL(subtotal + (shipping ? shipping.option.priceCents / 100 : 0))}</span></div>
                   {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
                   <Button type="submit" form="cart-delivery-checkout" disabled={!shipping || busy} className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold">
-                    {busy ? "ABRINDO PAGAMENTO…" : "PAGAR COM MERCADO PAGO"}
+                    {busy ? "ABRINDO PAGAMENTO…" : "FINALIZAR COMPRA"}
                   </Button>
                 </div>
               </>
