@@ -142,7 +142,7 @@ export function CartDrawer() {
                   {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
                   <Button
                     onClick={finish}
-                    disabled={!shipping || busy}
+                    disabled={!shipping || !address || busy}
                     className="h-auto w-full whitespace-normal py-3.5 text-sm font-bold"
                   >
                     {busy ? "ABRINDO PAGAMENTO…" : "CONTINUAR PARA APPMAX"}
