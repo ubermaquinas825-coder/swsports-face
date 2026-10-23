@@ -27,13 +27,15 @@ export function Personality() {
 
         <Reveal>
           <div className="mx-auto grid max-w-4xl items-center gap-8 md:grid-cols-2">
-            {/* produto central */}
             <div className="relative mx-auto flex h-[320px] w-full items-center justify-center [perspective:1000px]">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={product.id}
                   src={product.image}
                   alt={`Balaclava ${product.name}`}
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
                   style={{ transformPerspective: 1000 }}
                   initial={reduce ? false : { opacity: 0, rotateY: -70, scale: 0.9 }}
                   animate={{ opacity: 1, rotateY: 0, scale: 1 }}
@@ -72,7 +74,6 @@ export function Personality() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* miniaturas */}
               <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
                 {products.map((p, i) => (
                   <Button variant="ghost" size="icon"
@@ -87,7 +88,7 @@ export function Personality() {
                         : "border-border opacity-60 hover:opacity-100"
                     }`}
                   >
-                    <img src={p.image} alt="" className="h-full w-full bg-background object-cover object-top" />
+                    <img src={p.image} alt="" loading="lazy" decoding="async" fetchPriority="low" className="h-full w-full bg-background object-cover object-top" />
                   </Button>
                 ))}
               </div>
