@@ -32,7 +32,7 @@ export async function inspectHeldBlingOrder(order: Order) {
   } catch { outcome = "lookup_failed"; }
   const recorded = await supabaseAdmin.rpc("record_bling_recovery", {
     _order_id: order.id, _expected_revision: order.financial_revision, _outcome: outcome, _bling_order_id: blingId,
-  });
+  } as never);
   if (recorded.error || !recorded.data) throw new Error("Não foi possível registrar a recuperação sem sobrescrever uma decisão mais recente.");
   return { outcome, blingId };
 }
