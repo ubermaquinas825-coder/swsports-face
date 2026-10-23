@@ -1,3 +1,4 @@
+import { assertFinancialOperationsEnabled, FinancialMaintenanceError } from "./financial-maintenance.server";
 import { z } from "zod";
 import { RetryableSyncError } from "./financial-errors";
 import { recoverStaleBlingOrders } from "./bling-recovery.server";
@@ -29,6 +30,7 @@ async function findOrCreateContact(customer: { name?: string | undefined; email?
 
 /** Exports one Appmax-approved order to Bling once. Lock = conditional status transition queued -> processing. */
 export async function exportOrderToBling(orderId: string) {
+  assertFinancialOperationsEnabled();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const claim = await supabaseAdmin.rpc("claim_bling_export", { _order_id: orderId }).maybeSingle();
   if (claim.error) throw new RetryableSyncError("Não foi possível adquirir o pedido para envio ao Bling.");
@@ -71,6 +73,7 @@ export async function exportOrderToBling(orderId: string) {
 
 /** Automatic cycle: confirm recent pending Appmax payments, then export queued orders. */
 export async function syncPaidOrders() {
+  assertFinancialOperationsEnabled();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { reconcileAppmaxOrder } = await import("./payment-reconciliation.server");
   const recovery = await recoverStaleBlingOrders();
@@ -80,6 +83,7 @@ export async function syncPaidOrders() {
   let checked = 0, exported = 0, retryableFailures = 0;
   const errors: string[] = [...recovery.errors];
   const recordError = (error: unknown) => {
+    if (error instanceof FinancialMaintenanceError) throw error;
     errors.push(error instanceof Error ? error.message : "erro");
     if (error instanceof RetryableSyncError) retryableFailures++;
   };

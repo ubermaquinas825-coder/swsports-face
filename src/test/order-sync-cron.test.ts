@@ -1,4 +1,5 @@
 import { RetryableSyncError } from "@/lib/financial-errors";
+import { FinancialMaintenanceError } from "@/lib/financial-maintenance.server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const { sync, authenticate } = vi.hoisted(() => ({ sync: vi.fn(), authenticate: vi.fn() }));
@@ -43,5 +44,11 @@ describe("Order synchronization cron", () => {
     authenticate.mockResolvedValue(new Response("Unauthorized", { status: 401 }));
     expect((await handler({ request: new Request("https://local.invalid", { method: "POST" }) })).status).toBe(401);
     expect(sync).not.toHaveBeenCalled();
+  });
+  it("reports maintenance during a batch without classifying it as manual review", async () => {
+    authenticate.mockResolvedValue(null); sync.mockRejectedValue(new FinancialMaintenanceError());
+    const response = await handler({ request: new Request("https://local.invalid", { method: "POST" }) });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ ok: false, maintenance: true, code: "FINANCIAL_MAINTENANCE" });
   });
 });

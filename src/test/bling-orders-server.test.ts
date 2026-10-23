@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RetryableSyncError } from "@/lib/financial-errors";
+import { FinancialMaintenanceError } from "@/lib/financial-maintenance.server";
 
 const { from, rpc, recover, reconcile, token } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), recover: vi.fn(), reconcile: vi.fn(), token: vi.fn() }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from, rpc } }));
@@ -17,7 +18,7 @@ function query(result: unknown) {
   return q;
 }
 beforeEach(() => recover.mockResolvedValue({ inspected: 0, errors: [] }));
-afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("Sync database failures", () => {
   it("rejects a pending-query failure without consulting providers", async () => {
@@ -47,6 +48,15 @@ describe("Sync database failures", () => {
     recover.mockResolvedValue({ inspected: 1, errors: ["held for review"] });
     from.mockReturnValue(query({ data: [], error: null }));
     await expect(syncPaidOrders()).resolves.toMatchObject({ retryableFailures: 0, recovered: 1, errors: ["held for review"] });
+  });
+  it("stops the batch on maintenance without selecting the export queue", async () => {
+    from.mockReturnValueOnce(query({ data: [{ id: "order" }], error: null }));
+    reconcile.mockImplementation(async () => {
+      vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "true");
+      throw new FinancialMaintenanceError();
+    });
+    await expect(syncPaidOrders()).rejects.toBeInstanceOf(FinancialMaintenanceError);
+    expect(from).toHaveBeenCalledOnce(); expect(rpc).not.toHaveBeenCalled(); expect(token).not.toHaveBeenCalled();
   });
 });
 
@@ -86,6 +96,17 @@ describe("Bling export state fencing", () => {
     // An existing ERP order is read, never recreated, in this local fixture.
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher.mock.calls[0]?.[1]?.method).toBeUndefined();
+  });
+  it("can finish an admitted export but refuses a new one after maintenance starts", async () => {
+    const { final, fetcher } = existingOrder({ data: { id: "order" }, error: null });
+    fetcher.mockImplementationOnce(async () => {
+      vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "true");
+      return new Response(JSON.stringify({ data: [{ id: 42 }] }));
+    });
+    await expect(exportOrderToBling("order")).resolves.toEqual({ exported: true, blingOrderId: 42 });
+    expect(final.update).toHaveBeenCalledWith(expect.objectContaining({ bling_sync_status: "synced" }));
+    await expect(exportOrderToBling("another-order")).rejects.toBeInstanceOf(FinancialMaintenanceError);
+    expect(rpc).toHaveBeenCalledOnce(); expect(fetcher).toHaveBeenCalledOnce();
   });
   it("cannot overwrite a newer hold with synced or a failure flag", async () => {
     const { final } = existingOrder({ data: null, error: null });

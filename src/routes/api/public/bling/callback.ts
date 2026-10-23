@@ -4,6 +4,9 @@ import { BLING_ORIGIN } from "@/lib/bling";
 import { hashBlingValue, completeBlingAuthorization } from "@/lib/bling.server";
 
 export const Route = createFileRoute("/api/public/bling/callback")({ server: { handlers: { GET: async ({ request }) => {
+  const { financialMaintenanceResponse } = await import("@/lib/financial-maintenance.server");
+  const maintenance = financialMaintenanceResponse();
+  if (maintenance) return maintenance;
   const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'", "Set-Cookie": "__Host-bling-oauth=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0" };
   const reject = (status = 400) => new Response("Autorização Bling inválida ou expirada. Inicie novamente em Integrações > Bling.", { status, headers });
   const params = new URL(request.url).searchParams;

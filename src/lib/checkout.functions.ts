@@ -8,6 +8,8 @@ import { checkBlingCheckoutStock } from "@/lib/bling-inventory.server";
 export const createAppmaxCheckout = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => shippingRequestSchema.extend({ serviceId: z.string().min(1).max(30), quotedPriceCents: z.number().int().nonnegative() }).parse(data))
   .handler(async ({ data }) => {
+    const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+    assertFinancialOperationsEnabled();
     await checkBlingCheckoutStock(data.lines);
     const options = await quoteFreight(data.cep, data.lines);
     const selected = options.find((option) => option.id === data.serviceId);

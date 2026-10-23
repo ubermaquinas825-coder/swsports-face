@@ -4,6 +4,9 @@ import { blingAuthorizationUrl } from "@/lib/bling";
 import { blingConfigured, randomBlingValue, hashBlingValue } from "@/lib/bling.server";
 
 export const Route = createFileRoute("/api/public/bling/start")({ server: { handlers: { GET: async ({ request }) => {
+  const { financialMaintenanceResponse } = await import("@/lib/financial-maintenance.server");
+  const maintenance = financialMaintenanceResponse();
+  if (maintenance) return maintenance;
   const state = z.string().regex(/^[a-f0-9]{64}$/).safeParse(new URL(request.url).searchParams.get("state"));
   const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
   if (!state.success) return new Response("Autorização inválida.", { status: 400, headers });

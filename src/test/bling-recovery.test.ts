@@ -4,6 +4,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc }
 vi.mock("@/lib/bling.server", () => ({ getBlingAccessToken: token }));
 import { inspectHeldBlingOrder, recoverStaleBlingOrders } from "@/lib/bling-recovery.server";
 import { RetryableSyncError } from "@/lib/financial-errors";
+import { FinancialMaintenanceError } from "@/lib/financial-maintenance.server";
 
 const order = { id: "local", financial_revision: "held-revision" } as Parameters<typeof inspectHeldBlingOrder>[0];
 const json = (body: unknown) => new Response(JSON.stringify(body));
@@ -12,7 +13,7 @@ function setup(responses: Response[]) {
   const fetcher = vi.fn(); responses.forEach((response) => fetcher.mockResolvedValueOnce(response));
   vi.stubGlobal("fetch", fetcher); return fetcher;
 }
-afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 describe("Read-only Bling processing recovery", () => {
   it("records exactly one existing ERP order after verifying its detailed store reference", async () => {
     const fetcher = setup([json({ data: [{ id: 42 }] }), json({ data: { id: 42, numeroLoja: "local" } })]);
@@ -45,6 +46,14 @@ describe("Read-only Bling processing recovery", () => {
   it("reports quarantine database failures as retryable without provider calls", async () => {
     rpc.mockResolvedValue({ data: null, error: { message: "db unavailable" } });
     await expect(recoverStaleBlingOrders()).rejects.toBeInstanceOf(RetryableSyncError); expect(token).not.toHaveBeenCalled();
+  });
+  it("stops a recovery batch when maintenance begins between admissions", async () => {
+    rpc.mockImplementationOnce(async () => {
+      vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "true");
+      return { data: [order], error: null };
+    });
+    await expect(recoverStaleBlingOrders()).rejects.toBeInstanceOf(FinancialMaintenanceError);
+    expect(rpc).toHaveBeenCalledOnce(); expect(token).not.toHaveBeenCalled();
   });
   it("returns manual review after quarantining and discovering an existing order", async () => {
     const fetcher = setup([json({ data: [{ id: 42 }] }), json({ data: { id: 42, numeroLoja: "local" } })]);

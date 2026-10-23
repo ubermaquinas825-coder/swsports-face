@@ -5,6 +5,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const orderId = z.object({ id: z.string().uuid() });
 export const inspectBlingOrderForReview = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => orderId.parse(value)).handler(async ({ data, context }) => {
+    const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+    assertFinancialOperationsEnabled();
     const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
     const loadHeldOrder = async () => {
@@ -27,6 +29,8 @@ export const resolveOrderHold = createServerFn({ method: "POST" }).middleware([r
   .inputValidator((value: unknown) => orderId.extend({ revision: z.string().uuid(), action: z.enum(["keep_blocked", "accept_verified_export"]),
     reason: z.string().trim().min(10).max(1000), evidence: z.string().trim().min(10).max(1000) }).parse(value))
   .handler(async ({ data, context }) => {
+    const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+    assertFinancialOperationsEnabled();
     // Use the authenticated client: the database derives the actor from auth.uid(),
     // rechecks admin membership and records the resolution in the same transaction.
     const result = await context.supabase.rpc("resolve_shipping_order_hold", { _order_id: data.id,

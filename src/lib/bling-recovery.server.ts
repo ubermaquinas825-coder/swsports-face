@@ -1,3 +1,4 @@
+import { assertFinancialOperationsEnabled, FinancialMaintenanceError } from "./financial-maintenance.server";
 import { z } from "zod";
 import { getBlingAccessToken } from "./bling.server";
 import { RetryableSyncError } from "./financial-errors";
@@ -15,6 +16,7 @@ async function readBling(path: string) {
 
 // Recovery never creates ERP contacts/orders or requeues an uncertain creation.
 export async function inspectHeldBlingOrder(order: Order) {
+  assertFinancialOperationsEnabled();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let outcome: "found" | "not_found" | "ambiguous" | "lookup_failed" = "lookup_failed";
   let blingId: number | null = null;
@@ -36,6 +38,7 @@ export async function inspectHeldBlingOrder(order: Order) {
 }
 
 export async function recoverStaleBlingOrders() {
+  assertFinancialOperationsEnabled();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const stale = await supabaseAdmin.rpc("quarantine_stale_bling_orders");
   if (stale.error) throw new RetryableSyncError("Não foi possível identificar processamentos Bling interrompidos.");
@@ -46,7 +49,10 @@ export async function recoverStaleBlingOrders() {
       const result = await inspectHeldBlingOrder(order);
       inspected++;
       errors.push(result.outcome === "found" ? "Pedido Bling localizado; requer resolução administrativa auditada." : "Recuperação Bling inconclusiva; não recriar o pedido.");
-    } catch { errors.push("Recuperação Bling exige conferência manual; não repetir criações externas."); }
+    } catch (error) {
+      if (error instanceof FinancialMaintenanceError) throw error;
+      errors.push("Recuperação Bling exige conferência manual; não repetir criações externas.");
+    }
   }
   return { inspected, errors };
 }

@@ -1,3 +1,4 @@
+import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { z } from "zod";
 import { LeaseLostError, RetryableSyncError } from "./financial-errors";
 import { authenticateAppmax } from "./checkout.server";
@@ -18,6 +19,7 @@ async function readAppmax(path: string, token: string) {
   }
 }
 export async function reconcileAppmaxOrder(orderId: string) {
+  assertFinancialOperationsEnabled();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const claim = await supabaseAdmin.rpc("claim_appmax_check_v2", { _order_id: orderId });
   if (claim.error) throw new RetryableSyncError("Não foi possível iniciar a conferência.");

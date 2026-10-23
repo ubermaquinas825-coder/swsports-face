@@ -5,6 +5,9 @@ import { RetryableSyncError } from "@/lib/financial-errors";
 export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: { handlers: { POST: async ({ request }) => {
   const denied = await authenticateCronRequest(request);
   if (denied) return denied;
+  const { financialMaintenanceResponse, FinancialMaintenanceError } = await import("@/lib/financial-maintenance.server");
+  const maintenance = financialMaintenanceResponse();
+  if (maintenance) return maintenance;
   const { syncPaidOrders } = await import("@/lib/bling-orders.server");
   try {
     const result = await syncPaidOrders();
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/api/public/cron/sync-orders")({ server: {
       headers: retryable ? { "Retry-After": "60" } : {},
     });
   } catch (error) {
+    if (error instanceof FinancialMaintenanceError) return error.toResponse();
     if (!(error instanceof RetryableSyncError)) throw error;
     return Response.json({ ok: false, failures: 1, retryableFailures: 1 }, { status: 503, headers: { "Retry-After": "60" } });
   }
