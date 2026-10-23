@@ -5,7 +5,7 @@ import { Reveal } from "@/components/Reveal";
 const FAQS = [
   {
     q: "Quanto custa cada balaclava?",
-    a: `Cada modelo custa ${formatBRL(UNIT_PRICE)}. Kits promocionais estão em aprovação e entram no ar em breve.`,
+    a: `Cada modelo custa ${formatBRL(UNIT_PRICE)}. Escolha a estampa, calcule o frete e finalize a compra pelo site.`,
   },
   {
     q: "De qual material é feita?",
@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: "Como faço o pedido?",
-    a: "Escolha as balaclavas, calcule o frete no carrinho e siga para o checkout Appmax para pagar.",
+    a: "Escolha as balaclavas, calcule o frete no carrinho e siga para o pagamento seguro pelo Mercado Pago.",
   },
   {
     q: "Quanto custa o frete?",

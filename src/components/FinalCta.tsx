@@ -15,12 +15,12 @@ export function FinalCta() {
             PRONTO PARA TROCAR DE <span className="text-brand">PERSONALIDADE</span>?
           </h2>
           <p className="mx-auto mt-4 max-w-md text-muted-foreground">
-            Escolha a sua balaclava e pague no checkout Appmax.
+            Escolha a sua balaclava, calcule o frete e finalize com pagamento seguro pelo Mercado Pago.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#colecao"
-              className="inline-flex items-center justify-center rounded-full bg-brand px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_32px_-6px_rgba(227,38,54,0.6)] transition-transform hover:scale-[1.02]"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-[0_0_32px_-6px_rgba(227,38,54,0.6)] transition-transform hover:scale-[1.02]"
             >
               ESCOLHER MINHA BALACLAVA
             </a>
@@ -30,7 +30,7 @@ export function FinalCta() {
               )}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-full border border-border px-8 py-3.5 text-sm font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-8 py-3.5 text-sm font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
             >
               FALAR COM A EQUIPE
             </a>
