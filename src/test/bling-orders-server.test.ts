@@ -8,7 +8,7 @@ vi.mock("@/lib/payment-reconciliation.server", () => ({ reconcileAppmaxOrder: re
 vi.mock("@/lib/bling.server", () => ({ getBlingAccessToken: token }));
 vi.mock("@/lib/checkout.server", () => ({ authenticateAppmax: vi.fn() }));
 vi.mock("@/lib/bling-recovery.server", () => ({ recoverStaleBlingOrders: recover }));
-vi.mock("@/lib/labels.server", () => ({ issuePendingLabels: vi.fn().mockResolvedValue({ issued: 0, errors: [] }) }));
+vi.mock("@/lib/labels.server", () => ({ issuePendingLabels: async () => ({ issued: 0, errors: [] }) }));
 import { exportOrderToBling, syncPaidOrders } from "@/lib/bling-orders.server";
 
 // Preserve the complete filter chain so tests verify both outcome and fencing.
