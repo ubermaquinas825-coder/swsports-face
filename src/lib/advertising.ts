@@ -40,14 +40,14 @@ export function applyAdvertisingPermission(allowed: boolean) {
   if (!initialized && !allowed) return;
   if (!initialized) {
     window.dataLayer = window.dataLayer ?? [];
-    window.gtag = function () { window.dataLayer?.push(arguments); };
+    window.gtag = (...args: unknown[]) => { window.dataLayer?.push(args); };
     window.gtag("consent", "default", { ad_storage: "denied", analytics_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
     window.gtag("set", "developer_id.dZjgwMW", true);
     window.gtag("set", "ads_data_redaction", true);
     window.gtag("js", new Date());
     window.gtag("config", GOOGLE_ADS_ID, { send_page_view: false, allow_ad_personalization_signals: false, page_location: `${location.origin}${location.pathname}`, page_referrer: "" });
     const pixel: Pixel = Object.assign(function (...args: unknown[]) {
-      if (pixel.callMethod) pixel.callMethod.apply(pixel, args);
+      if (pixel.callMethod) pixel.callMethod(...args);
       else pixel.queue.push(args);
     }, { queue: [] as unknown[][], loaded: true, version: "2.0" });
     pixel.push = pixel;
