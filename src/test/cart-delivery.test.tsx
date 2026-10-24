@@ -1,53 +1,40 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { productFor } from "@/lib/products";
-import { testDeliveryAddress } from "./fixtures/delivery-address";
 
-const { checkout } = vi.hoisted(() => ({ checkout: vi.fn() }));
-vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
-vi.mock("@/lib/checkout.functions", () => ({ createAppmaxCheckout: checkout }));
 vi.mock("@/hooks/use-cart", () => ({ useCart: () => ({
   lines: [{ product: productFor("gato-divertido"), qty: 1 }], count: 1, subtotal: 49.9,
   isOpen: true, closeCart: vi.fn(), setQty: vi.fn(), remove: vi.fn(),
 }) }));
 vi.mock("@/components/ShippingCalculator", () => ({ ShippingCalculator: ({ onSelect }: { onSelect: (selection: unknown) => void }) => (
-  <button onClick={() => onSelect({ cep: "38408562", cartKey: "gato-divertido:1", option: { id: "1", name: "PAC", company: "Correios", priceCents: 1234, deliveryDays: 3 } })}>Selecionar frete de teste</button>
+  <div>
+    <button onClick={() => onSelect({ cep: "38408562", cartKey: "gato-divertido:1", option: { id: "1", name: "PAC", company: "Correios", priceCents: 1234, deliveryDays: 3 } })}>Selecionar frete de teste</button>
+    <button onClick={() => onSelect({ cep: "38408562", cartKey: "outro-produto:1", option: { id: "1", name: "PAC", company: "Correios", priceCents: 1234, deliveryDays: 3 } })}>Selecionar frete antigo</button>
+  </div>
 ) }));
 import { CartDrawer } from "@/components/CartDrawer";
 
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 
-describe("Cart delivery checkout", () => {
-  it("collects the recipient after freight selection and sends the address to the payment handler", async () => {
-    checkout.mockRejectedValue(new Error("Pagamento de teste indisponível."));
-    const { container } = render(<CartDrawer />);
-    expect(screen.getByRole("button", { name: "CONTINUAR PARA APPMAX" })).toBeDisabled();
+describe("Cart delivery handoff", () => {
+  it("requires a current freight selection before sending the customer to Mercado Pago checkout", () => {
+    render(<CartDrawer />);
+    const finish = screen.getByRole("button", { name: "FINALIZAR COMPRA" });
+    expect(finish).toBeDisabled();
+    expect(screen.getByText(/Pagamento seguro pelo Mercado Pago/i)).toBeInTheDocument();
+
     fireEvent.click(screen.getByText("Selecionar frete de teste"));
-    for (const [name, value] of Object.entries(testDeliveryAddress)) {
-      if (name === "postalCode") continue;
-      const input = container.querySelector(`[name="${name}"]`);
-      if (!input) throw new Error(`Missing delivery field ${name}`);
-      fireEvent.change(input, { target: { value } });
-    }
-    expect(screen.getByLabelText("CEP cotado")).toHaveValue("38408562");
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "CONTINUAR PARA APPMAX" }));
-    await waitFor(() => expect(checkout).toHaveBeenCalledWith({ data: {
-      lines: [{ id: "gato-divertido", qty: 1 }], cep: "38408562", serviceId: "1", quotedPriceCents: 1234,
-      deliveryAddress: testDeliveryAddress,
-    } }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Pagamento de teste indisponível.");
+
+    expect(finish).toBeEnabled();
+    expect(screen.getByText("R$ 12,34")).toBeInTheDocument();
+    expect(screen.getByText("R$ 62,24")).toBeInTheDocument();
   });
-  it("does not request payment when the recipient document is invalid", async () => {
-    const { container } = render(<CartDrawer />);
-    fireEvent.click(screen.getByText("Selecionar frete de teste"));
-    for (const [name, value] of Object.entries({ ...testDeliveryAddress, document: "11111111111" })) {
-      if (name === "postalCode") continue;
-      fireEvent.change(container.querySelector(`[name="${name}"]`)!, { target: { value } });
-    }
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "CONTINUAR PARA APPMAX" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("CPF ou CNPJ válido");
-    expect(checkout).not.toHaveBeenCalled();
+
+  it("rejects a stale freight selection that belongs to a different cart", () => {
+    render(<CartDrawer />);
+    fireEvent.click(screen.getByText("Selecionar frete antigo"));
+
+    expect(screen.getByRole("button", { name: "FINALIZAR COMPRA" })).toBeDisabled();
+    expect(screen.getByText("Escolha o frete")).toBeInTheDocument();
   });
 });
