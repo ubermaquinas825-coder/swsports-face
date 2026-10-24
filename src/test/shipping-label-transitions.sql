@@ -34,8 +34,8 @@ BEGIN
   IF (SELECT stage FROM public.shipping_label_jobs WHERE order_id=oid)<>'complete' THEN RAISE EXCEPTION 'Completed job downgraded'; END IF;
   IF (SELECT shipping_status FROM public.shipping_orders WHERE id=oid)<>'ready_to_post' THEN RAISE EXCEPTION 'Not ready to post'; END IF;
 
-  -- Mercado Pago is eligible only with approved internal state, Bling sync and
-  -- a provider payment id. It does not depend on Appmax freshness fields.
+  -- Mercado Pago is eligible with approved internal state, Bling sync and an
+  -- immutable provider payment association. It does not depend on Appmax freshness fields.
   oid := gen_random_uuid();
   INSERT INTO public.shipping_orders(
     id,payment_link_id,payment_status,bling_sync_status,provider_payment_id,delivery_address,
@@ -48,9 +48,16 @@ BEGIN
   SELECT financial_revision INTO rev FROM public.shipping_orders WHERE id=oid;
   IF public.claim_shipping_label(oid,rev,'{}') IS NOT NULL THEN RAISE EXCEPTION 'Mercado Pago duplicate claimed'; END IF;
   IF NOT public.advance_shipping_label(oid,tok,'creating','created','mp-shipment-test') THEN RAISE EXCEPTION 'Mercado Pago shipment identity not saved'; END IF;
-  UPDATE public.shipping_orders SET provider_payment_id=NULL WHERE id=oid;
-  IF public.advance_shipping_label(oid,tok,'created','paying') THEN RAISE EXCEPTION 'Mercado Pago debit allowed after payment evidence disappeared'; END IF;
-  IF (SELECT stage FROM public.shipping_label_jobs WHERE order_id=oid)<>'review' THEN RAISE EXCEPTION 'Mercado Pago evidence loss not held for review'; END IF;
+  BEGIN
+    UPDATE public.shipping_orders SET provider_payment_id=NULL WHERE id=oid;
+    RAISE EXCEPTION 'Mercado Pago payment association was cleared';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%established payment association%' THEN RAISE; END IF;
+  END;
+  IF (SELECT provider_payment_id FROM public.shipping_orders WHERE id=oid) IS DISTINCT FROM 'mp-payment-test' THEN
+    RAISE EXCEPTION 'Mercado Pago payment association changed';
+  END IF;
+  IF NOT public.advance_shipping_label(oid,tok,'created','paying') THEN RAISE EXCEPTION 'Mercado Pago valid evidence could not advance'; END IF;
 
   -- A refund after creation preserves the external id and prevents a debit.
   oid := gen_random_uuid();
