@@ -9,7 +9,7 @@ container=$(docker run --detach --network none --tmpfs /var/lib/postgresql/data:
 trap 'docker rm --force --volumes "$container" >/dev/null' EXIT
 ready=false
 for attempt in {1..30}; do
-  if docker logs "$container" 2>&1 | rg 'PostgreSQL init process complete' >/dev/null && docker exec "$container" pg_isready --username postgres --dbname postgres >/dev/null 2>&1; then
+  if docker logs "$container" 2>&1 | grep -q 'PostgreSQL init process complete' && docker exec "$container" pg_isready --username postgres --dbname postgres >/dev/null 2>&1; then
     ready=true
     break
   fi
