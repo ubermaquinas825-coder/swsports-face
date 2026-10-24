@@ -9,13 +9,14 @@ vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth:
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: database, rpc: database } }));
 vi.mock("@/integrations/supabase/cron-auth", () => ({ authenticateCronRequest: authenticate }));
 
-import { createAppmaxCheckout } from "@/lib/checkout.functions";
-import { saveShippingConfig, verifyShippingIntegrations, requestShippingQuote } from "@/lib/shipping.functions";
+import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
+import { saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { startBlingOAuth, renewBlingOAuth, testBlingProducts } from "@/lib/bling.functions";
 import { getBlingInventory, loadBlingWarehouses, saveBlingInventory, discoverBlingCatalog, testBlingInventory } from "@/lib/bling-inventory.functions";
 import { checkAppmaxPayments } from "@/lib/payment-reconciliation.functions";
 import { inspectBlingOrderForReview, resolveOrderHold } from "@/lib/order-review.functions";
 import { appmaxPaymentLink } from "@/lib/checkout.server";
+import { mercadoPagoPaymentLink } from "@/lib/mercadopago.server";
 import { exportOrderToBling, syncPaidOrders } from "@/lib/bling-orders.server";
 import { reconcileAppmaxOrder } from "@/lib/payment-reconciliation.server";
 import { inspectHeldBlingOrder, recoverStaleBlingOrders } from "@/lib/bling-recovery.server";
@@ -39,7 +40,7 @@ beforeEach(() => {
 afterEach(() => { vi.resetAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("Maintenance fences before database/provider side effects", () => {
-  const functions = { createAppmaxCheckout, saveShippingConfig, verifyShippingIntegrations, requestShippingQuote,
+  const functions = { createMercadoPagoCheckout, saveShippingConfig, verifyShippingIntegrations,
     startBlingOAuth, renewBlingOAuth, testBlingProducts, loadBlingWarehouses, saveBlingInventory,
     discoverBlingCatalog, testBlingInventory, checkAppmaxPayments, inspectBlingOrderForReview, resolveOrderHold };
   it.each(Object.entries(functions))("blocks server function %s", async (_name, fn) => {
@@ -48,7 +49,8 @@ describe("Maintenance fences before database/provider side effects", () => {
   });
 
   it.each([
-    ["checkout persistence", () => appmaxPaymentLink([], "", {} as Parameters<typeof appmaxPaymentLink>[2], {} as Parameters<typeof appmaxPaymentLink>[3])],
+    ["Mercado Pago checkout persistence", () => mercadoPagoPaymentLink([], "", {} as Parameters<typeof mercadoPagoPaymentLink>[2], {} as Parameters<typeof mercadoPagoPaymentLink>[3])],
+    ["legacy Appmax checkout persistence", () => appmaxPaymentLink([], "", {} as Parameters<typeof appmaxPaymentLink>[2], {} as Parameters<typeof appmaxPaymentLink>[3])],
     ["batch synchronization", () => syncPaidOrders()],
     ["single export", () => exportOrderToBling("order")],
     ["payment reconciliation", () => reconcileAppmaxOrder("order")],

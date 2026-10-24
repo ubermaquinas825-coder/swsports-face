@@ -27,5 +27,8 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Financial database tests
+        run: npm run test:financial-db
+
       - name: Build
         run: npm run build
