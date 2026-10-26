@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AtacadoRouteImport } from './routes/atacado'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
@@ -20,6 +22,7 @@ import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_aut
 import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
 import { Route as ApiPublicBlingStartRouteImport } from './routes/api/public/bling/start'
 import { Route as ApiPublicCronSyncOrdersRouteImport } from './routes/api/public/cron/sync-orders'
+import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,6 +41,16 @@ const AtacadoRoute = AtacadoRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagamentoRoute = PagamentoRouteImport.update({
+  id: '/pagamento',
+  path: '/pagamento',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -77,11 +90,19 @@ const ApiPublicCronSyncOrdersRoute = ApiPublicCronSyncOrdersRouteImport.update({
   path: '/api/public/cron/sync-orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMercadopagoWebhookRoute =
+  ApiPublicMercadopagoWebhookRouteImport.update({
+    id: '/api/public/mercadopago/webhook',
+    path: '/api/public/mercadopago/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
@@ -89,11 +110,14 @@ export interface FileRoutesByFullPath {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
@@ -101,6 +125,7 @@ export interface FileRoutesByTo {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +133,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/checkout': typeof CheckoutRoute
+  '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
@@ -115,6 +142,7 @@ export interface FileRoutesById {
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
   '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
+  '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,6 +150,8 @@ export interface FileRouteTypes {
     | '/'
     | '/atacado'
     | '/auth'
+    | '/checkout'
+    | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/frete-envios'
@@ -129,11 +159,14 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/mercadopago/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/atacado'
     | '/auth'
+    | '/checkout'
+    | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/frete-envios'
@@ -141,12 +174,15 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/mercadopago/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/atacado'
     | '/auth'
+    | '/checkout'
+    | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/_authenticated/frete-envios'
@@ -154,6 +190,7 @@ export interface FileRouteTypes {
     | '/api/public/bling/callback'
     | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
+    | '/api/public/mercadopago/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -161,11 +198,14 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AtacadoRoute: typeof AtacadoRoute
   AuthRoute: typeof AuthRoute
+  CheckoutRoute: typeof CheckoutRoute
+  PagamentoRoute: typeof PagamentoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
   ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
   ApiPublicCronSyncOrdersRoute: typeof ApiPublicCronSyncOrdersRoute
+  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +236,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pagamento': {
+      id: '/pagamento'
+      path: '/pagamento'
+      fullPath: '/pagamento'
+      preLoaderRoute: typeof PagamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -247,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mercadopago/webhook': {
+      id: '/api/public/mercadopago/webhook'
+      path: '/api/public/mercadopago/webhook'
+      fullPath: '/api/public/mercadopago/webhook'
+      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -268,11 +329,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AtacadoRoute: AtacadoRoute,
   AuthRoute: AuthRoute,
+  CheckoutRoute: CheckoutRoute,
+  PagamentoRoute: PagamentoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
   ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
   ApiPublicCronSyncOrdersRoute: ApiPublicCronSyncOrdersRoute,
+  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
