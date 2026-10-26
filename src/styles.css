@@ -133,6 +133,16 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-foreground);
+    outline-offset: 3px;
+    border-radius: max(2px, var(--radius-sm));
+  }
+
+  :where(input, select, textarea):focus-visible {
+    outline-color: var(--color-brand);
+  }
+
   ::selection {
     background-color: var(--color-brand);
     color: white;
