@@ -90,13 +90,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Balaclavas SW Sports com estampas realistas e divertidas por R$ 49,90. Frete calculado pela SuperFrete e pagamento seguro pelo Mercado Pago.",
+          "Balaclavas SW Sports com estampas realistas e divertidas por R$ 49,90. Frete calculado pelo Melhor Envio e pagamento seguro pelo Mercado Pago.",
       },
       { property: "og:title", content: "SW Sports — Balaclavas Divertidas" },
       {
         property: "og:description",
         content:
-          "Balaclavas com estampas realistas por R$ 49,90, frete pela SuperFrete e pagamento seguro pelo Mercado Pago.",
+          "Balaclavas com estampas realistas por R$ 49,90, frete pelo Melhor Envio e pagamento seguro pelo Mercado Pago.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
