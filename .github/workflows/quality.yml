@@ -40,6 +40,13 @@ jobs:
           VITE_PUBLIC_SITE_URL: https://example.com
           VITE_STANDALONE_AUTH: "true"
           CRON_SECRET: ci-only-placeholder-secret-32-chars-minimum
+          MERCADOPAGO_ACCESS_TOKEN: ci-mercadopago-access-token
+          MERCADOPAGO_WEBHOOK_SECRET: ci-mercadopago-webhook-secret
+          MELHOR_ENVIO_CLIENT_ID: "9000000"
+          MELHOR_ENVIO_CLIENT_SECRET: ci-melhor-envio-client-secret
+          MELHOR_ENVIO_REDIRECT_URI: https://example.com/api/melhor-envio/callback
+          MELHOR_ENVIO_ENVIRONMENT: production
+          MELHOR_ENVIO_OAUTH_STATE: ci-only-melhor-envio-oauth-state
         run: node scripts/check-vercel-env.mjs
 
       - name: Build

@@ -1,47 +1,34 @@
-# Roadmap — SW Sports
+# ERP SW Sports — status
 
-## Correções atuais
-- [ ] SuperFrete: conexão HTTP 200, saldo R$9,60; emissão bloqueada por estrutura shipping_label_jobs ausente e remetente não configurado. Histórico contém alteração antiga de etiquetas com hash diferente de 0008 atual: exige decisão sobre regularização, homologação e ativação; não criar/pagar etiquetas como teste.
-- [x] Preparar Meta Pixel 725374147272634 e Google Ads AW-875949502 com aviso regional e política; nove testes passaram, aceitação/recusa verificadas no navegador sem compras.
-- [ ] Rastreamento: publicar somente após autorização; Google transmitiu requisições no teste, Meta carregou mas PageView/recebimento ainda não verificados. GA4 e conversões de compra não incluídos nos IDs enviados.
-- [x] Solicitação atual: identificação real dos seis modelos por nome e conferência oficial Appmax implementadas; consulta de saldo antes de salvar configuração, trava por pedido e barreiras financeiras testadas (42 testes de integração). Painel verificado com proprietário; sem pedido com link disponível para leitura real de pagamento.
-- [ ] Solicitação atual: ativar depósito Geral e estoque real — nova consulta ainda HTTP 403; exige reautorizar no Bling após liberar permissões.
-- [ ] Solicitação atual: pedidos automáticos/fluxo pago completo — exige endereço final confiável, configuração de contato/situação/forma de pagamento Bling e confirmação da regra de baixa; nenhum pedido/link salvo disponível para teste de pagamento, não gerar cobrança sem etapa acompanhada.
-- [x] Verificar integrações sem cobranças: SuperFrete cotou 1/2/3/4/10 unidades (11 bloqueada), Appmax autenticou HTTP 200; painel com diagnóstico real, embalagens salvas/relidas e falhas de link sinalizadas para reconciliação; 29 testes passaram
-- [x] Liberar conta administrativa do proprietário identificado via --self; painel verificado com sessão real
-- [x] Preparar vínculos verificados de SKU/depósito, consulta de estoque virtual e conferência opcional antes do checkout; registrar pedidos pendentes e ID do link Appmax (26 testes passaram)
-- [ ] Ativar pedidos automáticos/estoque real Bling — OAuth e produtos verificados; consulta de depósitos negada HTTP 403, vínculos/depósito não salvos; faltam confirmação/cliente/endereço Appmax, reconciliação segura e teste real
-- [x] Bling etapa 1: infraestrutura OAuth, armazenamento criptografado, renovação e página administrativa; testes locais passaram
-- [x] Bling callback HTTPS público — verificado HTTP 400 sem parâmetros no domínio publicado
-- [x] Bling credenciais seguras e consulta administrativa somente leitura de produtos preparadas
-- [x] Solicitar publicação da consulta administrativa de produtos Bling
-- [x] Bling autorização real e consulta de produtos — callback concluiu HTTP 303 às 22:51 UTC; painel autenticado verificou acesso e retornou os seis SKUs existentes sem alterações
-- [ ] Bling depósitos/estoque — depósito Geral confirmado pelo proprietário, mas GET /depositos continua HTTP 403 em novo teste às 22:59 UTC; reautorizar no aplicativo, depois confirmar vínculos e depósito
-- [x] Refinar apresentação, transições 3D e navegação; adicionar WhatsApp flutuante inferior esquerdo e verificar em telas largas e pequenas
-- [x] Conectar credenciais SuperFrete e Appmax por formulário seguro e validar autenticação sem criar pedidos
-- [x] Preparar área Frete e Envios, armazenamento protegido e CEP sem cotações fictícias
-- [x] Identificar documentação oficial SuperFrete/Appmax e testar regras de embalagem e barreiras de emissão
-- [x] Verificar painel salvando e relendo dados — corrigido mínimo fracionário do campo capacidade; valores inteiros 1/3/10 salvos e relidos pela conta do proprietário
-- [x] Mostrar cotações SuperFrete no carrinho, selecionar frete e substituir finalização WhatsApp por checkout Appmax com total validado no servidor — cotação real e total R$68,35 relido na página hospedada, sem pagamento
-- [x] Habilitar frete para múltiplas unidades — cotações reais verificadas até 10; tara/espessura dos envelopes continuam estimativas já informadas, aguardando medidas do proprietário
-- [ ] Testar pagamentos reais, falha de emissão, eventos duplicados e reprocessamento — aguarda adaptadores autorizados
-- [x] Incluir no rodapé endereço, contato, horários e link do perfil Google enviado
-- [x] Corrigir compra imediata, navegação e carrinho no atacado; verificar no navegador
-- [x] Aplicar a logo enviada no cabeçalho, rodapé e ícone do site
+## Concluído
+- [x] Fase 1 — auditoria da loja e do painel administrativo
+- [x] Fase 2 — dashboard operacional de vendas e pedidos
+- [x] Fase 3 — banco ERP de produtos e movimentações de estoque
+- [x] Fase 4 — segurança, RLS e permissões administrativas
+- [x] Fase 5 — produtos e controle de estoque
+- [x] Fase 6 — pedidos integrados ao estoque com proteção do histórico
+- [x] Fase 7 — clientes e CRM interno
+- [x] Fase 8 — financeiro baseado em vendas confirmadas, sem cálculo de custo, margem ou lucro
+- [x] Fase 9 — logística Melhor Envio, fulfillment, rastreamento e relatórios gerenciais
+- [x] Fase 10 — automação diária, testes, validação de ambiente e prontidão de produção
 
-## Feito
-- [x] Identidade Dark Motion 3D (tokens, fontes, layout escuro/vermelho)
-- [x] Catálogo com as 6 fotos originais do usuário (recorte transparente)
-- [x] Hero cinematográfico com apresentação 2.5D (tilt + flutuação)
-- [x] Seção "Escolha sua personalidade"
-- [x] Kits (desativados até aprovação comercial)
-- [x] Carrinho lateral com localStorage + checkout Appmax e frete SuperFrete
-- [x] Página /atacado com formulário via WhatsApp
+## Arquitetura operacional final
+- Checkout: Mercado Pago.
+- Frete e logística: Melhor Envio em produção via OAuth.
+- Cotação: Melhor Envio antes do pagamento.
+- Etiqueta: preparação pelo ERP, com revisão e pagamento manual na conta Melhor Envio.
+- Rastreamento: sincronização manual por pedido e sincronização diária automatizada.
+- Estoque: baixa idempotente somente para pedidos pagos elegíveis; histórico antigo preservado.
+- Financeiro: faturamento pago, pedidos pagos, ticket médio, unidades, evolução mensal e desempenho por produto.
+- Relatórios: vendas, clientes identificados, pipeline logístico, estoque baixo e saúde das integrações.
+- Segurança: credenciais somente no servidor; nenhuma chave é exibida no painel ou versionada no repositório.
 
-## Pendente (aguarda o usuário / etapa futura)
-- [ ] Kits promocionais: ativar após aprovação comercial (2un R$ 89,90 / 3un R$ 119,90)
-- [ ] Painel de produtos, preços e WhatsApp — fora da preparação logística atual
-- [ ] Analytics: Google Analytics 4, Meta Pixel, eventos ViewContent/AddToCart/InitiateCheckout/Contact
-- [ ] SEO: sitemap.xml e OG image dedicada
+## Regras de segurança mantidas
+- O ERP não compra etiquetas automaticamente nem debita a Melhor Carteira.
+- Pedidos antigos não recebem baixa retroativa automática de estoque.
+- Nenhum teste de produção cria cobrança real apenas para validar a infraestrutura.
+- Dados de clientes permanecem restritos à área administrativa.
+- Custos, margem e lucro não são calculados pelo ERP.
 
-- [x] Embalagens para várias unidades configuradas (100 g/un., envelopes 26×36 e 32×40)
+## Histórico legado
+Código e registros antigos podem permanecer no histórico do repositório e do banco para auditoria, mas novos fluxos de frete utilizam Melhor Envio. Integrações legadas não fazem parte do caminho operacional principal.

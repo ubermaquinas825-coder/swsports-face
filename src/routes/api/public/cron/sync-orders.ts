@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 import { RetryableSyncError } from "@/lib/financial-errors";
+
 async function synchronize({ request }: { request: Request }) {
   const denied = await authenticateCronRequest(request);
   if (denied) return denied;
@@ -8,15 +9,23 @@ async function synchronize({ request }: { request: Request }) {
     await import("@/lib/financial-maintenance.server");
   const maintenance = financialMaintenanceResponse();
   if (maintenance) return maintenance;
+
   try {
-    const { syncPayments } = await import("@/lib/payment-sync.server");
-    const result = await syncPayments();
-    const failures = result.errors.length;
+    const [{ syncPayments }, { syncMelhorEnvioTracking }] = await Promise.all([
+      import("@/lib/payment-sync.server"),
+      import("@/lib/shipping-tracking.server"),
+    ]);
+    const payments = await syncPayments();
+    const tracking = await syncMelhorEnvioTracking();
+    const failures = payments.errors.length + tracking.errors.length;
     return Response.json(
       {
-        paymentsChecked: result.checked,
-        paymentsApproved: result.approved,
-        paymentsFailed: result.failed,
+        paymentsChecked: payments.checked,
+        paymentsApproved: payments.approved,
+        paymentsFailed: payments.failed,
+        trackingChecked: tracking.checked,
+        trackingUpdated: tracking.updated,
+        trackingFailures: tracking.errors.length,
         failures,
         ok: failures === 0,
       },
@@ -31,6 +40,7 @@ async function synchronize({ request }: { request: Request }) {
     );
   }
 }
+
 export const Route = createFileRoute("/api/public/cron/sync-orders")({
   server: { handlers: { GET: synchronize, POST: synchronize } },
 });

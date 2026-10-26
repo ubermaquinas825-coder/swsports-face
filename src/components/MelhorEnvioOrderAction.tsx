@@ -23,18 +23,14 @@ export function MelhorEnvioOrderAction({ order }: Props) {
   const inspect = useServerFn(inspectMelhorEnvioShipping);
   const qc = useQueryClient();
   const [inspecting, setInspecting] = useState(false);
-  const [diagnostic, setDiagnostic] = useState<Awaited<
-    ReturnType<typeof inspectMelhorEnvioShipping>
-  > | null>(null);
+  const [diagnostic, setDiagnostic] = useState<Awaited<ReturnType<typeof inspectMelhorEnvioShipping>> | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ shipmentId: string; dashboardUrl: string } | null>(null);
   const linked = prepared?.shipmentId || order.provider_shipment_id;
   const hold =
     order.shipping_hold ||
-    (order.payment_status !== "approved"
-      ? "O pagamento deste pedido ainda não está aprovado."
-      : null) ||
+    (order.payment_status !== "approved" ? "O pagamento deste pedido ainda não está aprovado." : null) ||
     (["logistics_failed", "posted", "delivered"].includes(order.shipping_status)
       ? "Este envio já foi processado ou exige conferência no Melhor Envio."
       : null);
@@ -61,7 +57,10 @@ export function MelhorEnvioOrderAction({ order }: Props) {
               setMessage("");
               setDiagnostic(null);
               try {
-                setDiagnostic(await inspect({ data: { orderId: order.id } }));
+                const result = await inspect({ data: { orderId: order.id } });
+                setDiagnostic(result);
+                setMessage(result.updated ? "Rastreamento atualizado no ERP." : "Rastreamento conferido; nenhuma alteração necessária.");
+                await qc.invalidateQueries({ queryKey: ["sales-admin"] });
               } catch (error) {
                 setMessage(error instanceof Error ? error.message : "Não foi possível consultar o envio.");
               } finally {
@@ -69,14 +68,15 @@ export function MelhorEnvioOrderAction({ order }: Props) {
               }
             }}
           >
-            {inspecting ? "Consultando…" : "Verificar envio existente"}
+            {inspecting ? "Consultando…" : "Sincronizar rastreamento"}
           </Button>
           {diagnostic && (
             <div role="status" className="my-3 rounded-lg border bg-background p-3 text-sm leading-6 [overflow-wrap:anywhere]">
               <p>Estado no Melhor Envio: <strong>{diagnostic.status}</strong></p>
+              <p>Estado no ERP: <strong>{diagnostic.shippingStatus}</strong></p>
               {diagnostic.priceCents !== null && <p>Valor retornado: {money(diagnostic.priceCents)}</p>}
               {diagnostic.tracking && <p>Rastreio: {diagnostic.tracking}</p>}
-              <p className="mt-2 text-muted-foreground">Consulta somente leitura. Nenhum pagamento foi realizado.</p>
+              <p className="mt-2 text-muted-foreground">Consulta e sincronização de status. Nenhum pagamento foi realizado.</p>
             </div>
           )}
           {!blocked && (
@@ -116,7 +116,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
         <p className="mt-2">
-          O preparo usa remetente, destinatário, produtos, serviço e volume salvos no pedido. O site não compra a etiqueta nem debita sua Melhor Carteira; a conferência e o pagamento são feitos por você no Melhor Envio.
+          O preparo usa remetente, destinatário, produtos, serviço e volume salvos no pedido. O site não compra a etiqueta nem debita sua Melhor Carteira; a conferência e o pagamento são feitos por você no Melhor Envio. Depois, o ERP sincroniza rastreamento e situação de entrega.
         </p>
       </details>
     </section>
