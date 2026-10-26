@@ -35,4 +35,16 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // ERP tables/functions were added after the generated Supabase Database type snapshot.
+    // Keep the exception narrowly scoped until those generated types are refreshed.
+    files: [
+      "src/lib/inventory.functions.ts",
+      "src/lib/mercadopago.server.ts",
+      "src/routes/admin/estoque.tsx",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 );
