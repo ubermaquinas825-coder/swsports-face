@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { prepareSuperfreteShipping } from "@/lib/superfrete-cart.functions";
+import { money } from "@/lib/sales";
+import {
+  prepareSuperfreteShipping,
+  inspectSuperfreteShipping,
+} from "@/lib/superfrete-cart.functions";
 
 type Props = {
   order: {
@@ -16,6 +20,11 @@ type Props = {
 export function SuperfreteOrderAction({ order }: Props) {
   const prepare = useServerFn(prepareSuperfreteShipping);
   const qc = useQueryClient();
+  const inspect = useServerFn(inspectSuperfreteShipping);
+  const [inspecting, setInspecting] = useState(false);
+  const [diagnostic, setDiagnostic] = useState<Awaited<
+    ReturnType<typeof inspectSuperfreteShipping>
+  > | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ shipmentId: string; dashboardUrl: string } | null>(
@@ -44,6 +53,53 @@ export function SuperfreteOrderAction({ order }: Props) {
           <p className="mb-3 break-all text-sm">
             Identificador do envio: <strong>{linked}</strong>
           </p>
+          <Button
+            className="mb-3 mr-2"
+            variant="outline"
+            disabled={inspecting}
+            onClick={async () => {
+              setInspecting(true);
+              setMessage("");
+              setDiagnostic(null);
+              try {
+                setDiagnostic(await inspect({ data: { orderId: order.id } }));
+              } catch (error) {
+                setMessage(
+                  error instanceof Error ? error.message : "Não foi possível consultar o envio.",
+                );
+              } finally {
+                setInspecting(false);
+              }
+            }}
+          >
+            {inspecting ? "Consultando…" : "Verificar envio existente"}
+          </Button>
+          {diagnostic && (
+            <div role="status" className="my-3 rounded-md border p-3 text-sm">
+              <p>
+                Estado na API SuperFrete: <strong>{diagnostic.status}</strong>
+              </p>
+              {diagnostic.priceCents !== null && (
+                <p>Valor retornado: {money(diagnostic.priceCents)}</p>
+              )}
+              {diagnostic.problems.length ? (
+                <ul className="mt-2 list-disc pl-5">
+                  {diagnostic.problems.map((problem, i) => (
+                    <li key={i}>{problem}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>
+                  Dados conferidos com a API. Isso não confirma que a tela de pagamento da
+                  SuperFrete esteja funcionando. Se continuar em loop, informe o identificador ao
+                  suporte SuperFrete.
+                </p>
+              )}
+              <p className="mt-2 text-muted-foreground">
+                Consulta somente leitura. Nenhum envio ou pagamento foi criado ou alterado.
+              </p>
+            </div>
+          )}
           {!blocked && (
             <Button asChild variant="outline">
               <a href="https://web.superfrete.com/" target="_blank" rel="noreferrer">

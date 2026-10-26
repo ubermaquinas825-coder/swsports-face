@@ -114,18 +114,22 @@ export async function prepareSuperfreteCart(orderId: string) {
     throw new Error(
       "O pedido mudou ou já existe uma tentativa de envio. Atualize o painel e confira a SuperFrete.",
     );
+  let phase = "criação na SuperFrete";
   try {
     const raw = await call("cart", payload);
     const created = z.object({ id: z.string().min(1).max(200) }).parse(raw);
+    phase = "vinculação do envio ao pedido";
     const saved = await supabaseAdmin.rpc("complete_manual_shipping_cart", {
       _order_id: orderId,
       _token: claim.data,
       _shipment_id: created.id,
     });
     if (saved.error || !saved.data) throw new Error("Não foi possível vincular o envio.");
+    phase = "validação da resposta de criação";
     const result = z.object({ status: z.literal("pending"), price: z.coerce.number() }).parse(raw);
     if (Math.round(result.price * 100) !== order.freight_cents)
       throw new Error("Frete divergente.");
+    phase = "consulta e conferência dos dados na SuperFrete";
     const info = verifyLabelInfo(
       await call(`order/info/${encodeURIComponent(created.id)}`),
       created.id,
@@ -133,6 +137,7 @@ export async function prepareSuperfreteCart(orderId: string) {
       order.freight_cents!,
     );
     if (info.status !== "pending") throw new Error("Envio não está aguardando pagamento.");
+    phase = "conferência final do pedido";
     const current = await loadOrder(orderId);
     if (manualShippingHold(current) || current.shipping_status !== "awaiting_label_payment")
       throw new Error("Pedido alterado durante a preparação.");
@@ -149,7 +154,7 @@ export async function prepareSuperfreteCart(orderId: string) {
       .update({ shipping_status: "logistics_failed" })
       .eq("id", orderId);
     throw new Error(
-      "Preparação interrompida. Confira a SuperFrete pelo número do pedido antes de tentar novamente. Nenhum pagamento foi solicitado pelo site.",
+      `Preparação interrompida na etapa de ${phase}. Use "Verificar envio existente" para consultar o diagnóstico. Confira a SuperFrete antes de tentar novamente. Nenhum pagamento foi solicitado pelo site.`,
     );
   }
 }

@@ -14,6 +14,13 @@ export type Database = {
   }
   public: {
     Tables: {
+      shipping_label_jobs: {
+        Row: { order_id: string; token: string; revision: string; stage: string; payload: Json; shipment_id: string | null; created_at: string; updated_at: string }
+        Insert: { order_id: string; token?: string; revision: string; stage: string; payload: Json; shipment_id?: string | null; created_at?: string; updated_at?: string }
+        Update: { order_id?: string; token?: string; revision?: string; stage?: string; payload?: Json; shipment_id?: string | null; created_at?: string; updated_at?: string }
+        Relationships: [{ foreignKeyName: "shipping_label_jobs_order_id_fkey"; columns: ["order_id"]; isOneToOne: true; referencedRelation: "shipping_orders"; referencedColumns: ["id"] }]
+      }
+
       bling_connections: {
         Row: {
           authorized_at: string

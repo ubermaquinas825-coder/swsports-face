@@ -13,3 +13,16 @@ export const prepareSuperfreteShipping = createServerFn({ method: "POST" })
     const { prepareSuperfreteCart } = await import("./superfrete-cart.server");
     return prepareSuperfreteCart(data.orderId);
   });
+
+export const inspectSuperfreteShipping = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ context, data }) => {
+    const role = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
+    const { diagnoseSuperfreteShipment } = await import("./superfrete-diagnostic.server");
+    return diagnoseSuperfreteShipment(data.orderId);
+  });
