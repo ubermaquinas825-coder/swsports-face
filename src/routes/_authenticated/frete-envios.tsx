@@ -9,28 +9,52 @@ import { LabelAutomationSettings } from "@/components/LabelAutomationSettings";
 import { getShippingAdmin, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { shippingConfigSchema, shippingStates } from "@/lib/shipping";
 import logo from "@/assets/sw-sports-logo.png.asset.json";
+
 const adminQuery = queryOptions({ queryKey: ["shipping-admin"], queryFn: () => getShippingAdmin() });
+
 export const Route = createFileRoute("/_authenticated/frete-envios")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminQuery),
   head: () => ({ meta: [{ title: "Frete e Envios | SW Sports" }, { name: "description", content: "Administração logística e configurações de envio SW Sports." }, { property: "og:title", content: "Frete e Envios SW Sports" }, { property: "og:description", content: "Configuração logística da loja." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Logistics,
   errorComponent: ({ reset }) => <main className="p-8"><p>Não foi possível carregar o painel.</p><Button onClick={reset}>Tentar novamente</Button></main>,
 });
+
 function Logistics() {
   const { data } = useSuspenseQuery(adminQuery);
-  const [config, setConfig] = useState(data.config); const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
-  const save = useServerFn(saveShippingConfig); const qc = useQueryClient(); const navigate = useNavigate();
+  const [config, setConfig] = useState(data.config);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const save = useServerFn(saveShippingConfig);
+  const qc = useQueryClient();
+  const navigate = useNavigate();
   const [tab, setTab] = useState("settings");
   const verify = useServerFn(verifyShippingIntegrations);
   const [checking, setChecking] = useState(false);
   const [checks, setChecks] = useState<Awaited<ReturnType<typeof verifyShippingIntegrations>> | null>(null);
   const field = "mt-2 w-full rounded-md border border-input bg-card px-3 py-2 text-sm";
+
   return <div className="min-h-screen bg-background">
     <header className="border-b border-border"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4"><Link to="/"><img src={logo.url} alt="SW Sports" className="h-16 w-28 object-contain" /></Link><div className="flex items-center gap-3"><Link to="/" className="text-sm text-muted-foreground">Voltar à loja</Link><Button variant="outline" onClick={async () => { await qc.cancelQueries(); qc.clear(); await supabase.auth.signOut(); navigate({ to: "/auth", replace: true }); }}><LogOut /> Sair</Button></div></div></header>
     <main className="mx-auto max-w-6xl px-5 py-10">
       <h1 className="flex items-center gap-3 font-display text-3xl font-bold"><Truck className="text-brand" /> FRETE E ENVIOS</h1>
       <Button asChild variant="outline" className="mt-5"><Link to="/admin">Vendas e pedidos</Link></Button>
       {!data.allowed ? <p className="mt-8 text-muted-foreground">Seu acesso está aguardando autorização administrativa do proprietário.</p> : <>
+        <section className={`mt-8 rounded-xl border p-5 ${data.melhorEnvio.connected ? "border-emerald-500/40 bg-emerald-500/5" : "border-amber-500/40 bg-amber-500/5"}`}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-semibold">Melhor Envio</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {data.melhorEnvio.connected
+                  ? `Conectado em ${data.melhorEnvio.environment}. A autorização está armazenada no servidor.`
+                  : "Conta ainda não confirmada. Autorize novamente para concluir a conexão."}
+              </p>
+              {data.melhorEnvio.connected && "updated_at" in data.melhorEnvio && data.melhorEnvio.updated_at && <p className="mt-1 text-xs text-muted-foreground">Última atualização da autorização: {new Date(data.melhorEnvio.updated_at).toLocaleString("pt-BR")}</p>}
+            </div>
+            <Button asChild variant={data.melhorEnvio.connected ? "outline" : "default"}>
+              <a href="/api/melhor-envio/authorize">{data.melhorEnvio.connected ? "Reautorizar" : "Conectar Melhor Envio"}</a>
+            </Button>
+          </div>
+        </section>
         <div className="my-8 flex flex-wrap gap-2">{[{ id: "settings", label: "Configurações" }, { id: "orders", label: "Pedidos e etiquetas" }, { id: "history", label: "Histórico" }].map((t) => <Button key={t.id} variant={tab === t.id ? "default" : "outline"} onClick={() => setTab(t.id)}>{t.label}</Button>)}</div>
         {tab === "settings" && <form onSubmit={async (e) => { e.preventDefault(); const parsed = shippingConfigSchema.safeParse(config); if (!parsed.success) { setMessage(parsed.error.issues[0]?.message ?? "Confira os campos de endereço e embalagem."); return; } setBusy(true); try { await save({ data: parsed.data }); setMessage("Configurações salvas."); await qc.invalidateQueries({ queryKey: ["shipping-admin"] }); } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível salvar."); } finally { setBusy(false); } }}>
           <section className="border-b border-border pb-8"><h2 className="mb-5 font-display text-xl font-bold">REMETENTE</h2><div className="grid gap-5 sm:grid-cols-[1fr_3fr]"><label className="text-sm">CEP de origem<input className={field} required value={config.originCep} onChange={(e) => setConfig({ ...config, originCep: e.target.value })} /></label><label className="text-sm">Endereço completo<input className={field} required value={config.senderAddress} onChange={(e) => setConfig({ ...config, senderAddress: e.target.value })} /></label></div></section>
@@ -38,12 +62,12 @@ function Logistics() {
             <label className="mb-6 block max-w-xs text-sm">Peso real de uma balaclava (kg)<input className={field} type="number" step="0.001" min="0.001" placeholder="Não informado" value={config.productWeightKg ?? ""} onChange={(e) => setConfig({ ...config, productWeightKg: e.target.value ? Number(e.target.value) : null })} /></label>
             <div className="space-y-6">{config.packages.map((p, i) => <div key={i} className="rounded-md border border-border bg-card p-5"><div className="mb-4 flex items-end gap-3"><label className="flex-1 text-sm">Nome<input className={field} value={p.name} onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, name: e.target.value } : v) })} /></label><Button type="button" variant="ghost" size="icon" disabled={config.packages.length === 1} aria-label="Remover embalagem" onClick={() => setConfig({ ...config, packages: config.packages.filter((_, n) => i !== n) })}><Trash2 /></Button></div><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{([{ key: "capacity", label: "Capacidade (un.)" }, { key: "weightKg", label: "Peso do pacote (kg)" }, { key: "lengthCm", label: "Comprimento (cm)" }, { key: "widthCm", label: "Largura (cm)" }, { key: "heightCm", label: "Altura (cm)" }, { key: "packagingWeightKg", label: "Peso da embalagem (kg)" }] as const).map(({ key, label }) => <label key={key} className="text-sm">{label}<input className={field} type="number" min={key === "capacity" ? 1 : key === "packagingWeightKg" ? 0 : 0.001} step={key === "capacity" ? 1 : 0.001} required={key !== "packagingWeightKg"} value={p[key] ?? ""} placeholder="Não informado" onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, [key]: e.target.value ? Number(e.target.value) : null } : v) })} /></label>)}</div></div>)}</div>
           </section>
-          <section className="border-b border-border py-8"><h2 className="mb-5 font-display text-xl font-bold">TRANSPORTADORAS</h2><label className="text-sm">Transportadoras habilitadas<input className={field} placeholder="Nenhuma habilitada" value={config.carriers.join(", ")} onChange={(e) => setConfig({ ...config, carriers: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })} /></label></section>
+          <section className="border-b border-border py-8"><h2 className="mb-5 font-display text-xl font-bold">TRANSPORTADORAS</h2><label className="text-sm">IDs de serviços Melhor Envio (opcional)<input className={field} placeholder="Vazio = usar serviços habilitados no Melhor Envio" value={config.carriers.join(", ")} onChange={(e) => setConfig({ ...config, carriers: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })} /></label><p className="mt-2 text-xs text-muted-foreground">Para receber automaticamente os serviços permitidos no seu aplicativo, deixe este campo vazio.</p></section>
           <LabelAutomationSettings config={config} onChange={setConfig} />
-          <section className="py-8"><h2 className="mb-5 font-display text-xl font-bold">INTEGRAÇÕES</h2><div className="grid gap-6 sm:grid-cols-2">{[{ name: "SuperFrete", url: "https://api.superfrete.com/", result: checks?.superfrete }, { name: "Appmax", url: "https://docs.appmax.com.br/guides/autenticacao", result: checks?.appmax }].map((p) => <div key={p.name} className="border-l-2 border-brand pl-4"><h3 className="font-bold">{p.name}</h3><p role="status" className={`my-2 text-sm ${p.result?.ok === false ? "text-destructive" : "text-muted-foreground"}`}>{checking ? "Verificando…" : p.result?.message ?? "Não verificado nesta sessão"}</p><a href={p.url} target="_blank" rel="noreferrer" className="text-sm text-brand">Documentação oficial ↗</a></div>)}</div><Button className="mt-5" type="button" variant="outline" disabled={checking} onClick={async () => { setChecking(true); try { setChecks(await verify()); } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível verificar."); } finally { setChecking(false); } }}><RefreshCw /> Verificar integrações</Button>{checks && <p className="mt-3 text-xs text-muted-foreground">Verificado em {new Date(checks.checkedAt).toLocaleString("pt-BR")}</p>}</section>
+          <section className="py-8"><h2 className="mb-5 font-display text-xl font-bold">INTEGRAÇÕES</h2><div className="grid gap-6 sm:grid-cols-2">{[{ name: "Melhor Envio", url: "https://docs.melhorenvio.com.br/", result: checks?.melhorEnvio }, { name: "Appmax (legado)", url: "https://docs.appmax.com.br/guides/autenticacao", result: checks?.appmax }].map((p) => <div key={p.name} className="border-l-2 border-brand pl-4"><h3 className="font-bold">{p.name}</h3><p role="status" className={`my-2 text-sm ${p.result?.ok === false ? "text-destructive" : "text-muted-foreground"}`}>{checking ? "Verificando…" : p.result?.message ?? "Não verificado nesta sessão"}</p><a href={p.url} target="_blank" rel="noreferrer" className="text-sm text-brand">Documentação oficial ↗</a></div>)}</div><Button className="mt-5" type="button" variant="outline" disabled={checking} onClick={async () => { setChecking(true); try { setChecks(await verify()); await qc.invalidateQueries({ queryKey: ["shipping-admin"] }); } catch (error) { setMessage(error instanceof Error ? error.message : "Não foi possível verificar."); } finally { setChecking(false); } }}><RefreshCw /> Verificar integrações</Button>{checks && <p className="mt-3 text-xs text-muted-foreground">Verificado em {new Date(checks.checkedAt).toLocaleString("pt-BR")}</p>}</section>
           <Button type="submit" disabled={busy}><Save /> {busy ? "Salvando…" : "Salvar configurações"}</Button><p role="status" className="mt-3 text-sm text-muted-foreground">{message}</p>
         </form>}
-        {tab === "orders" && <section><h2 className="mb-5 font-display text-xl font-bold">PEDIDOS E ETIQUETAS</h2>{data.orders.length === 0 ? <p className="text-muted-foreground">Nenhum pedido registrado.</p> : <div className="space-y-3">{data.orders.map((order) => <div key={order.id} className="rounded-md border border-border p-4"><p>Pedido {order.id.slice(0, 8)}</p><p className="text-sm text-muted-foreground">{shippingStates[order.shipping_status]} · {order.tracking_code ?? "Sem rastreamento"}</p>{order.provider_shipment_id && <p className="mt-1 break-all text-xs text-muted-foreground">Etiqueta SuperFrete: {order.provider_shipment_id}</p>}{order.shipping_status === "logistics_failed" && <p className="mt-2 text-sm text-destructive">Confira este pedido e o histórico na SuperFrete. A emissão não será repetida automaticamente.</p>}{order.label_url?.startsWith("https://") && <a href={order.label_url} target="_blank" rel="noreferrer" className="text-brand">Imprimir etiqueta</a>}</div>)}</div>}</section>}
+        {tab === "orders" && <section><h2 className="mb-5 font-display text-xl font-bold">PEDIDOS E ETIQUETAS</h2>{data.orders.length === 0 ? <p className="text-muted-foreground">Nenhum pedido registrado.</p> : <div className="space-y-3">{data.orders.map((order) => <div key={order.id} className="rounded-md border border-border p-4"><p>Pedido {order.id.slice(0, 8)}</p><p className="text-sm text-muted-foreground">{shippingStates[order.shipping_status]} · {order.tracking_code ?? "Sem rastreamento"}</p>{order.provider_shipment_id && <p className="mt-1 break-all text-xs text-muted-foreground">Identificador do envio: {order.provider_shipment_id}</p>}{order.shipping_status === "logistics_failed" && <p className="mt-2 text-sm text-destructive">Este envio exige conferência manual no provedor antes de qualquer nova tentativa.</p>}{order.label_url?.startsWith("https://") && <a href={order.label_url} target="_blank" rel="noreferrer" className="text-brand">Imprimir etiqueta</a>}</div>)}</div>}</section>}
         {tab === "history" && <section><h2 className="mb-5 font-display text-xl font-bold">COTAÇÕES E ENVIOS</h2>{data.events.length === 0 ? <p className="text-muted-foreground">Nenhuma cotação ou envio registrado.</p> : data.events.map((event) => <div key={event.id} className="border-b border-border py-4"><p>{event.provider} · {event.kind}</p><p className="text-sm text-muted-foreground">{event.state} · {new Date(event.created_at).toLocaleString("pt-BR")}</p></div>)}</section>}
       </>}
     </main>
