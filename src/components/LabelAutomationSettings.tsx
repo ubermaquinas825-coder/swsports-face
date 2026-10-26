@@ -5,8 +5,9 @@ export function LabelAutomationSettings({ config, onChange }: { config: Shipping
   const sender = settings.sender ?? { name: "", address: "", number: "", complement: "", district: "", city: "", state_abbr: "", postal_code: config.originCep, email: "" };
   const field = "mt-1 w-full rounded-md border border-input bg-card px-3 py-2 text-sm";
   return <section className="border-b border-border py-8">
-    <h2 className="mb-3 font-display text-xl font-bold">ETIQUETAS AUTOMÁTICAS</h2>
+    <h2 className="mb-3 font-display text-xl font-bold">REMETENTE E ETIQUETAS</h2>
     <p className="mb-4 text-sm text-muted-foreground">Declaração de conteúdo. Após a confirmação do pagamento e envio do pedido ao Bling, a etiqueta será paga com o saldo da carteira SuperFrete. Mantenha saldo suficiente. Divergências de valor ou dados ficam para conferência.</p>
+    <p className="mb-4 text-sm text-muted-foreground">Para preparar o envio pelo painel e pagar pessoalmente na SuperFrete, preencha e salve o remetente abaixo e mantenha a opção de pagamento automático desmarcada.</p>
     <label className="mb-5 flex items-center gap-2 text-sm font-semibold">
       <input type="checkbox" checked={settings.enabled} onChange={(e) => onChange({ ...config, labelAutomation: { enabled: e.target.checked, sender: e.target.checked ? sender : settings.sender } })} />
       Emitir e pagar etiquetas automaticamente

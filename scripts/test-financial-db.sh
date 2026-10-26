@@ -86,3 +86,5 @@ docker exec "$container" psql --username postgres --no-psqlrc --quiet --set ON_E
 wait "$label_locker"
 docker exec "$container" psql --username postgres --no-psqlrc --quiet --set ON_ERROR_STOP=1 -c "SELECT 1 / CASE WHEN count(*)=1 THEN 1 ELSE 0 END FROM public.shipping_label_jobs WHERE order_id='91000000-0000-4000-8000-000000000001';"
 printf '%s\n' 'PASS: concurrent sessions cannot claim a second label for the same order'
+
+docker exec --interactive "$container" psql --username postgres --no-psqlrc --quiet --tuples-only --no-align --set ON_ERROR_STOP=1 < src/test/manual-shipping-cart.sql

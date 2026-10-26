@@ -17,7 +17,7 @@ export const getSalesAdmin = createServerFn({ method: "GET" })
     const result = await context.supabase
       .from("shipping_orders")
       .select(
-        "id,created_at,delivery_address,items,subtotal_cents,discount_cents,freight_cents,payment_status,payment_link_id,provider_payment_id,appmax_payment_verified_at,shipping_service,shipping_status,tracking_code,quoted_cep,bling_sync_status",
+        "id,created_at,delivery_address,items,subtotal_cents,discount_cents,freight_cents,payment_status,payment_link_id,provider_payment_id,appmax_payment_verified_at,shipping_service,shipping_status,tracking_code,provider_shipment_id,quoted_cep,bling_sync_status",
         { count: "exact" },
       )
       .order("created_at", { ascending: false })

@@ -1,3 +1,4 @@
+vi.mock("@/lib/superfrete-cart.functions", () => ({ prepareSuperfreteShipping: vi.fn() }));
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { response } = vi.hoisted(() => ({
@@ -15,6 +16,13 @@ vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (config: unknown) => config,
   useNavigate: () => vi.fn(),
   Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+}));
+vi.mock("@tanstack/react-start", () => ({
+  useServerFn: () => vi.fn(),
+  createServerFn: () => {
+    const b = { middleware: () => b, inputValidator: () => b, handler: () => vi.fn() };
+    return b;
+  },
 }));
 vi.mock("@/lib/sales.functions", () => ({ getSalesAdmin: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));

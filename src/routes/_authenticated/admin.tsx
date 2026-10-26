@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { LogOut, RefreshCw, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SuperfreteOrderAction } from "@/components/SuperfreteOrderAction";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { productFor } from "@/lib/products";
@@ -424,6 +425,7 @@ export function SalesAdmin() {
                           {info("Código de rastreamento", order.tracking_code ?? "")}
                           {info("Integração ERP", order.bling_sync_status)}
                         </dl>
+                        <SuperfreteOrderAction key={order.id} order={order} />
                       </section>
                     </div>
                   </div>

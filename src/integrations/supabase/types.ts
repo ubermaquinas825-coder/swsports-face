@@ -370,6 +370,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_manual_shipping_cart: {
+        Args: { _order_id: string; _revision: string; _payload: Json }
+        Returns: string | null
+      }
+      complete_manual_shipping_cart: {
+        Args: { _order_id: string; _token: string; _shipment_id: string }
+        Returns: boolean
+      }
+
       claim_appmax_check: { Args: { _order_id: string }; Returns: boolean }
       claim_appmax_check_v2: { Args: { _order_id: string }; Returns: string }
       claim_bling_export: {
