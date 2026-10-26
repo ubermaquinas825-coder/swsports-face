@@ -20,17 +20,32 @@ const SCOPES = [
   "orders-read",
 ].join(" ");
 
+const USER_AGENT = "SW Sports (adm.swsports@gmail.com)";
+const REFRESH_SAFETY_MS = 5 * 60 * 1000;
+
+type ConnectionRow = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: string;
+  refresh_expires_at: string;
+  environment: "sandbox" | "production";
+  updated_at: string;
+};
+
 function config() {
   const clientId = process.env["MELHOR_ENVIO_CLIENT_ID"];
   const clientSecret = process.env["MELHOR_ENVIO_CLIENT_SECRET"];
   const redirectUri = process.env["MELHOR_ENVIO_REDIRECT_URI"];
   const environment = process.env["MELHOR_ENVIO_ENVIRONMENT"] === "production" ? "production" : "sandbox";
-  if (!clientId || !clientSecret || !redirectUri) throw new Error("Melhor Envio ainda não está configurado no servidor.");
+  if (!clientId || !clientSecret || !redirectUri)
+    throw new Error("Melhor Envio ainda não está configurado no servidor.");
   return { clientId, clientSecret, redirectUri, environment };
 }
 
 function baseUrl() {
-  return config().environment === "production" ? "https://melhorenvio.com.br" : "https://sandbox.melhorenvio.com.br";
+  return config().environment === "production"
+    ? "https://melhorenvio.com.br"
+    : "https://sandbox.melhorenvio.com.br";
 }
 
 export function melhorEnvioAuthorizationUrl(state: string) {
@@ -48,10 +63,15 @@ async function tokenRequest(params: URLSearchParams) {
   const response = await fetch(new URL("/oauth/token", baseUrl()), {
     method: "POST",
     signal: AbortSignal.timeout(15000),
-    headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "SW Sports (adm.swsports@gmail.com)" },
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent": USER_AGENT,
+    },
     body: params,
   });
-  if (!response.ok) throw new Error(`Melhor Envio recusou a autenticação (${response.status}).`);
+  if (!response.ok)
+    throw new Error(`Melhor Envio recusou a autenticação (${response.status}).`);
   return tokenSchema.parse(await response.json());
 }
 
@@ -69,26 +89,109 @@ async function saveToken(token: z.infer<typeof tokenSchema>) {
     refresh_expires_at: new Date(now + 45 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(now).toISOString(),
   } as never);
-  if (saved.error) throw new Error("Não foi possível armazenar a autorização do Melhor Envio.");
+  if (saved.error)
+    throw new Error("Não foi possível armazenar a autorização do Melhor Envio.");
+}
+
+async function loadConnection(): Promise<ConnectionRow | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const result = await supabaseAdmin
+    .from("melhor_envio_connections" as never)
+    .select("access_token,refresh_token,expires_at,refresh_expires_at,environment,updated_at")
+    .eq("id", true)
+    .maybeSingle();
+  if (result.error)
+    throw new Error("Não foi possível verificar a conexão com o Melhor Envio.");
+  return (result.data as ConnectionRow | null) ?? null;
 }
 
 export async function exchangeMelhorEnvioCode(code: string) {
   const { clientId, clientSecret, redirectUri } = config();
-  const token = await tokenRequest(new URLSearchParams({ grant_type: "authorization_code", client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, code }));
+  const token = await tokenRequest(
+    new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      code,
+    }),
+  );
   await saveToken(token);
 }
 
 export async function refreshMelhorEnvioToken(refreshToken: string) {
   const { clientId, clientSecret } = config();
-  const token = await tokenRequest(new URLSearchParams({ grant_type: "refresh_token", client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken }));
+  const token = await tokenRequest(
+    new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    }),
+  );
   await saveToken(token);
   return token.access_token;
 }
 
+async function accessToken(forceRefresh = false) {
+  const row = await loadConnection();
+  if (!row)
+    throw new Error("Melhor Envio ainda não foi autorizado. Conecte a conta em Frete e envios.");
+  if (row.environment !== config().environment)
+    throw new Error("A autorização do Melhor Envio pertence a outro ambiente. Autorize novamente.");
+
+  const expiresAt = Date.parse(row.expires_at);
+  if (!Number.isFinite(expiresAt))
+    throw new Error("A autorização do Melhor Envio está inválida. Autorize novamente.");
+  if (forceRefresh || expiresAt <= Date.now() + REFRESH_SAFETY_MS) {
+    const refreshExpiresAt = Date.parse(row.refresh_expires_at);
+    if (!Number.isFinite(refreshExpiresAt) || refreshExpiresAt <= Date.now())
+      throw new Error("A autorização do Melhor Envio expirou. Autorize novamente.");
+    return refreshMelhorEnvioToken(row.refresh_token);
+  }
+  return row.access_token;
+}
+
+export async function melhorEnvioRequest(path: string, init: RequestInit = {}) {
+  const request = async (token: string) => {
+    const headers = new Headers(init.headers);
+    headers.set("Accept", "application/json");
+    headers.set("Authorization", `Bearer ${token}`);
+    headers.set("User-Agent", USER_AGENT);
+    if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+    return fetch(new URL(path, baseUrl()), {
+      ...init,
+      headers,
+      signal: init.signal ?? AbortSignal.timeout(20000),
+    });
+  };
+
+  let response = await request(await accessToken());
+  if (response.status === 401) response = await request(await accessToken(true));
+  if (!response.ok) {
+    console.error(`Melhor Envio request failed [${response.status}] ${path}`);
+    throw new Error(`Melhor Envio não conseguiu atender a solicitação (${response.status}).`);
+  }
+  return response.json() as Promise<unknown>;
+}
+
 export async function melhorEnvioConnectionStatus() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const result = await supabaseAdmin.from("melhor_envio_connections" as never).select("expires_at,refresh_expires_at,environment,updated_at").eq("id", true).maybeSingle();
-  if (result.error) throw new Error("Não foi possível verificar a conexão com o Melhor Envio.");
-  const row = result.data as { expires_at: string; refresh_expires_at: string; environment: string; updated_at: string } | null;
-  return row ? { connected: true as const, ...row } : { connected: false as const, environment: config().environment };
+  const environment = config().environment;
+  const row = await loadConnection();
+  if (!row)
+    return { connected: false as const, environment, reason: "not_authorized" as const };
+  if (row.environment !== environment)
+    return {
+      connected: false as const,
+      environment,
+      reason: "environment_mismatch" as const,
+      updated_at: row.updated_at,
+    };
+  return {
+    connected: true as const,
+    environment,
+    expires_at: row.expires_at,
+    refresh_expires_at: row.refresh_expires_at,
+    updated_at: row.updated_at,
+  };
 }
