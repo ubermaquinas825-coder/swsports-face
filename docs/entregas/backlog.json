@@ -1,0 +1,128 @@
+[
+  {
+    "id": "T01",
+    "type": "Melhoria",
+    "title": "[Melhoria] Adotar Issues, Pull Requests e contexto obrigatório para todos os agentes",
+    "body_file": "issues/t01.md",
+    "depends_on": [],
+    "github_url": null
+  },
+  {
+    "id": "T02",
+    "type": "Correção",
+    "title": "[Correção] Consolidar Mercado Pago como único provedor nos fluxos ativos",
+    "body_file": "issues/t02.md",
+    "depends_on": [
+      "T01"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T03",
+    "type": "Melhoria",
+    "title": "[Melhoria] Validar remetente, embalagens e cotação real da SuperFrete",
+    "body_file": "issues/t03.md",
+    "depends_on": [
+      "T01",
+      "T02"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T04",
+    "type": "Melhoria",
+    "title": "[Melhoria] Validar conexão Bling, produtos, depósito e estoque",
+    "body_file": "issues/t04.md",
+    "depends_on": [
+      "T01",
+      "T02"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T05",
+    "type": "Nova função",
+    "title": "[Nova função] Disponibilizar emissão automática de etiquetas após pagamento Mercado Pago",
+    "body_file": "issues/t05.md",
+    "depends_on": [
+      "T02",
+      "T03",
+      "T04"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T06",
+    "type": "Melhoria",
+    "title": "[Melhoria] Confirmar recebimento dos eventos do pixel Meta e consentimento",
+    "body_file": "issues/t06.md",
+    "depends_on": [
+      "T01"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T07",
+    "type": "Nova função",
+    "title": "[Nova função] Habilitar e validar login Google pelo Supabase",
+    "body_file": "issues/t07.md",
+    "depends_on": [
+      "T01"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T08",
+    "type": "Melhoria",
+    "title": "[Melhoria] Inspecionar loja, plano e tema de destino da Nuvemshop",
+    "body_file": "issues/t08.md",
+    "depends_on": [
+      "T01"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T09",
+    "type": "Melhoria",
+    "title": "[Melhoria] Reproduzir identidade visual, cabeçalho e rodapé no tema Nuvemshop",
+    "body_file": "issues/t09.md",
+    "depends_on": [
+      "T08"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T10",
+    "type": "Melhoria",
+    "title": "[Melhoria] Reproduzir a página inicial e imagens originais na Nuvemshop",
+    "body_file": "issues/t10.md",
+    "depends_on": [
+      "T08",
+      "T09"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T11",
+    "type": "Melhoria",
+    "title": "[Melhoria] Adaptar catálogo, página de produto e carrinho nativos da Nuvemshop",
+    "body_file": "issues/t11.md",
+    "depends_on": [
+      "T08",
+      "T09"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T12",
+    "type": "Melhoria",
+    "title": "[Melhoria] Validar fidelidade visual e publicar o tema Nuvemshop pelo PR",
+    "body_file": "issues/t12.md",
+    "depends_on": [
+      "T09",
+      "T10",
+      "T11"
+    ],
+    "github_url": null
+  }
+]
