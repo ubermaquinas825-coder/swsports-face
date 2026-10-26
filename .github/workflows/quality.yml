@@ -30,5 +30,17 @@ jobs:
       - name: Financial database tests
         run: npm run test:financial-db
 
+      - name: Validate Vercel configuration
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-public-key
+          SUPABASE_URL: https://example.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: ci-public-key
+          SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key
+          VITE_PUBLIC_SITE_URL: https://example.com
+          VITE_STANDALONE_AUTH: "true"
+          CRON_SECRET: ci-only-placeholder-secret-32-chars-minimum
+        run: node scripts/check-vercel-env.mjs
+
       - name: Build
         run: npm run build
