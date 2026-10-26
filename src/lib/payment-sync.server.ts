@@ -23,6 +23,7 @@ export async function syncPayments() {
     .limit(5);
   if (pending.error)
     throw new RetryableSyncError("Não foi possível consultar os pagamentos pendentes.");
+
   let checked = mp.checked;
   const errors = [...mp.errors];
   for (const row of pending.data ?? []) {
@@ -33,5 +34,5 @@ export async function syncPayments() {
       errors.push("Pagamento pendente de conferência.");
     }
   }
-  return { checked, approved: mp.approved, failed: mp.failed, errors };
+  return { checked, approved: mp.approved, failed: mp.failed, held: mp.held, errors };
 }
