@@ -1,9 +1,5 @@
+// Payments are persisted by the provider reconciliation before this hook.
+// Shipping is prepared only by an explicit administrator action.
 export async function runPostPaymentAutomation() {
-  const { syncPaidOrders } = await import("./bling-orders.server");
-  const orders = await syncPaidOrders();
-
-  const { syncShippingLabels } = await import("./shipping-labels.server");
-  const labels = await syncShippingLabels();
-
-  return { orders, labels };
+  return { shipping: "manual" as const };
 }

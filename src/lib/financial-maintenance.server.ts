@@ -32,17 +32,3 @@ export function financialMaintenanceResponse(): Response | null {
   if (!isFinancialMaintenanceEnabled()) return null;
   return new FinancialMaintenanceError().toResponse();
 }
-
-// Explicit, server-only permission for connecting Bling during the Vercel migration.
-// This never changes admission for checkout, order exports, stock writes or labels.
-export function isBlingSetupEnabled(): boolean {
-  return process.env["VERCEL"] === "1" && process.env["SWSPORTS_BLING_SETUP_ENABLED"] === "true";
-}
-
-export function assertBlingConnectionAllowed(): void {
-  if (!isBlingSetupEnabled()) assertFinancialOperationsEnabled();
-}
-
-export function blingConnectionMaintenanceResponse(): Response | null {
-  return isBlingSetupEnabled() ? null : financialMaintenanceResponse();
-}

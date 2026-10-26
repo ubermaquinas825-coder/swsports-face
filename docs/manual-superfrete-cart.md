@@ -39,3 +39,19 @@ resposta completa. Timeouts e resultados ambíguos mantêm a reserva, sem repeti
 POST. Confira o envio na SuperFrete; não apague o job para tentar novamente.
 A nova preparação é exclusiva de administradores, protegida no servidor e por
 RLS/RPCs com privilégio service_role. Nenhuma etiqueta real foi criada nos testes.
+
+## Integração ERP retirada
+
+Por decisão do proprietário, não há conexão OAuth, consulta de estoque, exportação
+ou painel ERP no código ativo. O administrativo é o centro de gestão dos pedidos.
+O cron e o botão Conferir pagamentos consultam apenas os provedores de pagamento.
+A emissão/pagamento automático de etiquetas foi removida do fluxo: somente o
+administrador pode preparar o carrinho e o pagamento é feito na SuperFrete.
+Os nomes de colunas e migrações históricas são preservados para não destruir
+pedidos, auditorias e bloqueios financeiros. Não apagar tabelas históricas.
+Para os pedidos retidos exclusivamente pelo erro antigo de configuração anterior
+às chamadas externas, aplicar 0011 após 0010; ela mantém a pendência histórica e
+permite somente o preparo manual com pagamento Mercado Pago reconfirmado.
+A remoção do código não revoga autorizações já concedidas na conta do provedor.
+Revogar o aplicativo externamente e remover variáveis de credenciais antigas
+na hospedagem após a nova publicação. Nenhum segredo foi lido ou exposto.

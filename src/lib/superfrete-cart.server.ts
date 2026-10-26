@@ -1,3 +1,4 @@
+import { manualShippingHold } from "./manual-shipping-eligibility";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
@@ -32,13 +33,8 @@ export async function prepareSuperfreteCart(orderId: string) {
       "Preencha e salve os dados completos do remetente em Frete e envios. A emissão automática pode permanecer desligada.",
     );
   let order = await loadOrder(orderId);
-  if (
-    order.payment_status !== "approved" ||
-    ["blocked", "reconciliation_required", "processing"].includes(order.bling_sync_status)
-  )
-    throw new Error(
-      "O pedido precisa estar pago e sem bloqueios financeiros para preparar o envio.",
-    );
+  const hold = manualShippingHold(order);
+  if (hold) throw new Error(hold);
   if (order.shipping_status === "logistics_failed")
     throw new Error("Envio em revisão. Confira a SuperFrete antes de qualquer nova tentativa.");
   if (order.provider_shipment_id)
@@ -112,7 +108,7 @@ export async function prepareSuperfreteCart(orderId: string) {
   });
   if (claim.error)
     throw new Error(
-      "Preparação manual indisponível no banco. É necessário aplicar a migração 0010 e seus pré-requisitos após revisar o banco.",
+      "Preparação manual indisponível no banco. É necessário aplicar a migração de preparação manual e seus pré-requisitos após revisar o banco.",
     );
   if (!claim.data)
     throw new Error(
@@ -138,11 +134,7 @@ export async function prepareSuperfreteCart(orderId: string) {
     );
     if (info.status !== "pending") throw new Error("Envio não está aguardando pagamento.");
     const current = await loadOrder(orderId);
-    if (
-      current.payment_status !== "approved" ||
-      current.shipping_status !== "awaiting_label_payment" ||
-      ["blocked", "reconciliation_required"].includes(current.bling_sync_status)
-    )
+    if (manualShippingHold(current) || current.shipping_status !== "awaiting_label_payment")
       throw new Error("Pedido alterado durante a preparação.");
     return {
       shipmentId: created.id,

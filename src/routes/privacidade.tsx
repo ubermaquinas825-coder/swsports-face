@@ -71,7 +71,7 @@ function Privacy() {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Compras e entrega</h3>
               <p className="text-sm text-muted-foreground">
-                Dados informados no pedido, como nome, CPF/CNPJ, contato e endereço, são usados para atendimento, pagamento, emissão e entrega do pedido. O Mercado Pago processa o pagamento; o Bling auxilia na organização de pedidos e estoque; e a SuperFrete é utilizada no cálculo e na operação logística. Cada serviço recebe apenas os dados necessários à sua função.
+                Dados informados no pedido, como nome, CPF/CNPJ, contato e endereço, são usados para atendimento, pagamento, emissão e entrega do pedido. O Mercado Pago processa o pagamento; o sistema administrativo organiza os pedidos e os dados de atendimento; e a SuperFrete é utilizada no cálculo e na operação logística. Cada serviço recebe apenas os dados necessários à sua função.
               </p>
             </div>
 

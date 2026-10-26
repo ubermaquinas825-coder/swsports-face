@@ -97,9 +97,27 @@ describe("Manual SuperFrete preparation", () => {
       }),
     );
   });
+  it("prepares an independently verified MP order without clearing the ERP setup hold", async () => {
+    order["bling_sync_status"] = "reconciliation_required";
+    order["bling_sync_error"] = "Envio ao Bling falhou: Vínculos Bling não configurados.";
+    await expect(prepareSuperfreteCart(labelInput.orderId)).resolves.toMatchObject({
+      shipmentId: "shipment-test",
+    });
+    expect(verify).toHaveBeenCalled();
+    expect(order["bling_sync_status"]).toBe("reconciliation_required");
+  });
+  it("rejects a refunded MP payment even when the ERP hold is only missing setup", async () => {
+    order["bling_sync_status"] = "reconciliation_required";
+    order["bling_sync_error"] = "Envio ao Bling falhou: Vínculos Bling não configurados.";
+    verify.mockResolvedValue({ state: "failed" });
+    await expect(prepareSuperfreteCart(labelInput.orderId)).rejects.toThrow(
+      "Pagamento não confirmado",
+    );
+    expect(provider).not.toHaveBeenCalled();
+  });
   it("blocks unpaid orders before provider requests", async () => {
     order["payment_status"] = "pending";
-    await expect(prepareSuperfreteCart(labelInput.orderId)).rejects.toThrow("pago");
+    await expect(prepareSuperfreteCart(labelInput.orderId)).rejects.toThrow("aprovado");
     expect(provider).not.toHaveBeenCalled();
   });
   it("blocks maintenance before any database access", async () => {

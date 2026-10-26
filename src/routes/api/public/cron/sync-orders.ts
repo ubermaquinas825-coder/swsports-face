@@ -1,51 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 import { RetryableSyncError } from "@/lib/financial-errors";
-
 async function synchronize({ request }: { request: Request }) {
   const denied = await authenticateCronRequest(request);
   if (denied) return denied;
-  const { financialMaintenanceResponse, FinancialMaintenanceError } = await import("@/lib/financial-maintenance.server");
+  const { financialMaintenanceResponse, FinancialMaintenanceError } =
+    await import("@/lib/financial-maintenance.server");
   const maintenance = financialMaintenanceResponse();
   if (maintenance) return maintenance;
-
   try {
-    const { reconcilePendingMercadoPagoOrders } = await import("@/lib/mercadopago-reconciliation.server");
-    const payments = await reconcilePendingMercadoPagoOrders();
-
-    const { syncPaidOrders } = await import("@/lib/bling-orders.server");
-    const result = await syncPaidOrders();
-    const { syncShippingLabels } = await import("@/lib/shipping-labels.server");
-    const labels = await syncShippingLabels();
-
-    const retryable = result.retryableFailures + payments.errors.length;
-    const failures = result.errors.length + labels.errors.length + payments.errors.length;
-    return Response.json({
-      paymentsChecked: payments.checked,
-      paymentsApproved: payments.approved,
-      paymentsFailed: payments.failed,
-      checked: result.checked,
-      exported: result.exported,
-      recovered: result.recovered,
-      labelsIssued: labels.issued,
-      failures,
-      retryableFailures: retryable,
-      manualReviewFailures: failures - retryable,
-      ok: failures === 0,
-    }, {
-      status: retryable ? 503 : failures ? 207 : 200,
-      headers: retryable ? { "Retry-After": "60" } : {},
-    });
+    const { syncPayments } = await import("@/lib/payment-sync.server");
+    const result = await syncPayments();
+    const failures = result.errors.length;
+    return Response.json(
+      {
+        paymentsChecked: result.checked,
+        paymentsApproved: result.approved,
+        paymentsFailed: result.failed,
+        failures,
+        ok: failures === 0,
+      },
+      { status: failures ? 503 : 200, headers: failures ? { "Retry-After": "60" } : {} },
+    );
   } catch (error) {
     if (error instanceof FinancialMaintenanceError) return error.toResponse();
     if (!(error instanceof RetryableSyncError)) throw error;
     return Response.json(
-      { ok: false, failures: 1, retryableFailures: 1 },
+      { ok: false, failures: 1 },
       { status: 503, headers: { "Retry-After": "60" } },
     );
   }
 }
-
 export const Route = createFileRoute("/api/public/cron/sync-orders")({
   server: { handlers: { GET: synchronize, POST: synchronize } },
 });

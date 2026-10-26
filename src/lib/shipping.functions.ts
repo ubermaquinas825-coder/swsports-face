@@ -21,14 +21,7 @@ export const saveShippingConfig = createServerFn({ method: "POST" }).middleware(
   assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
-  if (data.labelAutomation.enabled && data.labelAutomation.sender) {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const ready = await supabaseAdmin.rpc("shipping_label_schema_ready" as never);
-    if (ready.error || !ready.data) throw new Error("Aplique a migração de etiquetas antes de ativar a automação.");
-    const { superfreteRequest } = await import("./superfrete.server");
-    await superfreteRequest("user", data.labelAutomation.sender.email);
-  }
-  const result = await context.supabase.from("shipping_settings").upsert({ id: true, config: data, updated_at: new Date().toISOString() });
+  const result = await context.supabase.from("shipping_settings").upsert({ id: true, config: { ...data, labelAutomation: { ...data.labelAutomation, enabled: false } }, updated_at: new Date().toISOString() });
   if (result.error) throw new Error("Não foi possível salvar as configurações.");
   return { saved: true };
 });

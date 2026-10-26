@@ -9,7 +9,7 @@ type Props = {
     id: string;
     payment_status: string;
     shipping_status: string;
-    bling_sync_status: string;
+    shipping_hold?: string | null;
     provider_shipment_id?: string | null;
   };
 };
@@ -22,10 +22,15 @@ export function SuperfreteOrderAction({ order }: Props) {
     null,
   );
   const linked = prepared?.shipmentId || order.provider_shipment_id;
-  const blocked =
-    order.payment_status !== "approved" ||
-    ["blocked", "reconciliation_required", "processing"].includes(order.bling_sync_status) ||
-    ["logistics_failed", "posted", "delivered"].includes(order.shipping_status);
+  const hold =
+    order.shipping_hold ||
+    (order.payment_status !== "approved"
+      ? "O pagamento deste pedido ainda não está aprovado."
+      : null) ||
+    (["logistics_failed", "posted", "delivered"].includes(order.shipping_status)
+      ? "Este envio já foi processado ou exige conferência na SuperFrete."
+      : null);
+  const blocked = Boolean(hold);
   return (
     <section className="mt-6 rounded-lg border p-4">
       <h4 className="font-semibold">Envio pela SuperFrete</h4>
@@ -75,12 +80,7 @@ export function SuperfreteOrderAction({ order }: Props) {
           {busy ? "Preparando envio…" : "Preparar envio e abrir SuperFrete"}
         </Button>
       )}
-      {blocked && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          Confirme o pagamento e resolva eventuais bloqueios ou pendências de envio antes de
-          continuar.
-        </p>
-      )}
+      {blocked && <p className="mt-3 text-sm text-muted-foreground">{hold}</p>}
       <p role="status" className="mt-3 text-sm">
         {message}
       </p>

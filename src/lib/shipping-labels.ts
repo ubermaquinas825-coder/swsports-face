@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { validateDeliveryAddress } from "./delivery-address";
-import { orderItemsSchema } from "./bling-orders";
+import { orderItemsSchema } from "./order-items";
 import { labelSenderSchema } from "./shipping";
 import { SITE_ORIGIN } from "./site";
 

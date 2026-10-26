@@ -1,3 +1,4 @@
+vi.mock("@/lib/payment-reconciliation.functions", () => ({ checkPayments: vi.fn() }));
 vi.mock("@/lib/superfrete-cart.functions", () => ({ prepareSuperfreteShipping: vi.fn() }));
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -75,6 +76,8 @@ describe("Administrative sales page", () => {
     expect(screen.getByText("Rua das Flores, 15")).toBeInTheDocument();
     expect(screen.getByText("Balaclava Gato")).toBeInTheDocument();
     expect(screen.getByText("Mercado Pago")).toBeInTheDocument();
+    expect(screen.queryByText("Integração ERP")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Bling/i)).not.toBeInTheDocument();
     expect(screen.getByText("Data exata não registrada no histórico atual")).toBeInTheDocument();
     expect(screen.getByText("AB123BR")).toBeInTheDocument();
   });

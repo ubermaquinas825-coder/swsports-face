@@ -19,9 +19,6 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
-import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_authenticated/integracoes/bling'
-import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
-import { Route as ApiPublicBlingStartRouteImport } from './routes/api/public/bling/start'
 import { Route as ApiPublicCronSyncOrdersRouteImport } from './routes/api/public/cron/sync-orders'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago/webhook'
 
@@ -75,22 +72,6 @@ const AuthenticatedFreteEnviosRoute =
     path: '/frete-envios',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedIntegracoesBlingRoute =
-  AuthenticatedIntegracoesBlingRouteImport.update({
-    id: '/integracoes/bling',
-    path: '/integracoes/bling',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const ApiPublicBlingCallbackRoute = ApiPublicBlingCallbackRouteImport.update({
-  id: '/api/public/bling/callback',
-  path: '/api/public/bling/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicBlingStartRoute = ApiPublicBlingStartRouteImport.update({
-  id: '/api/public/bling/start',
-  path: '/api/public/bling/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicCronSyncOrdersRoute = ApiPublicCronSyncOrdersRouteImport.update({
   id: '/api/public/cron/sync-orders',
   path: '/api/public/cron/sync-orders',
@@ -113,9 +94,6 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
-  '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
-  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
-  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -129,9 +107,6 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
-  '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
-  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
-  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -147,9 +122,6 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
-  '/_authenticated/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
-  '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
-  '/api/public/bling/start': typeof ApiPublicBlingStartRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -165,9 +137,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/admin'
     | '/frete-envios'
-    | '/integracoes/bling'
-    | '/api/public/bling/callback'
-    | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -181,9 +150,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/admin'
     | '/frete-envios'
-    | '/integracoes/bling'
-    | '/api/public/bling/callback'
-    | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   id:
@@ -198,9 +164,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/_authenticated/admin'
     | '/_authenticated/frete-envios'
-    | '/_authenticated/integracoes/bling'
-    | '/api/public/bling/callback'
-    | '/api/public/bling/start'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   fileRoutesById: FileRoutesById
@@ -214,8 +177,6 @@ export interface RootRouteChildren {
   PagamentoRoute: typeof PagamentoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
-  ApiPublicBlingCallbackRoute: typeof ApiPublicBlingCallbackRoute
-  ApiPublicBlingStartRoute: typeof ApiPublicBlingStartRoute
   ApiPublicCronSyncOrdersRoute: typeof ApiPublicCronSyncOrdersRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -292,27 +253,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFreteEnviosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/integracoes/bling': {
-      id: '/_authenticated/integracoes/bling'
-      path: '/integracoes/bling'
-      fullPath: '/integracoes/bling'
-      preLoaderRoute: typeof AuthenticatedIntegracoesBlingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/api/public/bling/callback': {
-      id: '/api/public/bling/callback'
-      path: '/api/public/bling/callback'
-      fullPath: '/api/public/bling/callback'
-      preLoaderRoute: typeof ApiPublicBlingCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/bling/start': {
-      id: '/api/public/bling/start'
-      path: '/api/public/bling/start'
-      fullPath: '/api/public/bling/start'
-      preLoaderRoute: typeof ApiPublicBlingStartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/cron/sync-orders': {
       id: '/api/public/cron/sync-orders'
       path: '/api/public/cron/sync-orders'
@@ -333,13 +273,11 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedFreteEnviosRoute: typeof AuthenticatedFreteEnviosRoute
-  AuthenticatedIntegracoesBlingRoute: typeof AuthenticatedIntegracoesBlingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedFreteEnviosRoute: AuthenticatedFreteEnviosRoute,
-  AuthenticatedIntegracoesBlingRoute: AuthenticatedIntegracoesBlingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -354,8 +292,6 @@ const rootRouteChildren: RootRouteChildren = {
   PagamentoRoute: PagamentoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
-  ApiPublicBlingCallbackRoute: ApiPublicBlingCallbackRoute,
-  ApiPublicBlingStartRoute: ApiPublicBlingStartRoute,
   ApiPublicCronSyncOrdersRoute: ApiPublicCronSyncOrdersRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }

@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { checkPayments } from "@/lib/payment-reconciliation.functions";
 import { useState } from "react";
 import { LogOut, RefreshCw, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,9 @@ export function SalesAdmin() {
   const [status, setStatus] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const qc = useQueryClient();
+  const check = useServerFn(checkPayments);
+  const [checkingPayments, setCheckingPayments] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
   const navigate = useNavigate();
   const query = useQuery({
     queryKey: ["sales-admin", page],
@@ -78,6 +83,31 @@ export function SalesAdmin() {
             </p>
           </div>
           <nav className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={checkingPayments}
+              onClick={async () => {
+                setCheckingPayments(true);
+                setPaymentMessage("");
+                try {
+                  const result = await check();
+                  setPaymentMessage(
+                    `${result.checked} pagamento(s) conferido(s). ${result.errors.length ? "Alguns pagamentos exigem nova conferência." : "Conferência concluída."}`,
+                  );
+                  await qc.invalidateQueries({ queryKey: ["sales-admin"] });
+                } catch (error) {
+                  setPaymentMessage(
+                    error instanceof Error
+                      ? error.message
+                      : "Não foi possível conferir os pagamentos.",
+                  );
+                } finally {
+                  setCheckingPayments(false);
+                }
+              }}
+            >
+              {checkingPayments ? "Conferindo…" : "Conferir pagamentos"}
+            </Button>
             <Button asChild variant="outline">
               <Link to="/frete-envios">Frete e envios</Link>
             </Button>
@@ -94,6 +124,9 @@ export function SalesAdmin() {
             </Button>
           </nav>
         </header>
+        <p role="status" className="mb-4 text-sm">
+          {paymentMessage}
+        </p>
         {query.isPending ? (
           <p role="status">Carregando pedidos…</p>
         ) : query.isError ? (
@@ -205,7 +238,10 @@ export function SalesAdmin() {
                             {paymentLabels[o.payment_status] ?? o.payment_status}
                           </td>
                           <td className="p-3">
-                            {shippingStates[o.shipping_status] ?? o.shipping_status}
+                            {o.payment_status === "approved" &&
+                            o.shipping_status === "awaiting_payment"
+                              ? "Aguardando preparo do envio"
+                              : (shippingStates[o.shipping_status] ?? o.shipping_status)}
                           </td>
                           <td className="p-3">
                             <Button
@@ -414,7 +450,10 @@ export function SalesAdmin() {
                         <dl className="grid gap-4 sm:grid-cols-2">
                           {info(
                             "Situação da entrega",
-                            shippingStates[order.shipping_status] ?? order.shipping_status,
+                            order.payment_status === "approved" &&
+                              order.shipping_status === "awaiting_payment"
+                              ? "Aguardando preparo do envio"
+                              : (shippingStates[order.shipping_status] ?? order.shipping_status),
                           )}
                           {info(
                             "Transportadora / serviço",
@@ -423,7 +462,6 @@ export function SalesAdmin() {
                               .join(" · "),
                           )}
                           {info("Código de rastreamento", order.tracking_code ?? "")}
-                          {info("Integração ERP", order.bling_sync_status)}
                         </dl>
                         <SuperfreteOrderAction key={order.id} order={order} />
                       </section>

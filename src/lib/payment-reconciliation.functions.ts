@@ -12,16 +12,8 @@ export const checkPayments = createServerFn({ method: "POST" })
     });
     if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
 
-    const { reconcilePendingMercadoPagoOrders } = await import("./mercadopago-reconciliation.server");
-    const payments = await reconcilePendingMercadoPagoOrders();
-    const { syncPaidOrders } = await import("./bling-orders.server");
-    const result = await syncPaidOrders();
-
-    return {
-      checked: payments.checked + result.checked,
-      exported: result.exported,
-      errors: [...payments.errors, ...result.errors].slice(0, 3),
-    };
+    const { syncPayments } = await import("./payment-sync.server");
+    return syncPayments();
   });
 
 // Temporary compatibility alias for any older admin bundle still importing the former name.
