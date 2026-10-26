@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { labelSenderSchema, shippingConfigSchema } from "./shipping";
 import { melhorEnvioRequest } from "./melhor-envio.server";
+import { normalizeMelhorEnvioQuoteResponse } from "./melhor-envio-quote";
 import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import { business } from "./business";
@@ -165,22 +166,21 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     sender,
   });
 
-  const quotes = quoteSchema.parse(
-    await melhorEnvioRequest("/api/v2/me/shipment/calculate", {
-      method: "POST",
-      body: JSON.stringify({
-        from: { postal_code: sender.postal_code },
-        to: { postal_code: order.quoted_cep },
-        services: String(cartPayload.service),
-        volumes: cartPayload.volumes,
-        options: {
-          insurance_value: order.subtotal_cents / 100,
-          receipt: false,
-          own_hand: false,
-        },
-      }),
+  const rawQuote = await melhorEnvioRequest("/api/v2/me/shipment/calculate", {
+    method: "POST",
+    body: JSON.stringify({
+      from: { postal_code: sender.postal_code },
+      to: { postal_code: order.quoted_cep },
+      services: String(cartPayload.service),
+      volumes: cartPayload.volumes,
+      options: {
+        insurance_value: order.subtotal_cents / 100,
+        receipt: false,
+        own_hand: false,
+      },
     }),
-  );
+  });
+  const quotes = quoteSchema.parse(normalizeMelhorEnvioQuoteResponse(rawQuote));
   const quote = quotes.find((q) => String(q.id) === String(cartPayload.service) && !q.error);
   const quotedPrice = quote?.custom_price ?? quote?.price;
   if (quotedPrice === null || quotedPrice === undefined || Math.round(quotedPrice * 100) !== order.freight_cents)

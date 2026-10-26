@@ -5,6 +5,7 @@ import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
 import { validateDeliveryAddress, type DeliveryAddress } from "./delivery-address";
 import { melhorEnvioRequest } from "./melhor-envio.server";
+import { normalizeMelhorEnvioQuoteResponse } from "./melhor-envio-quote";
 
 async function providerJson(response: Response, service: string) {
   if (!response.ok) {
@@ -58,9 +59,9 @@ export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<
     method: "POST",
     body: JSON.stringify(requestBody),
   });
-  if (!Array.isArray(body)) throw new Error("O Melhor Envio retornou uma cotação inválida.");
+  const quoteRows = normalizeMelhorEnvioQuoteResponse(body);
 
-  return body
+  return quoteRows
     .flatMap((row) => {
       const parsed = melhorEnvioServiceSchema.safeParse(row);
       if (!parsed.success || parsed.data.error) return [];
