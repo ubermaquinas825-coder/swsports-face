@@ -1,6 +1,11 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { superfreteRequest } from "./superfrete.server";
-import { labelInfoSchema, verifyLabelInfo, type LabelPayload } from "./shipping-labels";
+import {
+  labelInfoSchema,
+  verifyLabelInfo,
+  labelAddressDifferences,
+  type LabelPayload,
+} from "./shipping-labels";
 import { z } from "zod";
 
 const knownStatuses = new Set([
@@ -102,11 +107,19 @@ export async function diagnoseSuperfreteShipment(orderId: string) {
           order.data.freight_cents,
         );
       } catch (error) {
-        problems.push(
-          error instanceof Error && safeReasons.has(error.message)
-            ? error.message
-            : "Não foi possível comparar todos os dados salvos com a resposta da SuperFrete.",
-        );
+        if (
+          error instanceof Error &&
+          error.message === "Endereço da etiqueta divergente do pedido."
+        ) {
+          problems.push(
+            ...labelAddressDifferences(info, stored.data.shipment as unknown as LabelPayload),
+          );
+        } else
+          problems.push(
+            error instanceof Error && safeReasons.has(error.message)
+              ? error.message
+              : "Não foi possível comparar todos os dados salvos com a resposta da SuperFrete.",
+          );
       }
     }
   }

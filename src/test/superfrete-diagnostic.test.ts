@@ -51,7 +51,7 @@ describe("Read-only SuperFrete diagnostics", () => {
     info.to.city = "Different";
     provider.mockResolvedValue(info);
     const result = await diagnoseSuperfreteShipment("order");
-    expect(result.problems).toContain("Endereço da etiqueta divergente do pedido.");
+    expect(result.problems).toContain("Destinatário: cidade diferente do pedido.");
     expect(JSON.stringify(result)).not.toContain("Different");
   });
   it("does not leak arbitrary errors or provider bodies", async () => {
