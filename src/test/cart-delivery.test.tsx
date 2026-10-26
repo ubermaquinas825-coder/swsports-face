@@ -19,13 +19,15 @@ afterEach(() => { cleanup(); vi.resetAllMocks(); });
 describe("Cart delivery handoff", () => {
   it("requires a current freight selection before sending the customer to Mercado Pago checkout", () => {
     render(<CartDrawer />);
-    const finish = screen.getByRole("button", { name: "FINALIZAR COMPRA" });
-    expect(finish).toBeDisabled();
-    expect(screen.getByText(/Pagamento seguro pelo Mercado Pago/i)).toBeInTheDocument();
+
+    const blockedCheckout = screen.getByRole("button", { name: "ESCOLHA O FRETE PARA CONTINUAR" });
+    expect(blockedCheckout).toBeDisabled();
+    expect(screen.getByText(/pagamento seguro no Mercado Pago/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Selecionar frete de teste"));
 
-    expect(finish).toBeEnabled();
+    const enabledCheckout = screen.getByRole("button", { name: "CONTINUAR PARA PAGAMENTO" });
+    expect(enabledCheckout).toBeEnabled();
     expect(screen.getByText("R$ 12,34")).toBeInTheDocument();
     expect(screen.getByText("R$ 62,24")).toBeInTheDocument();
   });
@@ -34,7 +36,7 @@ describe("Cart delivery handoff", () => {
     render(<CartDrawer />);
     fireEvent.click(screen.getByText("Selecionar frete antigo"));
 
-    expect(screen.getByRole("button", { name: "FINALIZAR COMPRA" })).toBeDisabled();
-    expect(screen.getByText("Escolha o frete")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ESCOLHA O FRETE PARA CONTINUAR" })).toBeDisabled();
+    expect(screen.getByText("Calcule e escolha acima")).toBeInTheDocument();
   });
 });
