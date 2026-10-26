@@ -24,7 +24,7 @@ const run = () => handler({ request: new Request("https://local.test", { method:
 beforeEach(() => {
   vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "false");
   authenticate.mockResolvedValue(null);
-  syncPayments.mockResolvedValue({ checked: 0, approved: 0, failed: 0, errors: [] });
+  syncPayments.mockResolvedValue({ checked: 0, approved: 0, failed: 0, held: 0, errors: [] });
   syncTracking.mockResolvedValue({ checked: 0, updated: 0, errors: [] });
 });
 afterEach(() => {
@@ -34,7 +34,7 @@ afterEach(() => {
 
 describe("ERP daily scheduler", () => {
   it("reports payment and Melhor Envio tracking results without label purchases", async () => {
-    syncPayments.mockResolvedValue({ checked: 2, approved: 1, failed: 0, errors: [] });
+    syncPayments.mockResolvedValue({ checked: 2, approved: 1, failed: 0, held: 1, errors: [] });
     syncTracking.mockResolvedValue({ checked: 3, updated: 2, errors: [] });
     const response = await run();
     expect(response.status).toBe(200);
@@ -42,12 +42,20 @@ describe("ERP daily scheduler", () => {
       paymentsChecked: 2,
       paymentsApproved: 1,
       paymentsFailed: 0,
+      paymentsHeldForReview: 1,
       trackingChecked: 3,
       trackingUpdated: 2,
       trackingFailures: 0,
       failures: 0,
       ok: true,
     });
+  });
+
+  it("does not count a safely held historical payment as a cron failure", async () => {
+    syncPayments.mockResolvedValue({ checked: 1, approved: 0, failed: 0, held: 1, errors: [] });
+    const response = await run();
+    expect(response.status).toBe(200);
+    expect((await response.json()).paymentsHeldForReview).toBe(1);
   });
 
   it("returns retryable status without exposing provider error text", async () => {
