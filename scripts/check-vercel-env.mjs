@@ -43,14 +43,15 @@ if (process.env.CRON_SECRET.length < 32)
 if (process.env.MELHOR_ENVIO_ENVIRONMENT !== "production")
   throw new Error("MELHOR_ENVIO_ENVIRONMENT must be production for the production store");
 const redirect = new URL(process.env.MELHOR_ENVIO_REDIRECT_URI);
+const canonicalHost = (hostname) => hostname.toLowerCase().replace(/^www\./, "");
 if (
   redirect.protocol !== "https:" ||
-  redirect.origin !== site.origin ||
+  canonicalHost(redirect.hostname) !== canonicalHost(site.hostname) ||
   redirect.pathname !== "/api/melhor-envio/callback" ||
   redirect.search ||
   redirect.hash ||
   redirect.username ||
   redirect.password
-) throw new Error("MELHOR_ENVIO_REDIRECT_URI must be the production callback on the public store origin");
+) throw new Error("MELHOR_ENVIO_REDIRECT_URI must be the production callback on the public store domain");
 
 console.log("Vercel configuration checks passed. No credentials were printed.");
