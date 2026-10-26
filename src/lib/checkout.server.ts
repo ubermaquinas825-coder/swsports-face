@@ -4,8 +4,8 @@ import { choosePackage, defaultShippingConfig, shippingConfigSchema, validatedTo
 import { productFor, UNIT_PRICE } from "@/lib/products";
 import type { CheckoutLine, ShippingOption } from "@/lib/checkout";
 import { validateDeliveryAddress, type DeliveryAddress } from "./delivery-address";
+import { melhorEnvioRequest } from "./melhor-envio.server";
 
-import { superfreteRequest } from "./superfrete.server";
 async function providerJson(response: Response, service: string) {
   if (!response.ok) {
     // Authentication errors can echo credentials; never log provider bodies.
@@ -14,8 +14,18 @@ async function providerJson(response: Response, service: string) {
   }
   return response.json() as Promise<unknown>;
 }
-const quotedPackageSchema = z.object({ dimensions: z.object({ height: z.coerce.number().positive(), width: z.coerce.number().positive(), length: z.coerce.number().positive() }), weight: z.coerce.number().positive() });
-const serviceSchema = z.object({ id: z.union([z.string(), z.number()]), name: z.string(), price: z.coerce.number().finite().nonnegative(), delivery_time: z.coerce.number().int().nonnegative().optional(), company: z.object({ name: z.string() }).optional(), has_error: z.boolean().optional(), packages: z.array(quotedPackageSchema).optional(), error: z.unknown().optional() });
+
+const melhorEnvioServiceSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  name: z.string(),
+  price: z.coerce.number().finite().nonnegative().nullable().optional(),
+  custom_price: z.coerce.number().finite().nonnegative().nullable().optional(),
+  delivery_time: z.coerce.number().int().nonnegative().nullable().optional(),
+  custom_delivery_time: z.coerce.number().int().nonnegative().nullable().optional(),
+  company: z.object({ name: z.string() }).optional(),
+  error: z.unknown().optional(),
+});
+
 export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<ShippingOption[]> {
   // Privileged read of store-owned operational settings only; never return the settings or orders publicly.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -24,19 +34,58 @@ export async function quoteFreight(cep: string, lines: CheckoutLine[]): Promise<
   const config = settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig;
   const packaging = choosePackage(lines.reduce((sum, line) => sum + line.qty, 0), config);
   if (!packaging) throw new Error("A embalagem para esta quantidade ainda não foi cadastrada pela loja.");
-  const body = await superfreteRequest("calculator", config.labelAutomation.sender?.email, {
-    from: { postal_code: config.originCep }, to: { postal_code: cep }, services: config.carriers.length ? config.carriers.join(",") : "1,2,17,3,33",
-    options: { own_hand: false, receipt: false, insurance_value: validatedTotal(lines, 0, 0) / 100, use_insurance_value: true },
-    package: { weight: packaging.weightKg, height: packaging.heightCm, width: packaging.widthCm, length: packaging.lengthCm },
+
+  const requestBody: Record<string, unknown> = {
+    from: { postal_code: config.originCep },
+    to: { postal_code: cep },
+    volumes: [
+      {
+        height: packaging.heightCm,
+        width: packaging.widthCm,
+        length: packaging.lengthCm,
+        weight: packaging.weightKg,
+      },
+    ],
+    options: {
+      insurance_value: validatedTotal(lines, 0, 0) / 100,
+      receipt: false,
+      own_hand: false,
+    },
+  };
+  if (config.carriers.length) requestBody.services = config.carriers.join(",");
+
+  const body = await melhorEnvioRequest("/api/v2/me/shipment/calculate", {
+    method: "POST",
+    body: JSON.stringify(requestBody),
   });
-  if (!Array.isArray(body)) throw new Error("A SuperFrete retornou uma cotação inválida.");
-  return body.flatMap((row) => {
-    const parsed = serviceSchema.safeParse(row);
-    if (!parsed.success || parsed.data.has_error || parsed.data.error) return [];
-    const service = parsed.data;
-    const pkg = service.packages?.length === 1 ? service.packages[0] : undefined;
-    return [{ originCep: config.originCep, ...(pkg ? { package: { ...pkg.dimensions, weight: pkg.weight } } : {}), id: String(service.id), name: service.name, company: service.company?.name ?? "", priceCents: Math.round(service.price * 100), deliveryDays: service.delivery_time ?? null }];
-  }).sort((a, b) => a.priceCents - b.priceCents);
+  if (!Array.isArray(body)) throw new Error("O Melhor Envio retornou uma cotação inválida.");
+
+  return body
+    .flatMap((row) => {
+      const parsed = melhorEnvioServiceSchema.safeParse(row);
+      if (!parsed.success || parsed.data.error) return [];
+      const service = parsed.data;
+      const price = service.custom_price ?? service.price;
+      if (price === null || price === undefined) return [];
+      const deliveryDays = service.custom_delivery_time ?? service.delivery_time ?? null;
+      return [
+        {
+          originCep: config.originCep,
+          package: {
+            height: packaging.heightCm,
+            width: packaging.widthCm,
+            length: packaging.lengthCm,
+            weight: packaging.weightKg,
+          },
+          id: String(service.id),
+          name: service.name,
+          company: service.company?.name ?? "Melhor Envio",
+          priceCents: Math.round(price * 100),
+          deliveryDays,
+        },
+      ];
+    })
+    .sort((a, b) => a.priceCents - b.priceCents);
 }
 
 export async function authenticateAppmax() {
