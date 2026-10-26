@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { checkPayments } from "@/lib/payment-reconciliation.functions";
 import { useState } from "react";
-import { LogOut, RefreshCw, ShoppingBag } from "lucide-react";
+import { CircleDollarSign, Clock3, LogOut, PackageCheck, ReceiptText, RefreshCw, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/components/OrderDetails";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,13 @@ export function SalesAdmin() {
     gcTime: 0,
   });
   const orders = query.data?.orders ?? [];
+  const approvedOrders = orders.filter((order) => order.payment_status === "approved");
+  const pendingOrders = orders.filter((order) => order.payment_status === "pending");
+  const awaitingShippingOrders = approvedOrders.filter((order) =>
+    ["awaiting_payment", "awaiting_label", "awaiting_label_payment"].includes(order.shipping_status),
+  );
+  const paidRevenue = approvedOrders.reduce((sum, order) => sum + orderTotal(order), 0);
+  const averageTicket = approvedOrders.length ? Math.round(paidRevenue / approvedOrders.length) : 0;
   const filtered = orders.filter((order) => {
     const a = record(order.delivery_address);
     const haystack = [
@@ -64,12 +71,12 @@ export function SalesAdmin() {
       <div className="mx-auto max-w-7xl">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-brand">SW SPORTS · ADMINISTRATIVO</p>
+            <p className="text-sm font-bold text-brand">SW SPORTS · MINI ERP</p>
             <h1 className="mt-2 flex items-center gap-3 font-display text-3xl font-bold">
-              <ShoppingBag /> Vendas e pedidos
+              <ShoppingBag /> Painel de vendas
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Acompanhe seus clientes, pagamentos e entregas.
+              Visão operacional de pedidos, pagamentos e entregas da loja.
             </p>
           </div>
           <nav className="flex flex-wrap gap-2">
@@ -128,28 +135,32 @@ export function SalesAdmin() {
           </section>
         ) : (
           <>
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
-              {[
-                ["Pedidos nesta página", String(orders.length)],
-                [
-                  "Pagos nesta página",
-                  String(orders.filter((o) => o.payment_status === "approved").length),
-                ],
-                [
-                  "Total pago nesta página",
-                  money(
-                    orders
-                      .filter((o) => o.payment_status === "approved")
-                      .reduce((sum, o) => sum + orderTotal(o), 0),
-                  ),
-                ],
-              ].map(([label, value]) => (
-                <section key={label} className="rounded-xl border bg-card p-5">
-                  <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="mt-2 text-3xl font-bold">{value}</p>
-                </section>
-              ))}
-            </div>
+            <section aria-labelledby="erp-overview" className="mb-6">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <h2 id="erp-overview" className="font-display text-xl font-bold">Resumo operacional</h2>
+                  <p className="text-sm text-muted-foreground">Indicadores dos até 50 pedidos exibidos nesta página.</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{query.data?.count ?? 0} pedido(s) no total</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                {[
+                  ["Pedidos", String(orders.length), ShoppingBag],
+                  ["Faturamento pago", money(paidRevenue), CircleDollarSign],
+                  ["Ticket médio", money(averageTicket), ReceiptText],
+                  ["Aguardando pagamento", String(pendingOrders.length), Clock3],
+                  ["Aguardando envio", String(awaitingShippingOrders.length), PackageCheck],
+                ].map(([label, value, Icon]) => (
+                  <section key={String(label)} className="rounded-xl border bg-card p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm text-muted-foreground">{String(label)}</p>
+                      <Icon size={18} aria-hidden="true" className="text-muted-foreground" />
+                    </div>
+                    <p className="mt-3 text-2xl font-bold">{String(value)}</p>
+                  </section>
+                ))}
+              </div>
+            </section>
             <section className="rounded-xl border bg-card p-4 sm:p-6">
               <div className="mb-5 flex flex-wrap gap-3">
                 <label className="min-w-48 flex-1 text-sm">
