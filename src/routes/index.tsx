@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Modelos exclusivos por R$ 49,90, frete calculado pela SuperFrete e pagamento seguro pelo Mercado Pago.",
+          "Modelos exclusivos por R$ 49,90, frete calculado pelo Melhor Envio e pagamento seguro pelo Mercado Pago.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
