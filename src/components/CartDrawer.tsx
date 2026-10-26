@@ -112,7 +112,7 @@ export function CartDrawer() {
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="w-8 text-center text-sm font-bold">{qty}</span>
+                          <span className="w-8 text-center text-sm font-bold" aria-label={`Quantidade: ${qty}`}>{qty}</span>
                           <button
                             onClick={() => setQty(product.id, qty + 1)}
                             aria-label={`Aumentar quantidade de ${product.name}`}
@@ -132,6 +132,10 @@ export function CartDrawer() {
                     </motion.div>
                   ))}
 
+                  <div className="rounded-2xl border border-border bg-card/60 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-semibold text-foreground">Próximo passo:</span> informe seu CEP e escolha uma opção de entrega. O botão para continuar será liberado depois da escolha do frete.
+                  </div>
+
                   <ShippingCalculator
                     lines={checkoutLines}
                     selection={shipping}
@@ -147,7 +151,7 @@ export function CartDrawer() {
                   <div className="my-2 flex items-center justify-between text-sm text-muted-foreground">
                     <span>Entrega</span>
                     <span>
-                      {shipping ? formatBRL(shipping.option.priceCents / 100) : "Escolha o frete"}
+                      {shipping ? formatBRL(shipping.option.priceCents / 100) : "Calcule e escolha acima"}
                     </span>
                   </div>
                   <div className="mb-3 flex items-center justify-between font-semibold">
@@ -165,13 +169,13 @@ export function CartDrawer() {
                     disabled={!shipping}
                     className="min-h-12 w-full whitespace-normal rounded-xl py-3.5 text-sm font-bold"
                   >
-                    FINALIZAR COMPRA
+                    {shipping ? "CONTINUAR PARA PAGAMENTO" : "ESCOLHA O FRETE PARA CONTINUAR"}
                   </Button>
 
                   <div className="mt-3 flex items-start justify-center gap-2 text-center text-[11px] leading-relaxed text-muted-foreground">
                     <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
                     <span>
-                      Pagamento seguro pelo Mercado Pago. O frete é validado novamente no servidor antes da cobrança.
+                      Você ainda poderá revisar os dados de entrega e o total antes de abrir o pagamento seguro no Mercado Pago.
                     </span>
                   </div>
                 </div>
