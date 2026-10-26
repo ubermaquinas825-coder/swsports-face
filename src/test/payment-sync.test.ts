@@ -12,7 +12,7 @@ vi.mock("@/lib/payment-reconciliation.server", () => ({ reconcileAppmaxOrder: le
 import { syncPayments } from "@/lib/payment-sync.server";
 beforeEach(() => {
   vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "false");
-  reconcile.mockResolvedValue({ checked: 2, approved: 1, failed: 0, errors: [] });
+  reconcile.mockResolvedValue({ checked: 2, approved: 1, failed: 0, held: 1, errors: [] });
   const q = {
     select: () => q,
     not: () => q,
@@ -30,7 +30,7 @@ afterEach(() => {
 });
 describe("Payment-only processing", () => {
   it("reconciles new and legacy payments without touching ERP settings or export queues", async () => {
-    await expect(syncPayments()).resolves.toMatchObject({ checked: 3, approved: 1, errors: [] });
+    await expect(syncPayments()).resolves.toMatchObject({ checked: 3, approved: 1, held: 1, errors: [] });
     expect(legacy).toHaveBeenCalledWith("legacy-order");
     expect(from.mock.calls).toEqual([["shipping_orders"]]);
   });
