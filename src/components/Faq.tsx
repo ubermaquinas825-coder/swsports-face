@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: "Quanto custa o frete?",
-    a: "O frete é consultado pela SuperFrete no carrinho, de acordo com o CEP e os itens do pedido.",
+    a: "O frete é consultado pelo Melhor Envio no carrinho, de acordo com o CEP e os itens do pedido.",
   },
   {
     q: "Vocês vendem no atacado?",
