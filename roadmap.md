@@ -1,6 +1,7 @@
 # Roadmap — SW Sports
 
 ## Correções atuais
+- [ ] Diagnosticar e corrigir conexão/emissão automática SuperFrete após pagamento confirmado, sem cobranças de teste nem repetição de etiquetas ambíguas.
 - [ ] Conectar Meta Pixel 725374147272634 e Google Ads AW-875949502 com aviso regional, política de privacidade e verificação sem compras; publicação depende de autorização.
 - [x] Solicitação atual: identificação real dos seis modelos por nome e conferência oficial Appmax implementadas; consulta de saldo antes de salvar configuração, trava por pedido e barreiras financeiras testadas (42 testes de integração). Painel verificado com proprietário; sem pedido com link disponível para leitura real de pagamento.
 - [ ] Solicitação atual: ativar depósito Geral e estoque real — nova consulta ainda HTTP 403; exige reautorizar no Bling após liberar permissões.
