@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { response } = vi.hoisted(() => ({
   response: {
@@ -58,6 +58,10 @@ describe("Administrative sales page", () => {
   it("opens buyer, delivery and product details without inventing payment dates", () => {
     render(<SalesAdmin />);
     fireEvent.click(screen.getByRole("button", { name: "Ver pedido test-order" }));
+    const details = screen.getByRole("dialog", { name: "Detalhes do pedido" });
+    expect(details).toHaveAttribute("data-state", "open");
+    expect(within(details).getByText("Produtos comprados")).toBeVisible();
+    expect(within(details).getByText("Subtotal: R$ 100,00", { exact: false })).toBeInTheDocument();
     expect(screen.getByText("maria@example.test")).toBeInTheDocument();
     expect(screen.getByText("11999999999")).toBeInTheDocument();
     expect(screen.getByText("Rua das Flores, 15")).toBeInTheDocument();
@@ -65,6 +69,24 @@ describe("Administrative sales page", () => {
     expect(screen.getByText("Mercado Pago")).toBeInTheDocument();
     expect(screen.getByText("Data exata não registrada no histórico atual")).toBeInTheDocument();
     expect(screen.getByText("AB123BR")).toBeInTheDocument();
+  });
+  it("opens details over a long order list and closes them on request", () => {
+    const data = response.data as { count: number; orders: Array<{ id: string }> };
+    const original = data.orders[0];
+    data.orders = Array.from({ length: 50 }, (_, index) => ({ ...original, id: `order-${index}` }));
+    data.count = 50;
+    render(<SalesAdmin />);
+    fireEvent.click(screen.getByRole("button", { name: "Ver pedido order-0" }));
+    const dialog = screen.getByRole("dialog", { name: "Detalhes do pedido" });
+    expect(within(dialog).getByText("Balaclava Gato")).toBeVisible();
+    expect(within(dialog).getByRole("link", { name: "Conversar no WhatsApp" })).toHaveAttribute(
+      "href",
+      "https://wa.me/5511999999999",
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Fechar detalhes" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Ver pedido order-49" }));
+    expect(within(screen.getByRole("dialog")).getByText("order-49")).toBeInTheDocument();
   });
   it("filters out orders that do not match the customer search", () => {
     render(<SalesAdmin />);
