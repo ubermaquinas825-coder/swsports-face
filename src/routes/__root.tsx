@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { CartProvider } from "@/hooks/use-cart";
 import { CartDrawer } from "@/components/CartDrawer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -128,6 +129,7 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-background font-sans text-foreground antialiased">
         {children}
+        <SpeedInsights />
         <Scripts />
       </body>
     </html>
