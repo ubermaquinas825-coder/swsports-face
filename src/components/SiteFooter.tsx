@@ -16,7 +16,7 @@ export function SiteFooter() {
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">Balaclavas divertidas com estampas realistas. Escolha sua personalidade por R$ 49,90.</p>
           <div className="mt-4 space-y-1 text-xs text-muted-foreground">
             <p>Pagamento seguro via Mercado Pago</p>
-            <p>Frete calculado pela SuperFrete</p>
+            <p>Frete calculado pelo Melhor Envio</p>
           </div>
         </div>
 
