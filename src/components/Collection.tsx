@@ -61,7 +61,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
             </div>
 
-            <p className="font-display text-3xl font-bold text-brand">{formatBRL(UNIT_PRICE)}</p>
+            <div>
+              <p className="font-display text-3xl font-bold text-brand">{formatBRL(UNIT_PRICE)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Preço por unidade · frete calculado no carrinho</p>
+            </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
               <Button
@@ -80,6 +83,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 COMPRAR AGORA
               </Button>
             </div>
+            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+              Ao comprar agora, você confere o frete e o total antes de seguir para o pagamento.
+            </p>
           </div>
         </motion.div>
       </div>
@@ -98,7 +104,7 @@ export function Collection() {
               ESCOLHA SUA PRÓXIMA PERSONALIDADE
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Seis estampas exclusivas. Todas por {formatBRL(UNIT_PRICE)}.
+              Seis estampas exclusivas. Todas por {formatBRL(UNIT_PRICE)} por unidade. Escolha o modelo, calcule o frete no carrinho e confira o total antes do pagamento.
             </p>
           </div>
         </Reveal>
