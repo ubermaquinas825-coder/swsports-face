@@ -3,6 +3,10 @@ vi.mock("@/lib/superfrete-cart.functions", () => ({
   prepareSuperfreteShipping: vi.fn(),
   inspectSuperfreteShipping: vi.fn(),
 }));
+vi.mock("@/lib/melhor-envio-cart.functions", () => ({
+  prepareMelhorEnvioShipping: vi.fn(),
+  inspectMelhorEnvioShipping: vi.fn(),
+}));
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { response } = vi.hoisted(() => ({
