@@ -2,15 +2,28 @@ import { z } from "zod";
 import { manualShippingHold } from "./manual-shipping-eligibility";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
-import { shippingConfigSchema } from "./shipping";
-import { buildLabelPayload } from "./shipping-labels";
+import { labelSenderSchema, shippingConfigSchema } from "./shipping";
 import { melhorEnvioRequest } from "./melhor-envio.server";
 import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import { business } from "./business";
+import { validateDeliveryAddress } from "./delivery-address";
+import { orderItemsSchema } from "./order-items";
+import { SITE_ORIGIN } from "./site";
 
 const dashboardUrl = "https://melhorenvio.com.br/";
 
+const volumeSchema = z.object({
+  height: z.coerce.number().positive(),
+  width: z.coerce.number().positive(),
+  length: z.coerce.number().positive(),
+  weight: z.coerce.number().positive(),
+});
+const savedServiceSchema = z.object({
+  id: z.string().regex(/^\d+$/),
+  originCep: z.string().regex(/^\d{8}$/),
+  package: volumeSchema,
+});
 const quoteSchema = z.array(
   z.object({
     id: z.union([z.string(), z.number()]),
@@ -36,6 +49,71 @@ function recipientDocument(document: string) {
   if (value.length === 11) return { document: value };
   if (value.length === 14) return { company_document: value };
   throw new Error("Documento do destinatário inválido para o Melhor Envio.");
+}
+
+function buildMelhorEnvioPayload(input: {
+  orderId: string;
+  address: unknown;
+  cep: string;
+  service: unknown;
+  items: unknown;
+  subtotalCents: number;
+  sender: z.infer<typeof labelSenderSchema>;
+}) {
+  const to = validateDeliveryAddress(input.address, input.cep);
+  const service = savedServiceSchema.parse(input.service);
+  const sender = labelSenderSchema.parse(input.sender);
+  if (service.originCep !== sender.postal_code)
+    throw new Error("O remetente mudou desde a cotação; faça uma nova cotação.");
+  const items = orderItemsSchema.parse(input.items);
+  if (items.reduce((sum, row) => sum + row.qty * row.unit_price_cents, 0) !== input.subtotalCents)
+    throw new Error("Itens divergentes do valor do pedido.");
+
+  return {
+    service: Number(service.id),
+    from: {
+      name: sender.name,
+      email: sender.email,
+      phone: digits(business.phone),
+      company_document: digits(business.cnpj),
+      state_register: "",
+      address: sender.address,
+      complement: sender.complement,
+      number: sender.number,
+      district: sender.district,
+      city: sender.city,
+      postal_code: sender.postal_code,
+      country_id: "BR",
+      state_abbr: sender.state_abbr,
+    },
+    to: {
+      name: to.name,
+      email: to.email,
+      phone: to.phone,
+      ...recipientDocument(to.document),
+      address: to.street,
+      complement: to.complement,
+      number: to.number,
+      district: to.district,
+      city: to.city,
+      postal_code: to.postalCode,
+      country_id: "BR",
+      state_abbr: to.state,
+    },
+    products: items.map((row) => ({
+      name: row.name,
+      quantity: String(row.qty),
+      unitary_value: (row.unit_price_cents / 100).toFixed(2),
+    })),
+    volumes: [service.package],
+    options: {
+      platform: "SW Sports",
+      insurance_value: input.subtotalCents / 100,
+      receipt: false,
+      own_hand: false,
+      tags: [{ tag: input.orderId, url: SITE_ORIGIN }],
+    },
+  };
 }
 
 export async function prepareMelhorEnvioCart(orderId: string) {
@@ -77,7 +155,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     order = await loadOrder(orderId);
   }
 
-  const base = buildLabelPayload({
+  const cartPayload = buildMelhorEnvioPayload({
     orderId,
     address: order.delivery_address,
     cep: order.quoted_cep,
@@ -86,32 +164,6 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     subtotalCents: order.subtotal_cents,
     sender,
   });
-  const { document: toDocument, ...to } = base.to;
-  const cartPayload = {
-    service: base.service,
-    from: {
-      ...base.from,
-      email: sender.email,
-      phone: digits(business.phone),
-      company_document: digits(business.cnpj),
-      state_register: "",
-      country_id: "BR",
-    },
-    to: {
-      ...to,
-      ...recipientDocument(toDocument),
-      country_id: "BR",
-    },
-    products: base.products,
-    volumes: [base.volumes],
-    options: {
-      platform: "SW Sports",
-      insurance_value: base.options.insurance_value,
-      receipt: false,
-      own_hand: false,
-      tags: base.options.tags,
-    },
-  };
 
   const quotes = quoteSchema.parse(
     await melhorEnvioRequest("/api/v2/me/shipment/calculate", {
@@ -119,8 +171,8 @@ export async function prepareMelhorEnvioCart(orderId: string) {
       body: JSON.stringify({
         from: { postal_code: sender.postal_code },
         to: { postal_code: order.quoted_cep },
-        services: String(base.service),
-        volumes: [base.volumes],
+        services: String(cartPayload.service),
+        volumes: cartPayload.volumes,
         options: {
           insurance_value: order.subtotal_cents / 100,
           receipt: false,
@@ -129,7 +181,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
       }),
     }),
   );
-  const quote = quotes.find((q) => String(q.id) === String(base.service) && !q.error);
+  const quote = quotes.find((q) => String(q.id) === String(cartPayload.service) && !q.error);
   const quotedPrice = quote?.custom_price ?? quote?.price;
   if (quotedPrice === null || quotedPrice === undefined || Math.round(quotedPrice * 100) !== order.freight_cents)
     throw new Error("O valor do frete mudou ou o serviço está indisponível. Faça uma nova cotação antes de criar o envio.");
@@ -163,8 +215,8 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     });
     if (saved.error || !saved.data) throw new Error("Não foi possível vincular o envio.");
 
-    // The historical RPC names SuperFrete in its event. Correct only this newly-created
-    // event so history identifies the provider without rewriting legacy records.
+    // The historical RPC records provider=superfrete. Correct only the new event
+    // for this order; legacy events are preserved unchanged.
     await supabaseAdmin
       .from("shipping_events")
       .update({
