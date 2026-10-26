@@ -23,6 +23,7 @@ async function synchronize({ request }: { request: Request }) {
         paymentsChecked: payments.checked,
         paymentsApproved: payments.approved,
         paymentsFailed: payments.failed,
+        paymentsHeldForReview: payments.held,
         trackingChecked: tracking.checked,
         trackingUpdated: tracking.updated,
         trackingFailures: tracking.errors.length,
