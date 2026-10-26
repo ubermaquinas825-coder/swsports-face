@@ -46,10 +46,10 @@ export function Hero() {
             BALACLAVAS QUE MUDAM SUA <span className="text-brand">PERSONALIDADE</span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Estampas realistas, confortáveis e prontas para transformar seu visual.
+            Escolha sua estampa, calcule o frete antes de pagar e finalize com segurança pelo Mercado Pago.
           </p>
           <p className="mt-4 font-display text-3xl font-bold text-foreground sm:text-4xl">
-            {formatBRL(UNIT_PRICE)}
+            {formatBRL(UNIT_PRICE)} <span className="font-sans text-sm font-medium text-muted-foreground">por unidade</span>
           </p>
         </motion.div>
 
@@ -68,17 +68,11 @@ export function Hero() {
             rotateY.set(0);
           }}
         >
-          <span
-            aria-hidden
-            className="absolute left-0 top-10 font-display text-7xl font-bold text-foreground/5 sm:text-9xl"
-          >
+          <span aria-hidden className="absolute left-0 top-10 font-display text-7xl font-bold text-foreground/5 sm:text-9xl">
             0{current + 1}
           </span>
 
-          <motion.div
-            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-            className="relative flex h-full w-full items-center justify-center"
-          >
+          <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }} className="relative flex h-full w-full items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.img
                 key={featured.id}
@@ -98,78 +92,45 @@ export function Hero() {
             </AnimatePresence>
           </motion.div>
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => change(-1)}
-            aria-label="Estampa anterior"
-            title="Estampa anterior"
-            className="absolute left-0 h-11 w-11 rounded-full bg-background/85"
-          >
+          <Button variant="outline" size="icon" onClick={() => change(-1)} aria-label="Estampa anterior" title="Estampa anterior" className="absolute left-0 h-11 w-11 rounded-full bg-background/85">
             <ChevronLeft />
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => change(1)}
-            aria-label="Próxima estampa"
-            title="Próxima estampa"
-            className="absolute right-0 h-11 w-11 rounded-full bg-background/85"
-          >
+          <Button variant="outline" size="icon" onClick={() => change(1)} aria-label="Próxima estampa" title="Próxima estampa" className="absolute right-0 h-11 w-11 rounded-full bg-background/85">
             <ChevronRight />
           </Button>
         </div>
 
         <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
           <p className="text-sm font-medium">
-            {featured.name}
-            <span className="mx-2 text-muted-foreground">/</span>
-            <span className="font-bold text-brand">{formatBRL(UNIT_PRICE)}</span>
+            {featured.name}<span className="mx-2 text-muted-foreground">/</span><span className="font-bold text-brand">{formatBRL(UNIT_PRICE)}</span>
           </p>
 
           <div className="flex w-full max-w-xl flex-col gap-2 sm:flex-row sm:justify-center">
             <Button asChild size="lg" className="min-h-12 rounded-full px-8 font-bold">
-              <a href="#colecao">
-                ESCOLHER MINHA BALACLAVA <ArrowUpRight />
-              </a>
+              <a href="#colecao">COMPRAR AGORA <ArrowUpRight /></a>
             </Button>
             <Button asChild variant="outline" size="lg" className="min-h-12 rounded-full px-8 font-bold">
-              <a href="#colecao">VER COLEÇÃO</a>
+              <a href="#colecao">VER TODOS OS MODELOS</a>
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">Você confere o frete e o total antes de seguir para o pagamento.</p>
 
           <div className="grid w-full max-w-3xl gap-2 text-left text-xs text-muted-foreground sm:grid-cols-3">
             <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 py-2">
-              <LockKeyhole className="h-4 w-4 shrink-0 text-brand" />
-              <span>Pagamento seguro Mercado Pago</span>
+              <LockKeyhole className="h-4 w-4 shrink-0 text-brand" /><span>Pagamento pelo Mercado Pago</span>
             </div>
             <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 py-2">
-              <Truck className="h-4 w-4 shrink-0 text-brand" />
-              <span>Frete calculado pela SuperFrete</span>
+              <Truck className="h-4 w-4 shrink-0 text-brand" /><span>Frete calculado antes do pagamento</span>
             </div>
             <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/60 px-3 py-2">
-              <ShieldCheck className="h-4 w-4 shrink-0 text-brand" />
-              <span>Compra rápida e segura</span>
+              <ShieldCheck className="h-4 w-4 shrink-0 text-brand" /><span>Resumo do pedido antes de pagar</span>
             </div>
           </div>
 
           <div className="flex gap-2" aria-label="Estampas da coleção">
             {products.map((product, index) => (
-              <Button
-                key={product.id}
-                variant="ghost"
-                size="icon"
-                aria-label={`Mostrar ${product.name}`}
-                aria-pressed={index === current}
-                onClick={() => setCurrent(index)}
-                title={product.name}
-                className="h-11 w-11 rounded-full"
-              >
-                <span
-                  className={`h-1.5 rounded-full transition-all ${
-                    index === current ? "w-5 bg-brand" : "w-1.5 bg-muted-foreground"
-                  }`}
-                />
+              <Button key={product.id} variant="ghost" size="icon" aria-label={`Mostrar ${product.name}`} aria-pressed={index === current} onClick={() => setCurrent(index)} title={product.name} className="h-11 w-11 rounded-full">
+                <span className={`h-1.5 rounded-full transition-all ${index === current ? "w-5 bg-brand" : "w-1.5 bg-muted-foreground"}`} />
               </Button>
             ))}
           </div>
