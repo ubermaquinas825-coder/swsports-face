@@ -13,7 +13,8 @@
     "title": "[Correção] Consolidar Mercado Pago como único provedor nos fluxos ativos",
     "body_file": "issues/t02.md",
     "depends_on": [
-      "T01"
+      "T01",
+      "T13"
     ],
     "github_url": null
   },
@@ -122,6 +123,16 @@
       "T09",
       "T10",
       "T11"
+    ],
+    "github_url": null
+  },
+  {
+    "id": "T13",
+    "type": "Correção",
+    "title": "[Correção] Atualizar instalador para o cache npm regional do Lovable",
+    "body_file": "issues/t13.md",
+    "depends_on": [
+      "T01"
     ],
     "github_url": null
   }
