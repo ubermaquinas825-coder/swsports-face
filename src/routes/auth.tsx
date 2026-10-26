@@ -14,7 +14,7 @@ function Auth() {
   const navigate = useNavigate();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
-  useEffect(() => { supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/frete-envios" }); }); }, [navigate]);
+  useEffect(() => { supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/admin" }); }); }, [navigate]);
   const social = async (provider: "google" | "lovable") => {
     if (standalone) {
       if (provider !== "google") return;
@@ -24,12 +24,12 @@ function Auth() {
     }
     const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/auth` });
     if (result.error) setMessage("Não foi possível entrar. Tente novamente.");
-    else if (!result.redirected) navigate({ to: "/frete-envios" });
+    else if (!result.redirected) navigate({ to: "/admin" });
   };
   return <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-5 px-6 py-12">
     <Link to="/"><img src={logo.url} alt="SW Sports Uniformes" className="h-24 w-44 object-contain" /></Link>
     <h1 className="font-display text-3xl font-bold">ACESSO ADMINISTRATIVO</h1>
-    <form className="space-y-4" onSubmit={async (e) => { e.preventDefault(); setBusy(true); const { error } = await supabase.auth.signInWithPassword({ email, password }); setBusy(false); if (error) setMessage("E-mail ou senha inválidos. Verifique também a confirmação do e-mail."); else navigate({ to: "/frete-envios" }); }}>
+    <form className="space-y-4" onSubmit={async (e) => { e.preventDefault(); setBusy(true); const { error } = await supabase.auth.signInWithPassword({ email, password }); setBusy(false); if (error) setMessage("E-mail ou senha inválidos. Verifique também a confirmação do e-mail."); else navigate({ to: "/admin" }); }}>
       <label className="block text-sm">E-mail<input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full rounded-md border border-input bg-card px-3 py-3" /></label>
       <label className="block text-sm">Senha<input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full rounded-md border border-input bg-card px-3 py-3" /></label>
       <Button type="submit" disabled={busy} className="w-full">{busy ? "Entrando…" : "Entrar"}</Button>

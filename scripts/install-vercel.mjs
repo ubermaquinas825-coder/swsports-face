@@ -8,7 +8,7 @@ const stage = mkdtempSync(join(tmpdir(), "swsports-install-"));
 try {
   for (const name of ["package.json", "bunfig.toml"]) cpSync(join(root, name), join(stage, name));
   const original = readFileSync(join(root, "bun.lock"), "utf8");
-  writeFileSync(join(stage, "bun.lock"), original.replaceAll("https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/", "https://registry.npmjs.org/"));
+  writeFileSync(join(stage, "bun.lock"), original.replace(/https:\/\/europe-west[14]-npm\.pkg\.dev\/lovable-core-prod\/sandbox-npm-cache\//g, "https://registry.npmjs.org/"));
   execFileSync("npx", ["--yes", "bun@1.3.14", "install", "--cwd", stage, "--frozen-lockfile"], { stdio: "inherit" });
   cpSync(join(stage, "node_modules"), join(root, "node_modules"), {
     recursive: true, force: true, verbatimSymlinks: true,

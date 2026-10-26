@@ -17,6 +17,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
 import { Route as AuthenticatedIntegracoesBlingRouteImport } from './routes/_authenticated/integracoes/bling'
 import { Route as ApiPublicBlingCallbackRouteImport } from './routes/api/public/bling/callback'
@@ -63,6 +64,11 @@ const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
   path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFreteEnviosRoute =
   AuthenticatedFreteEnviosRouteImport.update({
     id: '/frete-envios',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
   '/_authenticated/integracoes/bling': typeof AuthenticatedIntegracoesBlingRoute
   '/api/public/bling/callback': typeof ApiPublicBlingCallbackRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/admin'
     | '/frete-envios'
     | '/integracoes/bling'
     | '/api/public/bling/callback'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/admin'
     | '/frete-envios'
     | '/integracoes/bling'
     | '/api/public/bling/callback'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/_authenticated/admin'
     | '/_authenticated/frete-envios'
     | '/_authenticated/integracoes/bling'
     | '/api/public/bling/callback'
@@ -266,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/frete-envios': {
       id: '/_authenticated/frete-envios'
       path: '/frete-envios'
@@ -312,11 +331,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedFreteEnviosRoute: typeof AuthenticatedFreteEnviosRoute
   AuthenticatedIntegracoesBlingRoute: typeof AuthenticatedIntegracoesBlingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedFreteEnviosRoute: AuthenticatedFreteEnviosRoute,
   AuthenticatedIntegracoesBlingRoute: AuthenticatedIntegracoesBlingRoute,
 }

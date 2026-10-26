@@ -4,6 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { waLink } from "@/lib/products";
 
 const HIDDEN_PREFIXES = [
+  "/admin",
   "/checkout",
   "/auth",
   "/redefinir-senha",
