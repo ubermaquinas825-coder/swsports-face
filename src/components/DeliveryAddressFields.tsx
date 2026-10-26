@@ -3,9 +3,11 @@ import { deliveryAddressSchema } from "@/lib/delivery-address";
 export function DeliveryAddressFields({ postalCode, disabled }: { postalCode: string; disabled: boolean }) {
   const field = "mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
   return (
-    <fieldset disabled={disabled} className="space-y-3 border-t border-border pt-4">
+    <fieldset disabled={disabled} className="space-y-3 border-t border-border pt-4" aria-describedby="delivery-data-help">
       <legend className="font-semibold">Dados para entrega</legend>
-      <p className="text-xs text-muted-foreground">Informe o destinatário e o endereço que deverão constar no envio. Estes são os dados de entrega do pedido, mesmo se você informar outro endereço na Appmax.</p>
+      <p id="delivery-data-help" className="text-xs text-muted-foreground">
+        Informe somente os dados necessários para identificar o destinatário e realizar a entrega do pedido.
+      </p>
       {[
         { name: "name", label: "Nome completo do destinatário", autoComplete: "shipping name", maxLength: 50 },
         { name: "document", label: "CPF ou CNPJ do destinatário", autoComplete: "off", maxLength: 18, inputMode: "numeric" as const },
@@ -31,9 +33,11 @@ export function DeliveryAddressFields({ postalCode, disabled }: { postalCode: st
       <label className="block text-sm">CEP cotado
         <input name="postalCode" value={postalCode} readOnly autoComplete="shipping postal-code" className={field} />
       </label>
-      <p className="text-xs text-muted-foreground">Para mudar o CEP, calcule o frete novamente acima. Seus dados serão usados para processar o pedido e realizar a entrega.</p>
+      <p id="delivery-privacy-help" className="text-xs text-muted-foreground">
+        Para mudar o CEP, calcule o frete novamente. Os dados informados são usados para processar o pedido, atendimento e entrega. Consulte a Política de Privacidade para mais informações.
+      </p>
       <label className="flex items-start gap-2 text-sm">
-        <input type="checkbox" name="confirmDelivery" required className="mt-1" />
+        <input type="checkbox" name="confirmDelivery" required className="mt-1 h-4 w-4 accent-primary" aria-describedby="delivery-privacy-help" />
         Confirmo que os dados acima estão corretos para a entrega.
       </label>
     </fieldset>
