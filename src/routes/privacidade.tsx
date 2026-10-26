@@ -48,7 +48,7 @@ function Privacy() {
             <p className="text-sm text-muted-foreground">A {business.legalName}, CNPJ {business.cnpj}, responsável pela operação da SW Sports, trata dados pessoais necessários para operar a loja, atender clientes, processar pedidos, pagamentos e entregas, prevenir fraudes e cumprir obrigações legais e regulatórias aplicáveis.</p>
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Compras e entrega</h3>
-              <p className="text-sm text-muted-foreground">Dados informados no pedido, como nome, CPF/CNPJ, contato e endereço, são usados para atendimento, pagamento, emissão e entrega do pedido. O Mercado Pago processa o pagamento; o sistema administrativo organiza os pedidos e os dados de atendimento; e a SuperFrete é utilizada no cálculo e na operação logística. Cada serviço recebe os dados necessários à sua função.</p>
+              <p className="text-sm text-muted-foreground">Dados informados no pedido, como nome, CPF/CNPJ, contato e endereço, são usados para atendimento, pagamento, emissão e entrega do pedido. O Mercado Pago processa o pagamento; o sistema administrativo organiza os pedidos e os dados de atendimento; e o Melhor Envio é utilizado no cálculo e na operação logística. Cada serviço recebe os dados necessários à sua função.</p>
             </div>
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Direitos e solicitações de privacidade</h3>
@@ -82,7 +82,7 @@ function Privacy() {
 
           <section id="entrega" className="scroll-mt-28 space-y-3">
             <h2 className="font-display text-2xl font-bold">Política de Entrega</h2>
-            <p className="text-sm text-muted-foreground">O frete é calculado a partir do CEP e dos itens do carrinho. As opções, valores e prazos estimados exibidos na compra são consultados pela integração com a SuperFrete e novamente validados no servidor antes da criação do pagamento.</p>
+            <p className="text-sm text-muted-foreground">O frete é calculado a partir do CEP e dos itens do carrinho. As opções, valores e prazos estimados exibidos na compra são consultados pela integração com o Melhor Envio e novamente validados no servidor antes da criação do pagamento.</p>
             <p className="text-sm text-muted-foreground">O cliente deve conferir o endereço antes de concluir a compra. Se a busca automática do CEP não preencher algum campo, o checkout permite completar o endereço manualmente.</p>
             <p className="text-sm text-muted-foreground">Os prazos apresentados são estimativas de transporte. Em caso de dúvida sobre um envio, fale com a equipe informando os dados do pedido.</p>
           </section>
