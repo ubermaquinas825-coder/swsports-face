@@ -41,20 +41,19 @@ export function SuperfreteOrderAction({ order }: Props) {
       : null);
   const blocked = Boolean(hold);
   return (
-    <section className="mt-6 rounded-lg border p-4">
-      <h4 className="font-semibold">Envio pela SuperFrete</h4>
-      <p className="my-3 text-sm text-muted-foreground">
-        Prepare o envio com remetente, endereço, produtos e embalagem do pedido. O site não paga a
-        etiqueta nem debita sua carteira. Revise e pague na mesma conta SuperFrete usada pela
-        integração.
+    <section className="min-w-0 rounded-xl border border-border bg-card p-5 sm:p-6">
+      <h4 className="text-base font-semibold">Envio pela SuperFrete</h4>
+      <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
+        Revise e pague a etiqueta na sua conta SuperFrete.
       </p>
       {linked ? (
         <>
-          <p className="mb-3 break-all text-sm">
-            Identificador do envio: <strong>{linked}</strong>
+          <p className="mb-4 rounded-lg bg-background p-3 text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]">
+            Identificador do envio
+            <span className="mt-1 block font-mono text-foreground">{linked}</span>
           </p>
           <Button
-            className="mb-3 mr-2"
+            className="mb-3 w-full whitespace-normal"
             variant="outline"
             disabled={inspecting}
             onClick={async () => {
@@ -75,7 +74,10 @@ export function SuperfreteOrderAction({ order }: Props) {
             {inspecting ? "Consultando…" : "Verificar envio existente"}
           </Button>
           {diagnostic && (
-            <div role="status" className="my-3 rounded-md border p-3 text-sm">
+            <div
+              role="status"
+              className="my-3 rounded-lg border bg-background p-3 text-sm leading-6 [overflow-wrap:anywhere]"
+            >
               <p>
                 Estado na API SuperFrete: <strong>{diagnostic.status}</strong>
               </p>
@@ -101,7 +103,7 @@ export function SuperfreteOrderAction({ order }: Props) {
             </div>
           )}
           {!blocked && (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full">
               <a href="https://web.superfrete.com/" target="_blank" rel="noreferrer">
                 Abrir SuperFrete
               </a>
@@ -110,6 +112,7 @@ export function SuperfreteOrderAction({ order }: Props) {
         </>
       ) : (
         <Button
+          className="h-auto min-h-10 w-full whitespace-normal py-3"
           disabled={busy || blocked}
           onClick={async () => {
             setBusy(true);
@@ -136,10 +139,27 @@ export function SuperfreteOrderAction({ order }: Props) {
           {busy ? "Preparando envio…" : "Preparar envio e abrir SuperFrete"}
         </Button>
       )}
-      {blocked && <p className="mt-3 text-sm text-muted-foreground">{hold}</p>}
-      <p role="status" className="mt-3 text-sm">
-        {message}
-      </p>
+      {blocked && (
+        <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">
+          {hold}
+        </p>
+      )}
+      {message && (
+        <p
+          role="status"
+          className="mt-4 rounded-lg border bg-background p-3 text-sm leading-6 [overflow-wrap:anywhere]"
+        >
+          {message}
+        </p>
+      )}
+      <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
+        <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
+        <p className="mt-2">
+          O preparo utiliza remetente, destinatário, produtos e embalagem salvos no pedido. Entre na
+          mesma conta usada pela integração para revisar e pagar. O site não paga a etiqueta nem
+          debita sua carteira.
+        </p>
+      </details>
     </section>
   );
 }
