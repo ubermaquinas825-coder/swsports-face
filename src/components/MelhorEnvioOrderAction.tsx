@@ -16,6 +16,8 @@ type Props = {
     shipping_status: string;
     shipping_hold?: string | null;
     provider_shipment_id?: string | null;
+    tracking_code?: string | null;
+    label_url?: string | null;
   };
 };
 
@@ -40,6 +42,8 @@ export function MelhorEnvioOrderAction({ order }: Props) {
   const blocked = Boolean(hold);
   const canReset =
     order.payment_status === "approved" &&
+    !order.tracking_code &&
+    !order.label_url &&
     !["ready_to_post", "posted", "delivered"].includes(order.shipping_status) &&
     (Boolean(linked) ||
       ["awaiting_label", "awaiting_label_payment", "label_issued", "logistics_failed"].includes(
