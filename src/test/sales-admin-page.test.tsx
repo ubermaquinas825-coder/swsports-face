@@ -6,6 +6,7 @@ vi.mock("@/lib/superfrete-cart.functions", () => ({
 vi.mock("@/lib/melhor-envio-cart.functions", () => ({
   prepareMelhorEnvioShipping: vi.fn(),
   inspectMelhorEnvioShipping: vi.fn(),
+  resetMelhorEnvioShipping: vi.fn(),
 }));
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";

@@ -19,6 +19,7 @@ vi.mock("@/integrations/supabase/cron-auth", () => ({ authenticateCronRequest: a
 import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { beginMelhorEnvioAuthorization, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { checkPayments } from "@/lib/payment-reconciliation.functions";
+import { resetMelhorEnvioShipping } from "@/lib/melhor-envio-cart.functions";
 import { prepareMelhorEnvioCart } from "@/lib/melhor-envio-cart.server";
 import { syncPayments } from "@/lib/payment-sync.server";
 import { Route as CronRoute } from "@/routes/api/public/cron/sync-orders";
@@ -56,6 +57,7 @@ describe("Active financial maintenance boundaries", () => {
       saveShippingConfig,
       verifyShippingIntegrations,
       checkPayments,
+      resetMelhorEnvioShipping,
     }),
   )("blocks %s before external calls", async (_name, fn) => {
     await expect(invoke(fn)).rejects.toThrow("manutenção");

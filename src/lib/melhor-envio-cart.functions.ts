@@ -30,3 +30,14 @@ export const inspectMelhorEnvioShipping = createServerFn({ method: "GET" })
     const { syncMelhorEnvioTrackingOrder } = await import("./shipping-tracking.server");
     return syncMelhorEnvioTrackingOrder(data.orderId);
   });
+
+export const resetMelhorEnvioShipping = createServerFn({ method: "POST" })
+  .validator(orderInput)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await requireWritableEnvironment();
+    const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
+    const { resetMelhorEnvioShippingAttempt } = await import("./melhor-envio-reset.server");
+    return resetMelhorEnvioShippingAttempt(data.orderId);
+  });
