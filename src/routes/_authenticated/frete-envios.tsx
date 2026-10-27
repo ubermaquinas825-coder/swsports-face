@@ -6,7 +6,7 @@ import { LogOut, Plus, Save, Trash2, Truck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { LabelAutomationSettings } from "@/components/LabelAutomationSettings";
-import { getShippingAdmin, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
+import { beginMelhorEnvioAuthorization, getShippingAdmin, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { shippingConfigSchema, shippingStates } from "@/lib/shipping";
 import logo from "@/assets/sw-sports-logo.png.asset.json";
 
@@ -29,7 +29,9 @@ function Logistics() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("settings");
   const verify = useServerFn(verifyShippingIntegrations);
+  const beginAuthorization = useServerFn(beginMelhorEnvioAuthorization);
   const [checking, setChecking] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [checks, setChecks] = useState<Awaited<ReturnType<typeof verifyShippingIntegrations>> | null>(null);
   const field = "mt-2 w-full rounded-md border border-input bg-card px-3 py-2 text-sm";
 
@@ -50,8 +52,21 @@ function Logistics() {
               </p>
               {data.melhorEnvio.connected && "updated_at" in data.melhorEnvio && data.melhorEnvio.updated_at && <p className="mt-1 text-xs text-muted-foreground">Última atualização da autorização: {new Date(data.melhorEnvio.updated_at).toLocaleString("pt-BR")}</p>}
             </div>
-            <Button asChild variant={data.melhorEnvio.connected ? "outline" : "default"}>
-              <a href="/api/melhor-envio/authorize">{data.melhorEnvio.connected ? "Reautorizar" : "Conectar Melhor Envio"}</a>
+            <Button
+              variant={data.melhorEnvio.connected ? "outline" : "default"}
+              disabled={connecting}
+              onClick={async () => {
+                setConnecting(true);
+                try {
+                  const result = await beginAuthorization();
+                  window.location.assign(result.url);
+                } catch (error) {
+                  setMessage(error instanceof Error ? error.message : "Não foi possível iniciar a autorização do Melhor Envio.");
+                  setConnecting(false);
+                }
+              }}
+            >
+              {connecting ? "Abrindo…" : data.melhorEnvio.connected ? "Reautorizar" : "Conectar Melhor Envio"}
             </Button>
           </div>
         </section>
@@ -60,7 +75,7 @@ function Logistics() {
           <section className="border-b border-border pb-8"><h2 className="mb-5 font-display text-xl font-bold">REMETENTE</h2><div className="grid gap-5 sm:grid-cols-[1fr_3fr]"><label className="text-sm">CEP de origem<input className={field} required value={config.originCep} onChange={(e) => setConfig({ ...config, originCep: e.target.value })} /></label><label className="text-sm">Endereço completo<input className={field} required value={config.senderAddress} onChange={(e) => setConfig({ ...config, senderAddress: e.target.value })} /></label></div></section>
           <section className="border-b border-border py-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-xl font-bold">EMBALAGENS</h2><Button type="button" variant="outline" onClick={() => setConfig({ ...config, packages: [...config.packages, { name: "Nova embalagem", capacity: 2, weightKg: 0.15, lengthCm: 20, widthCm: 15, heightCm: 10, packagingWeightKg: null }] })}><Plus /> Adicionar embalagem</Button></div>
             <label className="mb-6 block max-w-xs text-sm">Peso real de uma balaclava (kg)<input className={field} type="number" step="0.001" min="0.001" placeholder="Não informado" value={config.productWeightKg ?? ""} onChange={(e) => setConfig({ ...config, productWeightKg: e.target.value ? Number(e.target.value) : null })} /></label>
-            <div className="space-y-6">{config.packages.map((p, i) => <div key={i} className="rounded-md border border-border bg-card p-5"><div className="mb-4 flex items-end gap-3"><label className="flex-1 text-sm">Nome<input className={field} value={p.name} onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, name: e.target.value } : v) })} /></label><Button type="button" variant="ghost" size="icon" disabled={config.packages.length === 1} aria-label="Remover embalagem" onClick={() => setConfig({ ...config, packages: config.packages.filter((_, n) => i !== n) })}><Trash2 /></Button></div><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{([{ key: "capacity", label: "Capacidade (un.)" }, { key: "weightKg", label: "Peso do pacote (kg)" }, { key: "lengthCm", label: "Comprimento (cm)" }, { key: "widthCm", label: "Largura (cm)" }, { key: "heightCm", label: "Altura (cm)" }, { key: "packagingWeightKg", label: "Peso da embalagem (kg)" }] as const).map(({ key, label }) => <label key={key} className="text-sm">{label}<input className={field} type="number" min={key === "capacity" ? 1 : key === "packagingWeightKg" ? 0 : 0.001} step={key === "capacity" ? 1 : 0.001} required={key !== "packagingWeightKg"} value={p[key] ?? ""} placeholder="Não informado" onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, [key]: e.target.value ? Number(e.target.value) : null } : v) })} /></label>)}</div></div>)}</div>
+            <div className="space-y-6">{config.packages.map((p, i) => <div key={i} className="rounded-md border border-border bg-card p-5"><div className="mb-4 flex items-end gap-3"><label className="flex-1 text-sm">Nome<input className={field} value={p.name} onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, name: e.target.value } : v) })} /></label><Button type="button" variant="ghost" size="icon" disabled={config.packages.length === 1} aria-label="Remover embalagem" onClick={() => setConfig({ ...config, packages: config.packages.filter((_, n) => i !== n) })}><Trash2 /></Button></div><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{([{ key: "capacity", label: "Capacidade (un.)" }, { key: "weightKg", label: "Peso do pacote (kg)" }, { key: "lengthCm", label: "Comprimento (cm)" }, { key: "widthCm", label: "Largura (cm)" }, { key: "heightCm", label: "Altura (cm)" }, { key: "packagingWeightKg", label: "Peso da embalagem (kg)" }] as const).map(({ key, label }) => <label key={key} className="text-sm">{label}<input className={field} type="number" min={key === "capacity" ? 1 : key === "packagingWeightKg" ? 0 : 0.001} step={key === "capacity" ? 1 : 0.001} required={key !== "packagingWeightKg"} value={p[key] ?? ""} placeholder="Não informado" onChange={(e) => setConfig({ ...config, packages: config.packages.map((v, n) => n === i ? { ...v, [key]: e.target.value ? Number(e.target.value) : null } : v })} /></label>)}</div></div>)}</div>
           </section>
           <section className="border-b border-border py-8"><h2 className="mb-5 font-display text-xl font-bold">TRANSPORTADORAS</h2><label className="text-sm">IDs de serviços Melhor Envio (opcional)<input className={field} placeholder="Vazio = usar serviços habilitados no Melhor Envio" value={config.carriers.join(", ")} onChange={(e) => setConfig({ ...config, carriers: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })} /></label><p className="mt-2 text-xs text-muted-foreground">Para receber automaticamente os serviços permitidos no seu aplicativo, deixe este campo vazio.</p></section>
           <LabelAutomationSettings config={config} onChange={setConfig} />
