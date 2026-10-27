@@ -1,0 +1,399 @@
+{
+  "format": "webp",
+  "quality": 82,
+  "alphaQuality": 100,
+  "originalCatalogBytes": 3757330,
+  "catalog400Bytes": 213656,
+  "catalog800Bytes": 625800,
+  "selectors96Bytes": 29700,
+  "images": [
+    {
+      "id": "bebe-chupeta",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "956510dc1156a1f4abc546d74b63a7164ee0182c768a2d76e6a66f468c2f8af3",
+      "sourceBytes": 406383,
+      "sourceWidth": 849,
+      "sourceHeight": 614,
+      "variants": [
+        {
+          "url": "/products/optimized/bebe-chupeta-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2480,
+          "sha256": "96d4760b2f238a09a227bffb403c9b6538ce8cfef812ea7bb4f8f95209a65d49"
+        },
+        {
+          "url": "/products/optimized/bebe-chupeta-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 14686,
+          "sha256": "f6e065dfafd6ac5842ef2f9796910bda5ed36625c504ad6616726f9d22293fd3"
+        },
+        {
+          "url": "/products/optimized/bebe-chupeta-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 35686,
+          "sha256": "d63471672c5582fadce9e2af0e1f00e7afa45316e8c501ed923426c891c15418"
+        }
+      ]
+    },
+    {
+      "id": "boca-de-beijo",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "4706ee7a6e483938b19932793f1d9a91a830bc7074491420dec227bddacc11db",
+      "sourceBytes": 484481,
+      "sourceWidth": 859,
+      "sourceHeight": 622,
+      "variants": [
+        {
+          "url": "/products/optimized/boca-de-beijo-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2414,
+          "sha256": "a99e83d22115213b1c7b54073b4cbcc4f8643026906ba09ea862433bfa1c0511"
+        },
+        {
+          "url": "/products/optimized/boca-de-beijo-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 15620,
+          "sha256": "c611c14f98aa7037e330d869f3d0df4cbdd69b1cdd315568c3d2d4c36cf7b189"
+        },
+        {
+          "url": "/products/optimized/boca-de-beijo-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 48270,
+          "sha256": "e04dda38bb0974440978fc80e0a5e0d1f7187dd3fd205d1778b0461978fee54e"
+        }
+      ]
+    },
+    {
+      "id": "gato-divertido",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "7ee94a8dd30ee536dcf0a6aad680ac78b1f70153e55bdb86041606f3616b2d38",
+      "sourceBytes": 426462,
+      "sourceWidth": 806,
+      "sourceHeight": 583,
+      "variants": [
+        {
+          "url": "/products/optimized/gato-divertido-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2440,
+          "sha256": "bbe16d4f60a41619690644abdb58ac4783436dfefe01932d0cc2b9e882b63ac1"
+        },
+        {
+          "url": "/products/optimized/gato-divertido-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 15596,
+          "sha256": "0f429c1e5235123677103e4deee8b0e8ebd3aa6f26420fd40257d36267b0e535"
+        },
+        {
+          "url": "/products/optimized/gato-divertido-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 45480,
+          "sha256": "776b36ed7248fde128873955a714c0c5db0ac24523f9e2e9f4153b2d8b466cca"
+        }
+      ]
+    },
+    {
+      "id": "sorriso-banguela",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "67ffae4b6409007c9da45a8649632f4157d194c2c4b540621b09991d20373092",
+      "sourceBytes": 512651,
+      "sourceWidth": 873,
+      "sourceHeight": 642,
+      "variants": [
+        {
+          "url": "/products/optimized/sorriso-banguela-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2584,
+          "sha256": "34f1715be46d50ce7c1e7092238694791c311d8db0a117b644f977afb84c1168"
+        },
+        {
+          "url": "/products/optimized/sorriso-banguela-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 17474,
+          "sha256": "f5abef3eabce21b6542430223012295a826389243cdd84c03fd305b55993aace"
+        },
+        {
+          "url": "/products/optimized/sorriso-banguela-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 48154,
+          "sha256": "7009308c88aeac57bb5b28f74c682365e8034ea1354f44d0aca5ea8e094aa6c0"
+        }
+      ]
+    },
+    {
+      "id": "velhinho-bigodudo",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "7cd6ee0bccaa2835dba510d8573dda02bb8226bae617b801ab2648bbd21ea992",
+      "sourceBytes": 221548,
+      "sourceWidth": 568,
+      "sourceHeight": 400,
+      "variants": [
+        {
+          "url": "/products/optimized/velhinho-bigodudo-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2490,
+          "sha256": "a28b6f3896103b3a13218b3aadeb037c907379ae4ca31bdf96037fe7fe8feee7"
+        },
+        {
+          "url": "/products/optimized/velhinho-bigodudo-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 15672,
+          "sha256": "03458d9887bcb84b6b2d8ddfb3c2fc2e91cf52be415fe2330973074fe775fef1"
+        },
+        {
+          "url": "/products/optimized/velhinho-bigodudo-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 38276,
+          "sha256": "ceeefa45814dc946c89609e7408928bd7d45c0944ac2e3a065d8a603818333d5"
+        }
+      ]
+    },
+    {
+      "id": "vovo-rebelde",
+      "sourceKind": "existing-product-photo",
+      "sourceSha256": "02707b045afe92bcd2ef7f5d0c72d4d1a1d5c91293af8650dd71ac08c5cb26b6",
+      "sourceBytes": 519194,
+      "sourceWidth": 915,
+      "sourceHeight": 660,
+      "variants": [
+        {
+          "url": "/products/optimized/vovo-rebelde-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2518,
+          "sha256": "a91bae29a6b7a3406d4e0ddcb6b99699c049a4f5ef61258ad95cd0af04db8234"
+        },
+        {
+          "url": "/products/optimized/vovo-rebelde-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 16492,
+          "sha256": "13fa0769d8a04551a4911d0947ed1f2dace0105f4ec4e44ea520bc26c447f9d0"
+        },
+        {
+          "url": "/products/optimized/vovo-rebelde-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 48138,
+          "sha256": "3dcf2bdd53afb58ee111975e2797901471ed9d789622d462b7b790ec198971e5"
+        }
+      ]
+    },
+    {
+      "id": "sorriso-grisalho",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "01e3ab58ecc66109c605e1608088abc762da9ac3ce41d7e475a019cdea58b035",
+      "sourceBytes": 1756505,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/sorriso-grisalho-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2606,
+          "sha256": "a92467044cc0c764ef3cad4499deecf4df5546ba65f642ae4d717d02c2dfcb83"
+        },
+        {
+          "url": "/products/optimized/sorriso-grisalho-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 21188,
+          "sha256": "c708369502e91a41e2d6ab5e75cc9f6cc13f598341395b4c2fa210569b6ee17b"
+        },
+        {
+          "url": "/products/optimized/sorriso-grisalho-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 67672,
+          "sha256": "5b76c72849f83d6623bec3dd894331b62ecd50878556d12ccde6ed26e80a9844"
+        }
+      ]
+    },
+    {
+      "id": "grisalho-com-charuto",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "6e68494d58d52c5711d06f62f79cdcba7c57ebceb13caa43aa300ea2a698dcd4",
+      "sourceBytes": 1675282,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/grisalho-com-charuto-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2392,
+          "sha256": "cda3a15f4b09b6c1b7dd37ccd4f7710e61a5c2bfb3835b9ac1ca157330d47cef"
+        },
+        {
+          "url": "/products/optimized/grisalho-com-charuto-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 20066,
+          "sha256": "eb817ed3964c3347545ced1e4249fb4de39b4834e4bbe923526f33452960b751"
+        },
+        {
+          "url": "/products/optimized/grisalho-com-charuto-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 61620,
+          "sha256": "f053c4f862858e7324016d08e13f38261e89635726036780beb1bab887ab8e8f"
+        }
+      ]
+    },
+    {
+      "id": "bigodudo-irreverente",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "0c7175e8415291cc585f45304990d53bb050694544e25a69ab40cb87780b0509",
+      "sourceBytes": 1622398,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/bigodudo-irreverente-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2500,
+          "sha256": "c252d683a379e1bbf9bbb1d0b538a886a0e13df7338e1863a3c370d4e002eed7"
+        },
+        {
+          "url": "/products/optimized/bigodudo-irreverente-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 20008,
+          "sha256": "15e9edcd5888de62415aab6d15cb88a91c6042fba3322e1af1a8b7e7ed8146f9"
+        },
+        {
+          "url": "/products/optimized/bigodudo-irreverente-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 58930,
+          "sha256": "3056cbca40292f378a6db819041b7c38e56d9d267f23e0eb63a0ce684426ef19"
+        }
+      ]
+    },
+    {
+      "id": "sorriso-rebelde",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "1b9c3ebf6177b4a2e291daa226084d1f16534850f6bf4e29fa2f824a2327e18d",
+      "sourceBytes": 1653249,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/sorriso-rebelde-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2314,
+          "sha256": "ab800876d449afaf71f35e8f24788afe573162f7ac526ede9ae6b546f75aa097"
+        },
+        {
+          "url": "/products/optimized/sorriso-rebelde-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 18198,
+          "sha256": "ea3836ae4251917c3bd26e490603829b20d232201747ee593ce646c19910ab26"
+        },
+        {
+          "url": "/products/optimized/sorriso-rebelde-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 55406,
+          "sha256": "84c1258d619391a1bbd5ffadce061ae4a65ac9d6b18bcf193720bdd94850408a"
+        }
+      ]
+    },
+    {
+      "id": "bigode-branco",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "1b27b9c850d3eab465e6c823dd6be97b5d17ef814eaccac530de7891c79dbf48",
+      "sourceBytes": 1726340,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/bigode-branco-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2476,
+          "sha256": "97540ffc3dffb1c576c87f7baae7f002d35928cf7f89268859f21d8a10163f68"
+        },
+        {
+          "url": "/products/optimized/bigode-branco-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 19402,
+          "sha256": "96534cc8efd2bc3d18cae0569de570417033e1a47ba6589296c8118079e46c01"
+        },
+        {
+          "url": "/products/optimized/bigode-branco-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 60736,
+          "sha256": "a2fc03d39c436536ab4c441f7b1fe4a32ef34134fb768bb7c06ebcf49c28f342"
+        }
+      ]
+    },
+    {
+      "id": "grisalho-sorridente",
+      "sourceKind": "approved-model-composite",
+      "sourceSha256": "b95cb6b8f6cb6a5992b4a9485b03ad5c4af301eceefa90226b25c44f1fa3e594",
+      "sourceBytes": 1621871,
+      "sourceWidth": 1474,
+      "sourceHeight": 1067,
+      "variants": [
+        {
+          "url": "/products/optimized/grisalho-sorridente-96.webp",
+          "width": 96,
+          "height": 96,
+          "bytes": 2486,
+          "sha256": "cd1859d76b5c89025b0d9b4818948eb17ed7bfff8a18dd75c4faf97827d46a5f"
+        },
+        {
+          "url": "/products/optimized/grisalho-sorridente-400.webp",
+          "width": 400,
+          "height": 300,
+          "bytes": 19254,
+          "sha256": "032423ac202f2e8ba6602ad01dbee5f2fa40bf66af8d7da168466ecc8e3385f8"
+        },
+        {
+          "url": "/products/optimized/grisalho-sorridente-800.webp",
+          "width": 800,
+          "height": 600,
+          "bytes": 57432,
+          "sha256": "828751316b901bbdf81ebf3ce1dd76e3e8ff80c711fe3ade07152a38c43fa157"
+        }
+      ]
+    }
+  ],
+  "logos": [
+    {
+      "url": "/products/optimized/sw-sports-logo-192.webp",
+      "width": 192,
+      "height": 106,
+      "bytes": 6212,
+      "sha256": "4b63370768f104bf5d06ce709c14f02b692f8f766c34be35857a44a500fadf22"
+    },
+    {
+      "url": "/products/optimized/sw-sports-logo-384.webp",
+      "width": 384,
+      "height": 212,
+      "bytes": 14258,
+      "sha256": "41b847b1794ce386f9d579c2772c45682a6f856b08333cff37625e4888336cee"
+    }
+  ]
+}

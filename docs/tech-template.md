@@ -1,4 +1,6 @@
-# SW Sports — template tecnológico
+# SW Sports — histórico do template tecnológico
+
+> Atualização: a direção tecnológica deste documento foi substituída pela revisão premium aprovada pelo proprietário. Cubo, cursor, cena sticky e transformações no scroll foram removidos. O estado atual, as novas imagens e as medições estão em [premium-performance.md](premium-performance.md). A rota `/experiencia` foi mantida.
 
 Versão alternativa em `/experiencia`, na branch `feat/sw-sports-tech-template`. A home comercial da revisão anterior permanece disponível. A proposta continua exclusivamente escura, com preto, vermelho SW Sports, WhatsApp verde e preço unitário da fonte única `UNIT_PRICE` (R$ 49,90).
 

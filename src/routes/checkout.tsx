@@ -11,6 +11,7 @@ import {
   PackageCheck,
   Truck,
 } from "lucide-react";
+import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { checkoutCartKey, type ShippingSelection } from "@/lib/checkout";
@@ -584,14 +585,13 @@ function CheckoutPage() {
             <div className="space-y-3">
               {lines.map(({ product, qty }) => (
                 <div key={product.id} className="flex items-center gap-3">
-                  <img
-                    src={product.image}
+                  <ProductImage
+                    product={product}
+                    variant="thumbnail"
                     alt=""
-                    width={56}
-                    height={56}
                     loading="lazy"
                     decoding="async"
-                    className="h-14 w-14 rounded-xl bg-background object-cover object-top"
+                    className="h-14 w-14 rounded-md bg-background object-contain"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{product.name}</p>
