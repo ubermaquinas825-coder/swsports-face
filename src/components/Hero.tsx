@@ -2,9 +2,14 @@ import { ArrowRight, LockKeyhole, Truck } from "lucide-react";
 import { products, UNIT_PRICE, formatBRL } from "@/lib/products";
 import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/hooks/use-cart";
+import { SHOWCASE_IMAGE_SIZES, useProductShowcase } from "@/hooks/use-product-showcase";
 
 export function Hero() {
-  const featured = products.find((product) => product.id === "sorriso-grisalho");
+  const { isOpen } = useCart();
+  const showcase = useProductShowcase(isOpen);
+  const featured = showcase.product;
+  const previousFeatured = showcase.previousProduct;
   if (!featured) return null;
 
   return (
@@ -28,16 +33,35 @@ export function Hero() {
           </p>
         </div>
 
-        <figure className="min-w-0 bg-[#141414] lg:col-start-2 lg:row-start-1 lg:row-span-2">
-          <div className="flex h-[250px] items-center justify-center overflow-hidden px-2 pt-4 min-[375px]:h-[290px] sm:h-[360px] lg:h-[440px]">
+        <figure
+          ref={showcase.cardRef}
+          className="min-w-0 bg-[#141414] lg:col-start-2 lg:row-start-1 lg:row-span-2"
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse") showcase.setHovered(true);
+          }}
+          onPointerLeave={() => showcase.setHovered(false)}
+        >
+          <div className="relative isolate flex h-[250px] items-center justify-center overflow-hidden px-2 pt-4 min-[375px]:h-[290px] sm:h-[360px] lg:h-[440px]">
+            {previousFeatured && showcase.motionAllowed && (
+              <ProductImage
+                key={`previous-${previousFeatured.id}`}
+                product={previousFeatured}
+                alt=""
+                aria-hidden="true"
+                sizes={SHOWCASE_IMAGE_SIZES}
+                loading="eager"
+                className="premium-showcase-outgoing absolute inset-0 h-full w-full object-contain px-2 pt-4"
+              />
+            )}
             <ProductImage
+              key={featured.id}
               product={featured}
               alt={`Balaclava ${featured.name} da SW Sports, vista de frente`}
-              sizes="(min-width: 1280px) 580px, (min-width: 1024px) 45vw, 90vw"
+              sizes={SHOWCASE_IMAGE_SIZES}
               loading="eager"
               decoding="async"
               fetchPriority="high"
-              className="h-full w-full object-contain"
+              className={`relative h-full w-full object-contain${previousFeatured && showcase.motionAllowed ? " premium-showcase-incoming" : ""}`}
             />
           </div>
           <figcaption className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-4 text-sm">
