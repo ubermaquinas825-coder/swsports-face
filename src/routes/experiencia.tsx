@@ -1,32 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useScroll } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TechShowcase } from "@/components/TechShowcase";
-import { TechScrollScene } from "@/components/TechScrollScene";
 import { Collection } from "@/components/Collection";
 import { Benefits } from "@/components/Benefits";
 import { Faq } from "@/components/Faq";
 import { SiteFooter } from "@/components/SiteFooter";
-import { products, productFor } from "@/lib/products";
 
 export const Route = createFileRoute("/experiencia")({
   head: () => ({
     meta: [
-      { title: "Explore as balaclavas SW Sports | Coleção interativa" },
+      { title: "Balaclavas SW Sports | Escolha sua estampa" },
       {
         name: "description",
         content:
           "Explore as estampas das balaclavas SW Sports. Poliéster com elastano, R$ 49,90 por unidade, pagamento pelo Mercado Pago e frete pelo Melhor Envio.",
       },
-      { property: "og:title", content: "Sua estampa. Outra dimensão. | SW Sports" },
+      { property: "og:title", content: "Balaclavas com personalidade | SW Sports" },
       {
         property: "og:description",
         content: "Explore a coleção de balaclavas SW Sports por R$ 49,90 por unidade.",
       },
       {
         property: "og:image",
-        content: new URL((productFor("sorriso-grisalho") ?? products[1]).image, "https://www.balaclavaswsports.com.br").href,
+        content:
+          "https://www.balaclavaswsports.com.br/products/optimized/sorriso-grisalho-800.webp",
       },
       { name: "robots", content: "noindex, follow" },
     ],
@@ -36,18 +34,11 @@ export const Route = createFileRoute("/experiencia")({
 });
 
 function Experience() {
-  const { scrollYProgress } = useScroll();
   return (
     <>
       <SiteHeader />
-      <motion.div
-        aria-hidden
-        style={{ scaleX: scrollYProgress, transformOrigin: "left" }}
-        className="pointer-events-none fixed inset-x-0 top-[72px] z-40 h-0.5 bg-brand md:top-[76px] tech-scroll-progress"
-      />
-      <main className="tech-experience">
+      <main className="premium-experience">
         <TechShowcase />
-        <TechScrollScene />
         <Collection />
         <Benefits />
         <section className="border-b border-border bg-[#141414] py-12 md:py-16">

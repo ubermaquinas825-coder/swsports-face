@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProductImage } from "@/components/ProductImage";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Hero } from "@/components/Hero";
 import { Collection } from "@/components/Collection";
@@ -28,9 +29,9 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
       { property: "og:site_name", content: "SW Sports" },
-      { property: "og:image", content: new URL(products[1].image, SITE_URL).href },
-      { property: "og:image:alt", content: "Balaclava Boca de Beijo da SW Sports" },
-      { name: "twitter:image", content: new URL(products[1].image, SITE_URL).href },
+      { property: "og:image", content: new URL("/products/optimized/sorriso-grisalho-800.webp", SITE_URL).href },
+      { property: "og:image:alt", content: "Balaclava Sorriso Grisalho da SW Sports" },
+      { name: "twitter:image", content: new URL("/products/optimized/sorriso-grisalho-800.webp", SITE_URL).href },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Balaclavas Divertidas e Personalizadas | SW Sports" },
       {
@@ -71,7 +72,7 @@ const structuredData = {
           "@type": "Product",
           name: `Balaclava ${product.name}`,
           description: product.description,
-          image: new URL(product.image, SITE_URL).href,
+          image: new URL(`/products/optimized/${product.id}-800.webp`, SITE_URL).href,
           brand: { "@type": "Brand", name: "SW Sports" },
           offers: {
             "@type": "Offer",
@@ -96,7 +97,7 @@ function WholesaleStrip() {
           <Link to="/atacado" className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-md border border-foreground/40 px-5 py-3 text-sm font-bold transition-colors hover:border-brand hover:text-brand sm:w-auto">QUERO REVENDER SW SPORTS</Link>
         </div>
         <div aria-hidden className="grid grid-cols-3 gap-2 border-b border-white/10 pb-5 sm:gap-4">
-          {products.slice(0, 3).map((product) => <img key={product.id} src={product.image} alt="" width={300} height={240} loading="lazy" decoding="async" className="aspect-[4/5] w-full object-contain" />)}
+          {products.slice(0, 3).map((product) => <ProductImage key={product.id} product={product} alt="" sizes="(min-width: 1024px) 160px, 28vw" className="aspect-[4/5] w-full object-contain" />)}
         </div>
       </div>
     </section>
