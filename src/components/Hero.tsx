@@ -7,7 +7,10 @@ import { SHOWCASE_IMAGE_SIZES, useProductShowcase } from "@/hooks/use-product-sh
 
 export function Hero() {
   const { isOpen } = useCart();
-  const showcase = useProductShowcase(isOpen);
+  const showcase = useProductShowcase(isOpen, {
+    uninterruptedAutoplay: true,
+    intervalMs: 4500,
+  });
   const featured = showcase.product;
   const previousFeatured = showcase.previousProduct;
   if (!featured) return null;
@@ -36,10 +39,7 @@ export function Hero() {
         <figure
           ref={showcase.cardRef}
           className="min-w-0 bg-[#141414] lg:col-start-2 lg:row-start-1 lg:row-span-2"
-          onPointerEnter={(event) => {
-            if (event.pointerType === "mouse") showcase.setHovered(true);
-          }}
-          onPointerLeave={() => showcase.setHovered(false)}
+          aria-live="off"
         >
           <div className="relative isolate flex h-[250px] items-center justify-center overflow-hidden px-2 pt-4 min-[375px]:h-[290px] sm:h-[360px] lg:h-[440px]">
             {previousFeatured && showcase.motionAllowed && (

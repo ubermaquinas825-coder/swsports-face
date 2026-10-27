@@ -7,7 +7,17 @@ export const SHOWCASE_IMAGE_SIZES =
 const SLIDE_INTERVAL = 6000;
 const FADE_DURATION = 420;
 
-export function useProductShowcase(cartOpen: boolean) {
+type ProductShowcaseOptions = {
+  uninterruptedAutoplay?: boolean;
+  intervalMs?: number;
+};
+
+export function useProductShowcase(
+  cartOpen: boolean,
+  options: ProductShowcaseOptions = {},
+) {
+  const uninterruptedAutoplay = options.uninterruptedAutoplay ?? false;
+  const intervalMs = options.intervalMs ?? SLIDE_INTERVAL;
   const [selected, setSelected] = useState(() =>
     Math.max(0, products.findIndex((item) => item.id === "sorriso-grisalho")),
   );
@@ -82,13 +92,31 @@ export function useProductShowcase(cartOpen: boolean) {
     [motionAllowed, selected],
   );
 
-  const running = motionAllowed && pageVisible && inView && !paused && !hovered && !cartOpen && !loading;
+  const running =
+    pageVisible &&
+    !paused &&
+    !cartOpen &&
+    !loading &&
+    (uninterruptedAutoplay || (motionAllowed && inView && !hovered));
 
   useEffect(() => {
     if (!running || products.length < 2) return;
     let active = true;
     const version = requestVersion.current;
     const next = (selected + 1) % products.length;
+
+    if (uninterruptedAutoplay) {
+      void prepare(next).catch(() => undefined);
+      const timer = window.setTimeout(() => {
+        if (!active || version !== requestVersion.current) return;
+        commit(next);
+      }, intervalMs);
+      return () => {
+        active = false;
+        window.clearTimeout(timer);
+      };
+    }
+
     const ready = prepare(next).then(() => true, () => false);
     const timer = window.setTimeout(async () => {
       const decoded = await ready;
@@ -98,12 +126,12 @@ export function useProductShowcase(cartOpen: boolean) {
         setPaused(true);
         setImageError(true);
       }
-    }, SLIDE_INTERVAL);
+    }, intervalMs);
     return () => {
       active = false;
       window.clearTimeout(timer);
     };
-  }, [commit, prepare, running, selected]);
+  }, [commit, intervalMs, prepare, running, selected, uninterruptedAutoplay]);
 
   useEffect(() => {
     if (previous === null) return;
