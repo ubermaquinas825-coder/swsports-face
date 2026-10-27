@@ -105,21 +105,21 @@ function CheckoutProgress() {
       className="mx-auto flex w-full max-w-xl items-center justify-between gap-2 text-[11px] font-semibold sm:text-xs"
     >
       <li className="flex items-center gap-1.5 text-foreground">
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-brand text-primary-foreground">
+        <span className="grid h-6 w-6 place-items-center rounded-md bg-brand text-primary-foreground">
           <Check className="h-3.5 w-3.5" />
         </span>
         Carrinho
       </li>
       <span aria-hidden className="h-px flex-1 bg-brand/50" />
       <li className="flex items-center gap-1.5 text-brand" aria-current="step">
-        <span className="grid h-6 w-6 place-items-center rounded-full border border-brand bg-brand/10">
-          <span className="h-2 w-2 rounded-full bg-brand" />
+        <span className="grid h-6 w-6 place-items-center rounded-md border border-brand bg-brand/10">
+          <span className="h-2 w-2 rounded-md bg-brand" />
         </span>
         Entrega
       </li>
       <span aria-hidden className="h-px flex-1 bg-border" />
       <li className="flex items-center gap-1.5 text-muted-foreground">
-        <span className="grid h-6 w-6 place-items-center rounded-full border border-border">
+        <span className="grid h-6 w-6 place-items-center rounded-md border border-border">
           <Circle className="h-2.5 w-2.5" />
         </span>
         Pagamento
@@ -275,13 +275,13 @@ function CheckoutPage() {
   if (!lines.length || !shipping) {
     return (
       <main className="grid min-h-screen place-items-center bg-background px-4">
-        <div className="w-full max-w-md rounded-3xl border border-border bg-card p-7 text-center">
+        <div className="w-full max-w-md rounded-lg border border-border bg-card p-7 text-center">
           <PackageCheck className="mx-auto h-10 w-10 text-brand" />
           <h1 className="mt-4 font-display text-2xl font-bold">Finalize o frete primeiro</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Volte para a loja, confira os itens e escolha uma opção de entrega antes de acessar o checkout.
           </p>
-          <Button asChild className="mt-6 min-h-11 w-full rounded-full">
+          <Button asChild className="mt-6 min-h-11 w-full rounded-md">
             <Link to="/">VOLTAR PARA A LOJA</Link>
           </Button>
         </div>
@@ -318,7 +318,7 @@ function CheckoutPage() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 md:grid-cols-[1fr_360px] md:px-6 md:py-10">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px] md:px-6 md:py-10">
         <section>
           <div className="mb-6">
             <p className="text-xs font-bold tracking-[0.25em] text-brand">ENTREGA</p>
@@ -331,9 +331,9 @@ function CheckoutPage() {
           </div>
 
           <form id="checkout-order-form" onSubmit={submit} className="space-y-5" noValidate>
-            <div className="rounded-3xl border border-border bg-card p-5 md:p-6">
+            <div className="rounded-lg border border-border bg-card p-5 md:p-6">
               <div className="mb-5 flex items-center gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-brand">
+                <div className="grid h-9 w-9 place-items-center rounded-md bg-brand/10 text-brand">
                   <MapPin className="h-4 w-4" />
                 </div>
                 <div>
@@ -575,7 +575,7 @@ function CheckoutPage() {
         </section>
 
         <aside className="md:sticky md:top-6 md:self-start">
-          <div className="rounded-3xl border border-border bg-card p-5">
+          <div className="rounded-lg border border-border bg-card p-5">
             <div className="mb-4 flex items-center gap-2">
               <PackageCheck className="h-5 w-5 text-brand" />
               <h2 className="font-display text-lg font-bold">Resumo do pedido</h2>

@@ -58,7 +58,7 @@ export function CartDrawer() {
               <button
                 onClick={closeCart}
                 aria-label="Fechar carrinho"
-                className="grid h-11 w-11 place-items-center rounded-full border border-border transition-colors hover:text-brand"
+                className="grid h-11 w-11 place-items-center rounded-md border border-border transition-colors hover:text-brand"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -73,7 +73,7 @@ export function CartDrawer() {
                 </p>
                 <button
                   onClick={closeCart}
-                  className="mt-2 min-h-11 rounded-full border border-border px-5 py-2.5 text-xs font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
+                  className="mt-2 min-h-11 rounded-md border border-border px-5 py-2.5 text-xs font-bold tracking-wide transition-colors hover:border-brand hover:text-brand"
                 >
                   VER COLEÇÃO
                 </button>
@@ -88,7 +88,7 @@ export function CartDrawer() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="flex gap-3 rounded-2xl border border-border bg-card p-3"
+                      className="flex gap-3 rounded-lg border border-border bg-card p-3"
                     >
                       <img
                         src={product.image}
@@ -97,7 +97,7 @@ export function CartDrawer() {
                         height={64}
                         loading="lazy"
                         decoding="async"
-                        className="h-16 w-16 shrink-0 rounded-xl bg-background object-cover object-top"
+                        className="h-16 w-16 shrink-0 rounded-xl bg-background object-contain"
                       />
                       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                         <p className="truncate text-sm font-semibold">{product.name}</p>
@@ -108,7 +108,7 @@ export function CartDrawer() {
                           <button
                             onClick={() => setQty(product.id, qty - 1)}
                             aria-label={`Diminuir quantidade de ${product.name}`}
-                            className="grid h-11 w-11 place-items-center rounded-full border border-border"
+                            className="grid h-11 w-11 place-items-center rounded-md border border-border"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -116,14 +116,14 @@ export function CartDrawer() {
                           <button
                             onClick={() => setQty(product.id, qty + 1)}
                             aria-label={`Aumentar quantidade de ${product.name}`}
-                            className="grid h-11 w-11 place-items-center rounded-full border border-border"
+                            className="grid h-11 w-11 place-items-center rounded-md border border-border"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => remove(product.id)}
                             aria-label={`Remover ${product.name}`}
-                            className="ml-auto grid h-11 w-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                            className="ml-auto grid h-11 w-11 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -132,7 +132,7 @@ export function CartDrawer() {
                     </motion.div>
                   ))}
 
-                  <div className="rounded-2xl border border-border bg-card/60 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+                  <div className="rounded-lg border border-border bg-card/60 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
                     <span className="font-semibold text-foreground">Próximo passo:</span> informe seu CEP e escolha uma opção de entrega. O botão para continuar será liberado depois da escolha do frete.
                   </div>
 

@@ -8,6 +8,7 @@ import { business } from "@/lib/business";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://www.balaclavaswsports.com.br/privacidade" }],
     meta: [
       { title: "Políticas, privacidade e termos | SW Sports" },
       { name: "description", content: "Consulte as políticas de privacidade, cookies, trocas, entrega, termos de uso e canais de contato da SW Sports." },
@@ -28,18 +29,18 @@ function Privacy() {
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-5 pb-20 pt-28">
         <div className="mb-10">
-          <p className="text-xs font-bold tracking-[0.28em] text-brand">SW SPORTS</p>
+          <p className="text-xs font-bold tracking-[0.14em] text-brand">SW SPORTS</p>
           <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl">Políticas da loja, privacidade e termos</h1>
           <p className="mt-3 text-sm text-muted-foreground">Atualização: 26 de outubro de 2026.</p>
         </div>
 
-        <nav aria-label="Políticas da loja" className="mb-10 grid gap-2 rounded-2xl border border-border bg-card p-4 text-sm sm:grid-cols-2">
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#privacidade">Política de Privacidade</a>
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#cookies">Política de Cookies</a>
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#trocas">Trocas, Devoluções e Reembolsos</a>
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#entrega">Política de Entrega</a>
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#termos">Termos de Uso</a>
-          <a className="min-h-11 rounded-xl px-3 py-3 hover:bg-accent" href="#contato">Contato e identificação</a>
+        <nav aria-label="Políticas da loja" className="mb-10 grid gap-2 border-y border-border py-4 text-sm sm:grid-cols-2">
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#privacidade">Política de Privacidade</a>
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#cookies">Política de Cookies</a>
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#trocas">Trocas, Devoluções e Reembolsos</a>
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#entrega">Política de Entrega</a>
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#termos">Termos de Uso</a>
+          <a className="min-h-11 rounded-md px-3 py-3 hover:bg-accent" href="#contato">Contato e identificação</a>
         </nav>
 
         <div className="space-y-12 leading-relaxed">

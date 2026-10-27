@@ -29,10 +29,10 @@ export function WhatsAppFloat() {
       {...(reduce ? {} : { whileHover: { scale: 1.04 } })}
       whileTap={{ scale: 0.96 }}
       transition={{ duration: 0.25 }}
-      className="group fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-[max(1.25rem,env(safe-area-inset-left))] z-30 flex min-h-11 items-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-whatsapp-foreground shadow-whatsapp"
+      className="group fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-[max(1.25rem,env(safe-area-inset-left))] z-30 flex min-h-11 items-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-whatsapp-foreground shadow-sm"
     >
       <MessageCircle className="h-5 w-5" />
-      <span className="hidden pr-1 text-sm font-bold sm:inline">Precisa de ajuda?</span>
+      <span className="hidden pr-1 text-sm font-bold sm:inline">WhatsApp</span>
     </motion.a>
   );
 }
