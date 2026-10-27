@@ -24,7 +24,11 @@ export function normalizeMelhorEnvioTrackingId(value: unknown): string | null {
   if (!normalized || normalized.length > MAX_TRACKING_ID_LENGTH) return null;
   // Melhor Envio documents the identifier as a string. Reject only characters that
   // cannot belong to a safe opaque identifier instead of guessing a UUID format.
-  if (/\s|[\u0000-\u001f\u007f]/.test(normalized)) return null;
+  const hasControlCharacter = Array.from(normalized).some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+  if (/\s/.test(normalized) || hasControlCharacter) return null;
   return normalized;
 }
 
