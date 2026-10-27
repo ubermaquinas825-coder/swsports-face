@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Instagram, Menu, ShoppingBag, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -8,24 +8,15 @@ import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { label: "Início", to: "/", hash: "" },
   { label: "Coleção", to: "/", hash: "#colecao" },
-  { label: "Personalidades", to: "/", hash: "#personalidade" },
   { label: "Atacado", to: "/atacado", hash: "" },
+  { label: "Dúvidas", to: "/", hash: "#faq" },
 ] as const;
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { count, openCart } = useCart();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const go = (to: "/" | "/atacado", hash: string) => {
     setMenuOpen(false);
@@ -38,26 +29,20 @@ export function SiteHeader() {
     if (hash) {
       const el = document.querySelector(hash);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+        el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
         return;
       }
     }
 
     if (window.location.pathname === "/" && !hash) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     }
 
     navigate({ to: "/", hash: hash.replace(/^#/, "") });
   };
 
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? "border-b border-border bg-background/90 backdrop-blur-[14px]"
-          : "border-b border-transparent bg-transparent"
-      }`}
-    >
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-border bg-background">
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 md:h-[76px] md:px-6">
         <Link to="/" className="flex min-h-11 items-center gap-2 font-display text-lg font-bold tracking-tight">
           <img
@@ -88,7 +73,7 @@ export function SiteHeader() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram da SW Sports"
-            className="hidden h-11 w-11 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground sm:grid"
+            className="hidden h-11 w-11 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:grid"
           >
             <Instagram className="h-4 w-4" />
           </a>
@@ -98,7 +83,7 @@ export function SiteHeader() {
             size="icon"
             onClick={openCart}
             aria-label="Abrir carrinho"
-            className="relative grid h-11 w-11 place-items-center rounded-full border border-border transition-colors hover:border-brand hover:text-brand"
+            className="relative grid h-11 w-11 place-items-center rounded-md border border-border transition-colors hover:border-brand hover:text-brand"
           >
             <ShoppingBag className="h-4 w-4" />
             <AnimatePresence>
@@ -117,19 +102,12 @@ export function SiteHeader() {
           </Button>
 
           <Button
-            onClick={() => go("/", "#colecao")}
-            className="hidden min-h-11 rounded-full bg-brand px-5 text-xs font-bold tracking-wide text-primary-foreground transition-colors hover:bg-brand-deep md:inline-flex"
-          >
-            COMPRAR
-          </Button>
-
-          <Button
             variant="ghost"
             size="icon"
             onClick={() => setMenuOpen((value) => !value)}
             aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={menuOpen}
-            className="grid h-11 w-11 place-items-center rounded-full border border-border md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-md border border-border md:hidden"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
