@@ -12,29 +12,13 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { CartProvider } from "@/hooks/use-cart";
-import { ThemeProvider, useTheme } from "@/hooks/use-theme";
 import { CartDrawer } from "@/components/CartDrawer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { AdvertisingConsent } from "@/components/AdvertisingConsent";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-
-const themeBootstrapScript = `
-try {
-  const savedTheme = localStorage.getItem("sw-sports-theme");
-  const theme = savedTheme === "light" ? "light" : "dark";
-  const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
-  root.classList.toggle("light", theme === "light");
-  root.style.colorScheme = theme;
-} catch {
-  document.documentElement.classList.add("dark");
-  document.documentElement.style.colorScheme = "dark";
-}
-`;
 
 function NotFoundComponent() {
   return (
@@ -139,10 +123,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR">
       <head>
         <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body className="bg-background font-sans text-foreground antialiased">
         {children}
@@ -151,11 +134,6 @@ function RootShell({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-}
-
-function ThemeAwareToaster() {
-  const { theme } = useTheme();
-  return <Toaster position="top-center" theme={theme} richColors />;
 }
 
 function RootComponent() {
@@ -172,17 +150,14 @@ function RootComponent() {
   }, [router, queryClient]);
 
   return (
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <CartProvider>
-          <Outlet />
-          <CartDrawer />
-          <WhatsAppFloat />
-          <AdvertisingConsent />
-        </CartProvider>
-        <ThemeToggle />
-        <ThemeAwareToaster />
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <Outlet />
+        <CartDrawer />
+        <WhatsAppFloat />
+        <AdvertisingConsent />
+      </CartProvider>
+      <Toaster position="top-center" theme="dark" richColors />
+    </QueryClientProvider>
   );
 }
