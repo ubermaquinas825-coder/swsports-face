@@ -39,7 +39,7 @@ export const getInventoryAdmin = createServerFn({ method: "GET" }).middleware([r
   return { products: products.data ?? [], movements: movements.data ?? [] };
 });
 
-export const createInventoryProduct = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).validator((input: unknown) => productSchema.parse(input)).handler(async ({ context, data }) => {
+export const createInventoryProduct = createServerFn({ method: "POST" }).validator((input: unknown) => productSchema.parse(input)).middleware([requireSupabaseAuth]).handler(async ({ context, data }) => {
   await requireWritableEnvironment();
   await requireAdmin(context);
   const result = await context.supabase.rpc("erp_admin_create_product", {
@@ -50,7 +50,7 @@ export const createInventoryProduct = createServerFn({ method: "POST" }).middlew
   return { id: result.data };
 });
 
-export const adjustInventoryAdmin = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).validator((input: unknown) => adjustmentSchema.parse(input)).handler(async ({ context, data }) => {
+export const adjustInventoryAdmin = createServerFn({ method: "POST" }).validator((input: unknown) => adjustmentSchema.parse(input)).middleware([requireSupabaseAuth]).handler(async ({ context, data }) => {
   await requireWritableEnvironment();
   await requireAdmin(context);
   const result = await context.supabase.rpc("erp_admin_adjust_inventory", {
