@@ -4,7 +4,6 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { labelSenderSchema, shippingConfigSchema } from "./shipping";
 import { melhorEnvioRequest } from "./melhor-envio.server";
-import { normalizeMelhorEnvioQuoteResponse } from "./melhor-envio-quote";
 import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import { business } from "./business";
@@ -25,14 +24,6 @@ const savedServiceSchema = z.object({
   originCep: z.string().regex(/^\d{8}$/),
   package: volumeSchema,
 });
-const quoteSchema = z.array(
-  z.object({
-    id: z.union([z.string(), z.number()]),
-    price: z.coerce.number().finite().nonnegative().nullable().optional(),
-    custom_price: z.coerce.number().finite().nonnegative().nullable().optional(),
-    error: z.unknown().optional(),
-  }),
-);
 const createdSchema = z.object({ id: z.string().min(1).max(200) }).passthrough();
 
 async function loadOrder(id: string) {
@@ -65,7 +56,7 @@ function buildMelhorEnvioPayload(input: {
   const service = savedServiceSchema.parse(input.service);
   const sender = labelSenderSchema.parse(input.sender);
   if (service.originCep !== sender.postal_code)
-    throw new Error("O remetente mudou desde a cotação; faça uma nova cotação.");
+    throw new Error("O CEP de origem deste pedido é diferente do remetente atual. Confira os dados antes de enviar ao Melhor Envio.");
   const items = orderItemsSchema.parse(input.items);
   if (items.reduce((sum, row) => sum + row.qty * row.unit_price_cents, 0) !== input.subtotalCents)
     throw new Error("Itens divergentes do valor do pedido.");
@@ -136,11 +127,11 @@ export async function prepareMelhorEnvioCart(orderId: string) {
   const hold = manualShippingHold(order);
   if (hold) throw new Error(hold);
   if (order.shipping_status === "logistics_failed")
-    throw new Error("Envio em revisão. Confira o Melhor Envio antes de qualquer nova tentativa.");
+    throw new Error("Envio em revisão. Reinicie a tentativa antes de enviar novamente ao Melhor Envio.");
   if (order.provider_shipment_id)
-    throw new Error("Este pedido já possui um envio vinculado. Confira-o no Melhor Envio.");
-  if (!order.quoted_cep || order.freight_cents === null || order.discount_cents !== 0)
-    throw new Error("Frete ou declaração de conteúdo precisa de conferência antes de preparar o envio.");
+    throw new Error("Este pedido já possui um envio vinculado. Confira-o no Melhor Envio ou reinicie a tentativa.");
+  if (!order.quoted_cep || order.freight_cents === null || !order.shipping_service)
+    throw new Error("Dados de entrega incompletos. Confira CEP e serviço de frete do pedido.");
 
   if (mercadoPagoOrderIdFromLink(order.payment_link_id)) {
     const payment = await verifyMercadoPagoStoredOrder(order);
@@ -166,26 +157,10 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     sender,
   });
 
-  const rawQuote = await melhorEnvioRequest("/api/v2/me/shipment/calculate", {
-    method: "POST",
-    body: JSON.stringify({
-      from: { postal_code: sender.postal_code },
-      to: { postal_code: order.quoted_cep },
-      services: String(cartPayload.service),
-      volumes: cartPayload.volumes,
-      options: {
-        insurance_value: order.subtotal_cents / 100,
-        receipt: false,
-        own_hand: false,
-      },
-    }),
-  });
-  const quotes = quoteSchema.parse(normalizeMelhorEnvioQuoteResponse(rawQuote));
-  const quote = quotes.find((q) => String(q.id) === String(cartPayload.service) && !q.error);
-  const quotedPrice = quote?.custom_price ?? quote?.price;
-  if (quotedPrice === null || quotedPrice === undefined || Math.round(quotedPrice * 100) !== order.freight_cents)
-    throw new Error("O valor do frete mudou ou o serviço está indisponível. Faça uma nova cotação antes de criar o envio.");
-
+  // Manual handoff: use the service/package already chosen and saved with the
+  // customer's order. Do not reprice the shipment here. The Melhor Envio cart is
+  // the source of truth for the current label price, which the administrator will
+  // review and pay manually in the provider dashboard.
   const claim = await supabaseAdmin.rpc("claim_manual_shipping_cart", {
     _order_id: orderId,
     _revision: order.financial_revision,
@@ -197,7 +172,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     throw new Error("O pedido mudou ou já existe uma tentativa de envio. Atualize o painel.");
 
   let createdId: string | null = null;
-  let phase = "criação no Melhor Envio";
+  let phase = "envio dos dados ao Melhor Envio";
   try {
     const created = createdSchema.parse(
       await melhorEnvioRequest("/api/v2/me/cart", {
@@ -221,7 +196,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
       .from("shipping_events")
       .update({
         provider: "melhor_envio",
-        state: "Envio preparado para revisão e pagamento manual no Melhor Envio. Nenhum débito efetuado pelo site.",
+        state: "Dados do pedido enviados ao carrinho do Melhor Envio para revisão e pagamento manual. Nenhum débito efetuado pelo site.",
       })
       .eq("order_id", orderId)
       .eq("provider", "superfrete")
@@ -237,7 +212,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
       shipmentId: created.id,
       dashboardUrl,
       message:
-        "Envio preparado no Melhor Envio. Abra sua conta, confira os dados e pague a etiqueta manualmente. O site não debitou sua carteira.",
+        "Dados enviados ao carrinho do Melhor Envio. Confira o valor atual, revise o envio e faça o pagamento da etiqueta diretamente no Melhor Envio.",
     };
   } catch {
     if (createdId) {
@@ -253,7 +228,7 @@ export async function prepareMelhorEnvioCart(orderId: string) {
         .eq("id", orderId);
     }
     throw new Error(
-      `Preparação interrompida na etapa de ${phase}. Confira o Melhor Envio antes de tentar novamente. Nenhum pagamento foi solicitado pelo site.`,
+      `Preparação interrompida na etapa de ${phase}. Confira os dados do pedido e tente novamente. Nenhum pagamento foi solicitado pelo site.`,
     );
   }
 }
