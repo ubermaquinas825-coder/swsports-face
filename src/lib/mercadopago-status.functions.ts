@@ -5,6 +5,7 @@ import {
   processMercadoPagoWebhook,
 } from "@/lib/mercadopago.server";
 import { runPostPaymentAutomation } from "@/lib/post-payment.server";
+import { isPreviewEnvironment } from "@/lib/financial-maintenance.server";
 
 const paymentStatusRequestSchema = z.object({
   orderId: z.string().uuid(),
@@ -26,8 +27,11 @@ async function triggerPostPaymentAutomation() {
 // Public checkout return endpoint. It only exposes a minimal payment state for an
 // unguessable order UUID and never returns customer, address, amount or provider data.
 export const getMercadoPagoOrderStatus = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => paymentStatusRequestSchema.parse(data))
+  .validator((data: unknown) => paymentStatusRequestSchema.parse(data))
   .handler(async ({ data }): Promise<{ state: PublicPaymentState }> => {
+    // Preview never reconciles payments or triggers post-payment automation.
+    if (isPreviewEnvironment()) return { state: "unknown" };
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const lookup = await supabaseAdmin
       .from("shipping_orders")
