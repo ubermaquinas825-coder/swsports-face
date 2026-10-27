@@ -17,21 +17,27 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 vi.mock("@/integrations/supabase/cron-auth", () => ({ authenticateCronRequest: authenticate }));
 import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
-import { saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
+import { beginMelhorEnvioAuthorization, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { checkPayments } from "@/lib/payment-reconciliation.functions";
 import { prepareMelhorEnvioCart } from "@/lib/melhor-envio-cart.server";
 import { syncPayments } from "@/lib/payment-sync.server";
-import { Route } from "@/routes/api/public/cron/sync-orders";
+import { Route as CronRoute } from "@/routes/api/public/cron/sync-orders";
+import { Route as OAuthAuthorizeRoute } from "@/routes/api/melhor-envio/authorize";
 const invoke = (fn: unknown) =>
   (fn as (args: unknown) => Promise<unknown>)({
     data: {},
     context: { userId: "admin", supabase: { from: database, rpc: database } },
   });
 const cron = (
-  Route as unknown as {
+  CronRoute as unknown as {
     server: { handlers: { POST: (args: { request: Request }) => Promise<Response> } };
   }
 ).server.handlers.POST;
+const publicOAuthAuthorize = (
+  OAuthAuthorizeRoute as unknown as {
+    server: { handlers: { GET: () => Promise<Response> } };
+  }
+).server.handlers.GET;
 beforeEach(() => {
   vi.stubEnv("SWSPORTS_FINANCIAL_MAINTENANCE", "true");
   vi.stubGlobal("fetch", request);
@@ -46,12 +52,21 @@ describe("Active financial maintenance boundaries", () => {
   it.each(
     Object.entries({
       createMercadoPagoCheckout,
+      beginMelhorEnvioAuthorization,
       saveShippingConfig,
       verifyShippingIntegrations,
       checkPayments,
     }),
   )("blocks %s before external calls", async (_name, fn) => {
     await expect(invoke(fn)).rejects.toThrow("manutenção");
+    expect(database).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled();
+  });
+  it("does not expose the Melhor Envio OAuth state through a public initiator", async () => {
+    vi.stubEnv("MELHOR_ENVIO_OAUTH_STATE", "must-not-be-exposed");
+    const response = await publicOAuthAuthorize();
+    expect(response.status).toBe(404);
+    expect(await response.text()).not.toContain("must-not-be-exposed");
     expect(database).not.toHaveBeenCalled();
     expect(request).not.toHaveBeenCalled();
   });
