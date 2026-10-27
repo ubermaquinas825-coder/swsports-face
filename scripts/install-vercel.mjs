@@ -42,8 +42,8 @@ try {
     },
   });
 } finally {
-  // The staged Lovable registry rewrite must never escape into the repository.
-  if (readFileSync(lockPath, "utf8") !== original)
-    throw new Error("Repository bun.lock unexpectedly changed during dependency installation");
+  const changed = readFileSync(lockPath, "utf8") !== original;
+  if (changed) writeFileSync(lockPath, original);
   rmSync(stage, { recursive: true, force: true });
+  if (changed) throw new Error("Repository bun.lock was unexpectedly touched and has been restored");
 }
