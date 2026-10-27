@@ -30,8 +30,9 @@ jobs:
       - name: Financial database tests
         run: npm run test:financial-db
 
-      - name: Validate Vercel configuration
+      - name: Validate production Vercel configuration contract
         env:
+          VERCEL_ENV: production
           VITE_SUPABASE_URL: https://example.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: ci-public-key
           SUPABASE_URL: https://example.supabase.co
@@ -49,5 +50,17 @@ jobs:
           MELHOR_ENVIO_OAUTH_STATE: ci-only-melhor-envio-oauth-state
         run: node scripts/check-vercel-env.mjs
 
-      - name: Build
+      - name: Build (generic)
         run: npm run build
+
+      - name: Build (Vercel Preview target)
+        env:
+          VERCEL: "1"
+          VERCEL_ENV: preview
+          VITE_SUPABASE_URL: https://preview.example.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-preview-public-key
+          SUPABASE_URL: https://preview.example.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: ci-preview-public-key
+          VITE_PUBLIC_SITE_URL: https://example.com
+          VITE_STANDALONE_AUTH: "true"
+        run: npm run build:vercel
