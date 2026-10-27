@@ -6,7 +6,7 @@ const { database, request, authenticate } = vi.hoisted(() => ({
 }));
 vi.mock("@tanstack/react-start", () => ({
   createServerFn: () => {
-    const b = { middleware: () => b, inputValidator: () => b, handler: (fn: unknown) => fn };
+    const b = { middleware: () => b, validator: () => b, inputValidator: () => b, handler: (fn: unknown) => fn };
     return b;
   },
 }));
@@ -19,7 +19,7 @@ vi.mock("@/integrations/supabase/cron-auth", () => ({ authenticateCronRequest: a
 import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { checkPayments } from "@/lib/payment-reconciliation.functions";
-import { prepareSuperfreteCart } from "@/lib/superfrete-cart.server";
+import { prepareMelhorEnvioCart } from "@/lib/melhor-envio-cart.server";
 import { syncPayments } from "@/lib/payment-sync.server";
 import { Route } from "@/routes/api/public/cron/sync-orders";
 const invoke = (fn: unknown) =>
@@ -55,10 +55,11 @@ describe("Active financial maintenance boundaries", () => {
     expect(database).not.toHaveBeenCalled();
     expect(request).not.toHaveBeenCalled();
   });
-  it("blocks cart preparation and payment scheduler during maintenance", async () => {
-    await expect(prepareSuperfreteCart("id")).rejects.toThrow("manutenção");
+  it("blocks Melhor Envio cart preparation and payment scheduler during maintenance", async () => {
+    await expect(prepareMelhorEnvioCart("00000000-0000-4000-8000-000000000000")).rejects.toThrow("manutenção");
     await expect(syncPayments()).rejects.toThrow("manutenção");
     expect(database).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled();
   });
   it("keeps cron authentication before maintenance", async () => {
     authenticate.mockResolvedValue(new Response("Unauthorized", { status: 401 }));
