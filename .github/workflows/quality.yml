@@ -24,8 +24,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests
+      - name: Tests (npm test)
         run: npm test
+
+      - name: Tests (npm run test)
+        run: npm run test
 
       - name: Financial database tests
         run: npm run test:financial-db
