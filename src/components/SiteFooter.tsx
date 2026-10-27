@@ -2,19 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
 import { INSTAGRAM_URL, WHATSAPP_NUMBER, waLink } from "@/lib/products";
 import { business } from "@/lib/business";
-import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-background py-12">
+    <footer className="border-t border-border bg-[#101010] py-10 md:py-14">
       <div className="mx-auto grid max-w-7xl gap-x-8 gap-y-10 px-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.1fr_1fr_1fr] md:px-6">
         <div className="min-w-0">
           <Link to="/" className="inline-flex" aria-label="SW Sports — início">
-            <img src={logoAsset.url} alt="SW Sports" width={453} height={255} loading="lazy" decoding="async" className="h-24 w-44 object-contain" />
+            <img src="/products/optimized/sw-sports-logo-192.webp" srcSet="/products/optimized/sw-sports-logo-192.webp 192w, /products/optimized/sw-sports-logo-384.webp 384w" sizes="176px" alt="SW Sports" width={384} height={216} loading="lazy" decoding="async" className="h-24 w-44 object-contain" />
           </Link>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">Balaclavas divertidas com estampas realistas. Escolha sua personalidade por R$ 49,90.</p>
-          <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">Balaclavas SW Sports. Estampas com personalidade, em poliéster com elastano.</p>
+          <div className="mt-4 space-y-1 text-sm text-muted-foreground">
             <p>Pagamento seguro via Mercado Pago</p>
             <p>Frete calculado pelo Melhor Envio</p>
           </div>
@@ -38,7 +37,7 @@ export function SiteFooter() {
           <a href={`tel:+${WHATSAPP_NUMBER}`} className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground"><Phone className="h-4 w-4 shrink-0 text-brand" />{business.phone}</a>
           <a href={`mailto:${business.email}`} className="inline-flex min-h-11 items-center hover:text-foreground">{business.email}</a>
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground"><Instagram className="h-4 w-4 text-brand" />@swsport.s</a>
-          <a href={waLink("Olá, equipe SW Sports! Gostaria de ajuda com uma compra.")} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground"><MessageCircle className="h-4 w-4 text-brand" />WhatsApp</a>
+          <a href={waLink("Olá, equipe SW Sports! Gostaria de ajuda com uma compra.")} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 text-whatsapp transition-colors hover:text-whatsapp/80"><MessageCircle className="h-4 w-4 text-whatsapp" />WhatsApp</a>
           <a href="/privacidade#privacidade" className="inline-flex min-h-11 items-center hover:text-foreground">Política de Privacidade</a>
           <a href="/privacidade#cookies" className="inline-flex min-h-11 items-center hover:text-foreground">Política de Cookies</a>
           <a href="/privacidade#trocas" className="inline-flex min-h-11 items-center hover:text-foreground">Trocas, Devoluções e Reembolsos</a>
@@ -47,9 +46,9 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-border px-4 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6">
+      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-border px-4 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6">
         <span>© {new Date().getFullYear()} SW Sports. Todos os direitos reservados.</span>
-        <Button variant="link" size="sm" className="h-auto justify-start p-0 text-xs text-muted-foreground" onClick={() => window.dispatchEvent(new Event("sw-cookie-settings"))}>Configurações de cookies</Button>
+        <Button variant="link" size="sm" className="h-auto justify-start p-0 text-sm text-muted-foreground" onClick={() => window.dispatchEvent(new Event("sw-cookie-settings"))}>Configurações de cookies</Button>
       </div>
     </footer>
   );
