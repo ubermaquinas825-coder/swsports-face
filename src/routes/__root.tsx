@@ -15,7 +15,6 @@ import { CartProvider } from "@/hooks/use-cart";
 import { CartDrawer } from "@/components/CartDrawer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { AdvertisingConsent } from "@/components/AdvertisingConsent";
-import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -141,12 +140,27 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => data.subscription.unsubscribe();
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    void import("@/integrations/supabase/client")
+      .then(({ supabase }) => {
+        if (cancelled) return;
+        const { data } = supabase.auth.onAuthStateChange((event) => {
+          if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+          router.invalidate();
+          if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        });
+        unsubscribe = () => data.subscription.unsubscribe();
+      })
+      .catch((error) => {
+        if (!cancelled) reportLovableError(error, { boundary: "supabase_auth_listener" });
+      });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, [router, queryClient]);
 
   return (
