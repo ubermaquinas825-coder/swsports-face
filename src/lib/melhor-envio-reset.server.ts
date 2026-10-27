@@ -27,6 +27,19 @@ async function loadOrder(orderId: string) {
   return result.data;
 }
 
+async function latestAttemptProvider(orderId: string) {
+  const result = await supabaseAdmin
+    .from("shipping_events")
+    .select("provider,kind,created_at")
+    .eq("order_id", orderId)
+    .in("kind", ["manual_cart", "label"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (result.error) throw new Error("Não foi possível conferir o histórico logístico do pedido.");
+  return result.data?.provider ?? null;
+}
+
 async function trackingState(shipmentId: string) {
   return fetchMelhorEnvioTrackingRecords([shipmentId], (ids) =>
     melhorEnvioRequest("/api/v2/me/shipment/tracking", {
@@ -62,7 +75,7 @@ function assertNoIssuedLabel(order: {
   if (["ready_to_post", "posted", "delivered"].includes(order.shipping_status))
     throw new Error("Este pedido já avançou para postagem e não pode ser reiniciado automaticamente.");
   if (order.tracking_code || order.label_url)
-    throw new Error("Este pedido possui rastreio ou documento de etiqueta. Confira o Melhor Envio antes de reiniciar.");
+    throw new Error("Este pedido possui rastreio ou documento de etiqueta. Confira o provedor antes de reiniciar.");
 }
 
 export async function resetMelhorEnvioShippingAttempt(orderId: string) {
@@ -79,7 +92,9 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
       message: "Este pedido não possui uma tentativa de emissão para reiniciar.",
     };
 
-  if (order.provider_shipment_id) {
+  const attemptProvider = await latestAttemptProvider(orderId);
+
+  if (order.provider_shipment_id && attemptProvider !== "superfrete") {
     const shipmentId = order.provider_shipment_id;
     const tracking = await trackingState(shipmentId);
     const record = tracking.records.find((item) => item.id === shipmentId) ?? null;
@@ -112,7 +127,11 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     }
   }
 
-  // Re-read after the provider call so a concurrent financial or logistics update
+  // Historical SuperFrete attempts are local-only now: the active runtime and
+  // Production credentials were removed. They can be released only when there is
+  // no tracking code, label URL or posted/delivered state, all checked above.
+
+  // Re-read after any provider call so a concurrent financial or logistics update
   // cannot be silently overwritten by the reset.
   order = await loadOrder(orderId);
   const currentHold = manualShippingHold(order);
@@ -141,18 +160,22 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
   if (reset.error || !reset.data)
     throw new Error("O pedido mudou durante a reinicialização. Atualize o painel antes de tentar novamente.");
 
+  const legacy = attemptProvider === "superfrete";
   const event = await supabaseAdmin.from("shipping_events").insert({
     order_id: orderId,
-    provider: "melhor_envio",
+    provider: legacy ? "superfrete" : "melhor_envio",
     kind: "manual_reset",
-    state:
-      "Tentativa incompleta removida do carrinho e vínculo local reiniciado por administrador. Nenhum pagamento ou etiqueta foi criado pelo reset.",
+    state: legacy
+      ? "Tentativa legada SuperFrete sem rastreio/documento liberada por administrador para nova emissão no Melhor Envio."
+      : "Tentativa incompleta removida do carrinho e vínculo local reiniciado por administrador. Nenhum pagamento ou etiqueta foi criado pelo reset.",
   });
   if (event.error)
-    console.warn("Melhor Envio reset completed but audit event could not be recorded.");
+    console.warn("Shipping reset completed but audit event could not be recorded.");
 
   return {
     reset: true as const,
-    message: "Emissão reiniciada. O pedido está liberado para preparar um novo envio.",
+    message: legacy
+      ? "Tentativa antiga liberada. O pedido está pronto para um novo envio pelo Melhor Envio."
+      : "Emissão reiniciada. O pedido está liberado para preparar um novo envio.",
   };
 }
