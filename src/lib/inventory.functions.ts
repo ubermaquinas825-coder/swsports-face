@@ -24,6 +24,11 @@ async function requireAdmin(context: any) {
   if (role.error || !role.data) throw new Error("Acesso exclusivo para administradores.");
 }
 
+async function requireWritableEnvironment() {
+  const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+  assertFinancialOperationsEnabled();
+}
+
 export const getInventoryAdmin = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   await requireAdmin(context);
   const [products, movements] = await Promise.all([
@@ -34,7 +39,8 @@ export const getInventoryAdmin = createServerFn({ method: "GET" }).middleware([r
   return { products: products.data ?? [], movements: movements.data ?? [] };
 });
 
-export const createInventoryProduct = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((input: unknown) => productSchema.parse(input)).handler(async ({ context, data }) => {
+export const createInventoryProduct = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).validator((input: unknown) => productSchema.parse(input)).handler(async ({ context, data }) => {
+  await requireWritableEnvironment();
   await requireAdmin(context);
   const result = await context.supabase.rpc("erp_admin_create_product", {
     _sku: data.sku, _slug: data.slug, _name: data.name, _description: data.description,
@@ -44,7 +50,8 @@ export const createInventoryProduct = createServerFn({ method: "POST" }).middlew
   return { id: result.data };
 });
 
-export const adjustInventoryAdmin = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((input: unknown) => adjustmentSchema.parse(input)).handler(async ({ context, data }) => {
+export const adjustInventoryAdmin = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).validator((input: unknown) => adjustmentSchema.parse(input)).handler(async ({ context, data }) => {
+  await requireWritableEnvironment();
   await requireAdmin(context);
   const result = await context.supabase.rpc("erp_admin_adjust_inventory", {
     _product_id: data.productId, _quantity_delta: data.quantityDelta, _movement_type: data.movementType, _reason: data.reason,
