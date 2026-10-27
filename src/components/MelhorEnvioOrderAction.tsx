@@ -54,7 +54,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
     <section className="min-w-0 rounded-xl border border-border bg-card p-5 sm:p-6">
       <h4 className="text-base font-semibold">Envio pelo Melhor Envio</h4>
       <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
-        O sistema prepara o envio. A revisão e o pagamento da etiqueta continuam na sua conta Melhor Envio.
+        O site envia os dados do pedido para o carrinho do Melhor Envio. Você confere o valor atual e faz a emissão da etiqueta diretamente na sua conta.
       </p>
       {linked ? (
         <>
@@ -115,14 +115,14 @@ export function MelhorEnvioOrderAction({ order }: Props) {
               if (tab) tab.location.href = result.dashboardUrl;
             } catch (error) {
               tab?.close();
-              setMessage(error instanceof Error ? error.message : "Não foi possível preparar o envio.");
+              setMessage(error instanceof Error ? error.message : "Não foi possível enviar os dados ao Melhor Envio.");
             } finally {
               setBusy(false);
               await qc.invalidateQueries({ queryKey: ["sales-admin"] });
             }
           }}
         >
-          {busy ? "Preparando envio…" : "Preparar envio e abrir Melhor Envio"}
+          {busy ? "Enviando dados…" : "Enviar pedido para o Melhor Envio"}
         </Button>
       )}
       {canReset && (
@@ -159,7 +159,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
         <p className="mt-2">
-          O preparo usa remetente, destinatário, produtos, serviço e volume salvos no pedido. O site não compra a etiqueta nem debita sua Melhor Carteira; a conferência e o pagamento são feitos por você no Melhor Envio. Depois, o ERP sincroniza rastreamento e situação de entrega.
+          O site usa remetente, destinatário, produtos, serviço e volume já salvos no pedido e adiciona o envio ao carrinho do Melhor Envio. O site não recalcula nem exige que o preço antigo continue igual ao preço atual, não compra a etiqueta e não debita sua Melhor Carteira. Você revisa e paga no Melhor Envio.
         </p>
       </details>
     </section>
