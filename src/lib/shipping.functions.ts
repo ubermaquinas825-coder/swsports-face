@@ -19,7 +19,7 @@ export const getShippingAdmin = createServerFn({ method: "GET" }).middleware([re
   return { allowed: true as const, config: settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig, orders: orders.data ?? [], events: events.data ?? [], melhorEnvio };
 });
 
-export const saveShippingConfig = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).validator((data: unknown) => shippingConfigSchema.parse(data)).handler(async ({ data, context }) => {
+export const saveShippingConfig = createServerFn({ method: "POST" }).validator((data: unknown) => shippingConfigSchema.parse(data)).middleware([requireSupabaseAuth]).handler(async ({ data, context }) => {
   const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
   assertFinancialOperationsEnabled();
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
