@@ -3,7 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { defaultShippingConfig, shippingConfigSchema } from "@/lib/shipping";
 import { shippingRequestSchema } from "@/lib/checkout";
 import { quoteFreight, authenticateAppmax } from "@/lib/checkout.server";
-import { melhorEnvioConnectionStatus } from "@/lib/melhor-envio.server";
+import { melhorEnvioAuthorizationUrl, melhorEnvioConnectionStatus } from "@/lib/melhor-envio.server";
 
 export const getShippingAdmin = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
@@ -18,6 +18,18 @@ export const getShippingAdmin = createServerFn({ method: "GET" }).middleware([re
   if (settings.error || orders.error || events.error) throw new Error("Não foi possível carregar frete e envios.");
   return { allowed: true as const, config: settings.data ? shippingConfigSchema.parse(settings.data.config) : defaultShippingConfig, orders: orders.data ?? [], events: events.data ?? [], melhorEnvio };
 });
+
+export const beginMelhorEnvioAuthorization = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
+    assertFinancialOperationsEnabled();
+    const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (role.error || !role.data) throw new Error("Acesso administrativo necessário.");
+    const state = process.env["MELHOR_ENVIO_OAUTH_STATE"];
+    if (!state) throw new Error("Estado OAuth do Melhor Envio não configurado.");
+    return { url: melhorEnvioAuthorizationUrl(state) };
+  });
 
 export const saveShippingConfig = createServerFn({ method: "POST" }).validator((data: unknown) => shippingConfigSchema.parse(data)).middleware([requireSupabaseAuth]).handler(async ({ data, context }) => {
   const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
