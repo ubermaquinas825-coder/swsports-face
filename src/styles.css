@@ -159,3 +159,55 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Interactive collection: depth from real product photography, no WebGL or scroll interception. */
+.tech-showcase { background: #090909; }
+.tech-grid {
+  background-image: linear-gradient(#ffffff05 1px, transparent 1px), linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+.tech-surface { --light-x: 50%; --light-y: 35%; }
+.tech-light {
+  background: radial-gradient(ellipse at var(--light-x) var(--light-y), #e326361c, transparent 62%);
+}
+.tech-stage { perspective: 1000px; }
+.tech-orbit { transform: rotateX(65deg); }
+.tech-product { filter: drop-shadow(0 24px 20px #0009); }
+.tech-cross { width: 12px; height: 12px; }
+.tech-cross::before, .tech-cross::after { content: ""; position: absolute; background: #ffffff40; }
+.tech-cross::before { width: 12px; height: 1px; top: 6px; }
+.tech-cross::after { width: 1px; height: 12px; left: 6px; }
+.tech-experience #colecao article > div:first-child { border: 1px solid #ffffff0f; transition: border-color 180ms ease; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tech-experience #colecao article:hover > div:first-child { border-color: #e3263666; }
+}
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .tech-stage > div[style] { transform: none !important; }
+  .tech-light { background: radial-gradient(ellipse at center, #e3263610, transparent 62%); }
+}
+.tech-depth-stage { perspective: 1200px; }
+.tech-depth-grid { transform-style: preserve-3d; }
+.tech-depth-card { transform-origin: center; }
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) and (pointer: fine) {
+  .tech-scroll-scene { min-height: 175svh; }
+  .tech-sticky-scene { position: sticky; top: 96px; min-height: calc(100svh - 120px); }
+}
+@media (max-width: 1023px), (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .tech-depth-card, .tech-depth-stage > div[style] { transform: none !important; }
+}
+.tech-cube { width: 90px; height: 90px; transform-style: preserve-3d; opacity: 0.45; }
+.tech-cube-face { position: absolute; inset: 0; border: 1px solid #e3263666; background: #e3263603; }
+.tech-cube-front { transform: translateZ(45px); }
+.tech-cube-back { transform: rotateY(180deg) translateZ(45px); }
+.tech-cube-left { transform: rotateY(-90deg) translateZ(45px); }
+.tech-cube-right { transform: rotateY(90deg) translateZ(45px); }
+.tech-cube-top { transform: rotateX(90deg) translateZ(45px); }
+.tech-cube-bottom { transform: rotateX(-90deg) translateZ(45px); }
+@media (prefers-reduced-motion: reduce) {
+  .tech-scroll-progress, .tech-scroll-hint { display: none !important; }
+  .tech-cube { display: none; }
+}
+@media (max-width: 639px) {
+  .tech-cube { display: none; }
+}
