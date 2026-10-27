@@ -10,8 +10,8 @@ async function requireWritableEnvironment() {
 }
 
 export const prepareMelhorEnvioShipping = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator(orderInput)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await requireWritableEnvironment();
     const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
@@ -21,8 +21,8 @@ export const prepareMelhorEnvioShipping = createServerFn({ method: "POST" })
   });
 
 export const inspectMelhorEnvioShipping = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .validator(orderInput)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await requireWritableEnvironment();
     const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
