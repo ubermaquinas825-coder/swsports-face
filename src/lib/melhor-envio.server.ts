@@ -32,6 +32,16 @@ type ConnectionRow = {
   updated_at: string;
 };
 
+export class MelhorEnvioRequestError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly path: string,
+  ) {
+    super(`Melhor Envio não conseguiu atender a solicitação (${status}).`);
+    this.name = "MelhorEnvioRequestError";
+  }
+}
+
 function config() {
   const clientId = process.env["MELHOR_ENVIO_CLIENT_ID"];
   const clientSecret = process.env["MELHOR_ENVIO_CLIENT_SECRET"];
@@ -169,8 +179,13 @@ export async function melhorEnvioRequest(path: string, init: RequestInit = {}) {
   let response = await request(await accessToken());
   if (response.status === 401) response = await request(await accessToken(true));
   if (!response.ok) {
-    console.error(`Melhor Envio request failed [${response.status}] ${path}`);
-    throw new Error(`Melhor Envio não conseguiu atender a solicitação (${response.status}).`);
+    // 400/404/422 can represent stale or invalid opaque shipment identifiers and
+    // are handled by the tracking reconciler. Keep them out of critical error logs.
+    if ([400, 404, 422].includes(response.status))
+      console.warn(`Melhor Envio request rejected [${response.status}] ${path}`);
+    else
+      console.error(`Melhor Envio request failed [${response.status}] ${path}`);
+    throw new MelhorEnvioRequestError(response.status, path);
   }
   return response.json() as Promise<unknown>;
 }

@@ -2,8 +2,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { RetryableSyncError } from "./financial-errors";
 import { melhorEnvioRequest } from "./melhor-envio.server";
 import {
+  fetchMelhorEnvioTrackingRecords,
   mapMelhorEnvioStatus,
-  normalizeMelhorEnvioTrackingResponse,
+  normalizeMelhorEnvioTrackingId,
   shouldAdvanceShippingStatus,
   type MelhorEnvioTrackingRecord,
 } from "./melhor-envio-tracking";
@@ -78,28 +79,33 @@ async function persistTracking(order: ShippingOrder, provider: MelhorEnvioTracki
   };
 }
 
-async function synchronizeRows(rows: ShippingOrder[], failFast: boolean): Promise<SyncResult> {
-  const ids = rows.flatMap((row) => (row.provider_shipment_id ? [row.provider_shipment_id] : []));
-  if (!ids.length) return { checked: 0, updated: 0, errors: [] };
+function appendErrors(errors: string[], count: number, message: string) {
+  for (let index = 0; index < count; index += 1) errors.push(message);
+}
 
-  let raw: unknown;
+async function synchronizeRows(rows: ShippingOrder[], failFast: boolean): Promise<SyncResult> {
+  const rawIds = rows.map((row) => row.provider_shipment_id);
+  if (!rawIds.some(Boolean)) return { checked: 0, updated: 0, errors: [] };
+
+  let fetched: Awaited<ReturnType<typeof fetchMelhorEnvioTrackingRecords>>;
   try {
-    raw = await requestTracking(ids);
+    fetched = await fetchMelhorEnvioTrackingRecords(rawIds, requestTracking);
   } catch (error) {
     if (failFast) throw error;
-    return { checked: rows.length, updated: 0, errors: ["Rastreamento pendente de conferência."] };
+    return { checked: rows.length, updated: 0, errors: ["Rastreamento pendente de nova tentativa automática."] };
   }
-  const records = normalizeMelhorEnvioTrackingResponse(raw);
+
   let updated = 0;
   const errors: string[] = [];
+  appendErrors(errors, fetched.invalid, "Um envio possui identificador de rastreamento inválido.");
+  appendErrors(errors, fetched.rejected, "Um envio não foi aceito pelo rastreamento do Melhor Envio.");
+  appendErrors(errors, fetched.missing, "Um envio não retornou estado de rastreamento.");
 
   for (const order of rows) {
-    if (!order.provider_shipment_id) continue;
-    const provider = matchingRecord(records, order.provider_shipment_id);
-    if (!provider) {
-      errors.push("Um envio não retornou estado de rastreamento.");
-      continue;
-    }
+    const shipmentId = normalizeMelhorEnvioTrackingId(order.provider_shipment_id);
+    if (!shipmentId) continue;
+    const provider = matchingRecord(fetched.records, shipmentId);
+    if (!provider) continue;
     try {
       if ((await persistTracking(order, provider)).updated) updated += 1;
     } catch (error) {
@@ -130,10 +136,11 @@ export async function syncMelhorEnvioTrackingOrder(orderId: string) {
     .single();
   if (result.error || !result.data) throw new Error("Não foi possível carregar o envio.");
   const order = result.data as ShippingOrder;
-  if (!order.provider_shipment_id) throw new Error("Este pedido ainda não possui envio vinculado.");
+  const shipmentId = normalizeMelhorEnvioTrackingId(order.provider_shipment_id);
+  if (!shipmentId) throw new Error("Este pedido ainda não possui um envio válido vinculado.");
 
-  const raw = await requestTracking([order.provider_shipment_id]);
-  const provider = matchingRecord(normalizeMelhorEnvioTrackingResponse(raw), order.provider_shipment_id);
+  const fetched = await fetchMelhorEnvioTrackingRecords([shipmentId], requestTracking);
+  const provider = matchingRecord(fetched.records, shipmentId);
   if (!provider) throw new Error("O Melhor Envio não retornou o rastreamento deste envio.");
   const saved = await persistTracking(order, provider);
   return {

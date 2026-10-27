@@ -5,6 +5,10 @@ export type MelhorEnvioTrackingRecord = {
 };
 
 type JsonRecord = Record<string, unknown>;
+type TrackingRequester = (ids: string[]) => Promise<unknown>;
+
+const MAX_TRACKING_ID_LENGTH = 200;
+const TRACKING_BATCH_SIZE = 20;
 
 function record(value: unknown): JsonRecord | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : null;
@@ -12,6 +16,43 @@ function record(value: unknown): JsonRecord | null {
 
 function text(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+export function normalizeMelhorEnvioTrackingId(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!normalized || normalized.length > MAX_TRACKING_ID_LENGTH) return null;
+  // Melhor Envio documents the identifier as a string. Reject only characters that
+  // cannot belong to a safe opaque identifier instead of guessing a UUID format.
+  const hasControlCharacter = Array.from(normalized).some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+  if (/\s/.test(normalized) || hasControlCharacter) return null;
+  return normalized;
+}
+
+export function sanitizeMelhorEnvioTrackingIds(values: unknown[]): string[] {
+  return [...new Set(values.flatMap((value) => {
+    const id = normalizeMelhorEnvioTrackingId(value);
+    return id ? [id] : [];
+  }))];
+}
+
+export function isRecoverableTrackingLookupStatus(status: number | null): boolean {
+  return status === 400 || status === 404 || status === 422;
+}
+
+function requestStatus(error: unknown): number | null {
+  if (!error || typeof error !== "object" || !("status" in error)) return null;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" && Number.isInteger(status) ? status : null;
+}
+
+function chunks<T>(values: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let index = 0; index < values.length; index += size) result.push(values.slice(index, index + size));
+  return result;
 }
 
 function trackingCode(value: JsonRecord): string | null {
@@ -32,11 +73,11 @@ function trackingRecord(value: unknown, fallbackId?: string): MelhorEnvioTrackin
   const row = record(value);
   if (!row) return null;
   const id =
-    text(row["id"]) ??
-    text(row["order_id"]) ??
-    text(row["orderId"]) ??
-    text(row["shipment_id"]) ??
-    fallbackId ??
+    normalizeMelhorEnvioTrackingId(row["id"]) ??
+    normalizeMelhorEnvioTrackingId(row["order_id"]) ??
+    normalizeMelhorEnvioTrackingId(row["orderId"]) ??
+    normalizeMelhorEnvioTrackingId(row["shipment_id"]) ??
+    normalizeMelhorEnvioTrackingId(fallbackId) ??
     null;
   if (!id) return null;
   return { id, status: statusText(row), tracking: trackingCode(row) };
@@ -68,6 +109,62 @@ export function normalizeMelhorEnvioTrackingResponse(raw: unknown): MelhorEnvioT
     const parsed = trackingRecord(value, id);
     return parsed ? [parsed] : [];
   });
+}
+
+async function requestIndividually(ids: string[], request: TrackingRequester) {
+  const records: MelhorEnvioTrackingRecord[] = [];
+  let rejected = 0;
+  let missing = 0;
+
+  for (const id of ids) {
+    try {
+      const parsed = normalizeMelhorEnvioTrackingResponse(await request([id]));
+      const matching = parsed.find((row) => row.id === id);
+      if (matching) records.push(matching);
+      else missing += 1;
+    } catch (error) {
+      if (!isRecoverableTrackingLookupStatus(requestStatus(error))) throw error;
+      rejected += 1;
+    }
+  }
+
+  return { records, rejected, missing };
+}
+
+export async function fetchMelhorEnvioTrackingRecords(values: unknown[], request: TrackingRequester) {
+  const ids = sanitizeMelhorEnvioTrackingIds(values);
+  const invalid = values.filter((value) => normalizeMelhorEnvioTrackingId(value) === null).length;
+  const records: MelhorEnvioTrackingRecord[] = [];
+  let rejected = 0;
+  let missing = 0;
+
+  for (const batch of chunks(ids, TRACKING_BATCH_SIZE)) {
+    try {
+      const parsed = normalizeMelhorEnvioTrackingResponse(await request(batch));
+      const returned = new Map(parsed.map((row) => [row.id, row]));
+      for (const id of batch) {
+        const found = returned.get(id);
+        if (found) records.push(found);
+      }
+      const absent = batch.filter((id) => !returned.has(id));
+      if (absent.length) {
+        const fallback = await requestIndividually(absent, request);
+        records.push(...fallback.records);
+        rejected += fallback.rejected;
+        missing += fallback.missing;
+      }
+    } catch (error) {
+      if (!isRecoverableTrackingLookupStatus(requestStatus(error))) throw error;
+      // A malformed/stale identifier can make the provider reject a whole batch.
+      // Retry only this batch one-by-one so valid shipments still synchronize.
+      const fallback = await requestIndividually(batch, request);
+      records.push(...fallback.records);
+      rejected += fallback.rejected;
+      missing += fallback.missing;
+    }
+  }
+
+  return { ids, records, invalid, rejected, missing };
 }
 
 const statusAliases: Record<string, string> = {

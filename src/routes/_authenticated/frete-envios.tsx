@@ -6,7 +6,7 @@ import { LogOut, Plus, Save, Trash2, Truck, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { LabelAutomationSettings } from "@/components/LabelAutomationSettings";
-import { getShippingAdmin, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
+import { beginMelhorEnvioAuthorization, getShippingAdmin, saveShippingConfig, verifyShippingIntegrations } from "@/lib/shipping.functions";
 import { shippingConfigSchema, shippingStates } from "@/lib/shipping";
 import logo from "@/assets/sw-sports-logo.png.asset.json";
 
@@ -29,7 +29,9 @@ function Logistics() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("settings");
   const verify = useServerFn(verifyShippingIntegrations);
+  const beginAuthorization = useServerFn(beginMelhorEnvioAuthorization);
   const [checking, setChecking] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [checks, setChecks] = useState<Awaited<ReturnType<typeof verifyShippingIntegrations>> | null>(null);
   const field = "mt-2 w-full rounded-md border border-input bg-card px-3 py-2 text-sm";
 
@@ -50,8 +52,21 @@ function Logistics() {
               </p>
               {data.melhorEnvio.connected && "updated_at" in data.melhorEnvio && data.melhorEnvio.updated_at && <p className="mt-1 text-xs text-muted-foreground">Última atualização da autorização: {new Date(data.melhorEnvio.updated_at).toLocaleString("pt-BR")}</p>}
             </div>
-            <Button asChild variant={data.melhorEnvio.connected ? "outline" : "default"}>
-              <a href="/api/melhor-envio/authorize">{data.melhorEnvio.connected ? "Reautorizar" : "Conectar Melhor Envio"}</a>
+            <Button
+              variant={data.melhorEnvio.connected ? "outline" : "default"}
+              disabled={connecting}
+              onClick={async () => {
+                setConnecting(true);
+                try {
+                  const result = await beginAuthorization();
+                  window.location.assign(result.url);
+                } catch (error) {
+                  setMessage(error instanceof Error ? error.message : "Não foi possível iniciar a autorização do Melhor Envio.");
+                  setConnecting(false);
+                }
+              }}
+            >
+              {connecting ? "Abrindo…" : data.melhorEnvio.connected ? "Reautorizar" : "Conectar Melhor Envio"}
             </Button>
           </div>
         </section>

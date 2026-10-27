@@ -79,9 +79,10 @@ describe("Mercado Pago order reconciliation", () => {
     );
   });
 
-  it("exposes only the HTTP status for a historical order that no longer exists", async () => {
+  it("demotes an expected historical 404 without logging the provider body", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("private-provider-body", { status: 404 })));
-    const logger = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorLogger = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warningLogger = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     let caught: unknown;
     try {
@@ -91,8 +92,18 @@ describe("Mercado Pago order reconciliation", () => {
     }
     expect(caught).toBeInstanceOf(MercadoPagoRequestError);
     expect((caught as MercadoPagoRequestError).status).toBe(404);
-    expect(logger).toHaveBeenCalledWith("Mercado Pago request failed [404]");
-    expect(JSON.stringify(logger.mock.calls)).not.toContain("private-provider-body");
+    expect(errorLogger).not.toHaveBeenCalled();
+    expect(warningLogger).toHaveBeenCalledWith("Mercado Pago request handled [404]");
+    expect(JSON.stringify(warningLogger.mock.calls)).not.toContain("private-provider-body");
+  });
+
+  it("keeps unexpected provider failures as errors without logging the provider body", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("private-500-body", { status: 500 })));
+    const logger = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(readMercadoPagoOrder("remote-1")).rejects.toBeInstanceOf(MercadoPagoRequestError);
+    expect(logger).toHaveBeenCalledWith("Mercado Pago request failed [500]");
+    expect(JSON.stringify(logger.mock.calls)).not.toContain("private-500-body");
   });
 
   it("rejects a structurally incompatible response without logging its body", async () => {

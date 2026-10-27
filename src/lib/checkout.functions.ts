@@ -7,7 +7,7 @@ import { deliveryAddressSchema, validateDeliveryAddress } from "./delivery-addre
 
 // Public guest checkout intentionally accepts only validated catalog items; no account data is exposed.
 export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => shippingRequestSchema.extend({ serviceId: z.string().min(1).max(30), quotedPriceCents: z.number().int().nonnegative(), deliveryAddress: deliveryAddressSchema }).parse(data))
+  .validator((data: unknown) => shippingRequestSchema.extend({ serviceId: z.string().min(1).max(30), quotedPriceCents: z.number().int().nonnegative(), deliveryAddress: deliveryAddressSchema }).parse(data))
   .handler(async ({ data }) => {
     const { assertFinancialOperationsEnabled } = await import("./financial-maintenance.server");
     assertFinancialOperationsEnabled();

@@ -2,7 +2,16 @@
 // This is not a distributed drain signal and cannot fence older deployments.
 export const FINANCIAL_MAINTENANCE_MESSAGE = "Operações temporariamente indisponíveis para manutenção. Tente novamente mais tarde.";
 
+export function isPreviewEnvironment(): boolean {
+  return process.env["VERCEL_ENV"] === "preview";
+}
+
 export function isFinancialMaintenanceEnabled(): boolean {
+  // Vercel Preview must never mutate production financial, stock or logistics state.
+  // This remains a second line of defense even when production-only secrets are
+  // correctly scoped out of Preview deployments.
+  if (isPreviewEnvironment()) return true;
+
   const value = process.env["SWSPORTS_FINANCIAL_MAINTENANCE"];
   // Preserve existing deployments until the operator deliberately enables it.
   if (value === undefined) return false;

@@ -99,7 +99,8 @@ function webhookSecret() {
 
 async function mercadoPagoJson(response: Response) {
   if (!response.ok) {
-    console.error(`Mercado Pago request failed [${response.status}]`);
+    if (response.status === 404) console.warn("Mercado Pago request handled [404]");
+    else console.error(`Mercado Pago request failed [${response.status}]`);
     throw new MercadoPagoRequestError(response.status);
   }
   return response.json() as Promise<unknown>;
@@ -166,8 +167,6 @@ export async function verifyMercadoPagoStoredOrder(order: StoredOrder) {
     };
   }
 
-  // Pending/incomplete orders may legitimately omit paid totals and status detail.
-  // Never infer approval or failure from fields that are not present yet.
   return { state: "pending" as const, providerPaymentId: null, status: remote.status, statusDetail };
 }
 
