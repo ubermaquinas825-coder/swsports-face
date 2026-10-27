@@ -6,6 +6,7 @@ import { money } from "@/lib/sales";
 import {
   prepareMelhorEnvioShipping,
   inspectMelhorEnvioShipping,
+  resetMelhorEnvioShipping,
 } from "@/lib/melhor-envio-cart.functions";
 
 type Props = {
@@ -21,10 +22,12 @@ type Props = {
 export function MelhorEnvioOrderAction({ order }: Props) {
   const prepare = useServerFn(prepareMelhorEnvioShipping);
   const inspect = useServerFn(inspectMelhorEnvioShipping);
+  const resetShipping = useServerFn(resetMelhorEnvioShipping);
   const qc = useQueryClient();
   const [inspecting, setInspecting] = useState(false);
   const [diagnostic, setDiagnostic] = useState<Awaited<ReturnType<typeof inspectMelhorEnvioShipping>> | null>(null);
   const [busy, setBusy] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ shipmentId: string; dashboardUrl: string } | null>(null);
   const linked = prepared?.shipmentId || order.provider_shipment_id;
@@ -35,6 +38,13 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       ? "Este envio já foi processado ou exige conferência no Melhor Envio."
       : null);
   const blocked = Boolean(hold);
+  const canReset =
+    order.payment_status === "approved" &&
+    !["ready_to_post", "posted", "delivered"].includes(order.shipping_status) &&
+    (Boolean(linked) ||
+      ["awaiting_label", "awaiting_label_payment", "label_issued", "logistics_failed"].includes(
+        order.shipping_status,
+      ));
 
   return (
     <section className="min-w-0 rounded-xl border border-border bg-card p-5 sm:p-6">
@@ -51,7 +61,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
           <Button
             className="mb-3 w-full whitespace-normal"
             variant="outline"
-            disabled={inspecting}
+            disabled={inspecting || resetting}
             onClick={async () => {
               setInspecting(true);
               setMessage("");
@@ -88,7 +98,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       ) : (
         <Button
           className="h-auto min-h-10 w-full whitespace-normal py-3"
-          disabled={busy || blocked}
+          disabled={busy || blocked || resetting}
           onClick={async () => {
             setBusy(true);
             setMessage("");
@@ -111,7 +121,36 @@ export function MelhorEnvioOrderAction({ order }: Props) {
           {busy ? "Preparando envio…" : "Preparar envio e abrir Melhor Envio"}
         </Button>
       )}
-      {blocked && <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">{hold}</p>}
+      {canReset && (
+        <Button
+          className="mt-3 h-auto min-h-10 w-full whitespace-normal py-3"
+          variant="outline"
+          disabled={busy || inspecting || resetting}
+          onClick={async () => {
+            if (!window.confirm("Reiniciar a tentativa de emissão deste pedido? O sistema só continuará se confirmar que não há etiqueta paga, gerada ou postada no Melhor Envio.")) return;
+            setResetting(true);
+            setMessage("");
+            setDiagnostic(null);
+            try {
+              const result = await resetShipping({ data: { orderId: order.id } });
+              setPrepared(null);
+              setMessage(result.message);
+              await Promise.all([
+                qc.invalidateQueries({ queryKey: ["sales-admin"] }),
+                qc.invalidateQueries({ queryKey: ["shipping-admin"] }),
+              ]);
+            } catch (error) {
+              setMessage(error instanceof Error ? error.message : "Não foi possível reiniciar a emissão.");
+            } finally {
+              setResetting(false);
+            }
+          }}
+        >
+          {resetting ? "Conferindo e reiniciando…" : "Reiniciar emissão da etiqueta"}
+        </Button>
+      )}
+      {blocked && !canReset && <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">{hold}</p>}
+      {blocked && canReset && <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">{hold} Se nenhuma etiqueta foi paga ou gerada, use o botão de reinício acima.</p>}
       {message && <p role="status" className="mt-4 rounded-lg border bg-background p-3 text-sm leading-6 [overflow-wrap:anywhere]">{message}</p>}
       <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
