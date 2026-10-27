@@ -2,7 +2,7 @@ import { ScanFace, StretchHorizontal, Store } from "lucide-react";
 
 const BENEFITS = [
   { icon: StretchHorizontal, title: "Poliéster com elastano", text: "Elasticidade para acompanhar os movimentos." },
-  { icon: ScanFace, title: "Seis estampas, sua escolha", text: "Veja os modelos e escolha a sua balaclava." },
+  { icon: ScanFace, title: "Estampas para escolher", text: "Veja os modelos e escolha a sua balaclava." },
   { icon: Store, title: "Varejo e atacado", text: "Compre pelo site ou consulte condições para revenda." },
 ];
 

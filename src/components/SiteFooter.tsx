@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
 import { INSTAGRAM_URL, WHATSAPP_NUMBER, waLink } from "@/lib/products";
 import { business } from "@/lib/business";
-import logoAsset from "@/assets/sw-sports-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
 export function SiteFooter() {
@@ -11,7 +10,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-x-8 gap-y-10 px-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.1fr_1fr_1fr] md:px-6">
         <div className="min-w-0">
           <Link to="/" className="inline-flex" aria-label="SW Sports — início">
-            <img src={logoAsset.url} alt="SW Sports" width={453} height={255} loading="lazy" decoding="async" className="h-24 w-44 object-contain" />
+            <img src="/products/optimized/sw-sports-logo-192.webp" srcSet="/products/optimized/sw-sports-logo-192.webp 192w, /products/optimized/sw-sports-logo-384.webp 384w" sizes="176px" alt="SW Sports" width={384} height={216} loading="lazy" decoding="async" className="h-24 w-44 object-contain" />
           </Link>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">Balaclavas SW Sports. Estampas com personalidade, em poliéster com elastano.</p>
           <div className="mt-4 space-y-1 text-sm text-muted-foreground">

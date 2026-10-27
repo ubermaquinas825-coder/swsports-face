@@ -1,9 +1,10 @@
 import { ArrowRight, LockKeyhole, Truck } from "lucide-react";
 import { products, UNIT_PRICE, formatBRL } from "@/lib/products";
+import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
-  const featured = products.find((product) => product.id === "boca-de-beijo");
+  const featured = products.find((product) => product.id === "sorriso-grisalho");
   if (!featured) return null;
 
   return (
@@ -14,21 +15,25 @@ export function Hero() {
             <span aria-hidden className="h-px w-8 bg-brand" />
             BALACLAVAS SW SPORTS
           </p>
-          <h1 id="hero-title" className="max-w-xl font-display text-[2rem] font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.5rem]">
-            Estampas que não passam <span className="text-brand">despercebidas.</span>
+          <h1
+            id="hero-title"
+            className="max-w-xl font-display text-[2rem] font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.5rem]"
+          >
+            Balaclavas SW Sports.
+            <br />
+            <span className="text-brand">Escolha sua estampa.</span>
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
-            Poliéster com elastano. Seis modelos para escolher a sua cara.
+            Poliéster com elastano. {products.length} modelos para escolher a sua cara.
           </p>
         </div>
 
         <figure className="min-w-0 bg-[#141414] lg:col-start-2 lg:row-start-1 lg:row-span-2">
           <div className="flex h-[250px] items-center justify-center overflow-hidden px-2 pt-4 min-[375px]:h-[290px] sm:h-[360px] lg:h-[440px]">
-            <img
-              src={featured.image}
+            <ProductImage
+              product={featured}
               alt={`Balaclava ${featured.name} da SW Sports, vista de frente`}
-              width={859}
-              height={622}
+              sizes="(min-width: 1280px) 580px, (min-width: 1024px) 45vw, 90vw"
               loading="eager"
               decoding="async"
               fetchPriority="high"
@@ -37,7 +42,10 @@ export function Hero() {
           </div>
           <figcaption className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-4 text-sm">
             <span className="font-medium">{featured.name}</span>
-            <a href="#colecao" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-muted-foreground transition-colors hover:text-foreground">
+            <a
+              href="#colecao"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+            >
               Ver coleção <ArrowRight aria-hidden className="h-4 w-4" />
             </a>
           </figcaption>
@@ -45,16 +53,32 @@ export function Hero() {
 
         <div className="self-start lg:pb-2">
           <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-display text-3xl font-bold tracking-tight">{formatBRL(UNIT_PRICE)}</span>
+            <span className="font-display text-3xl font-bold tracking-tight">
+              {formatBRL(UNIT_PRICE)}
+            </span>
             <span className="text-sm text-muted-foreground">por unidade</span>
           </p>
-          <Button asChild size="lg" className="mt-5 min-h-12 w-full rounded-md px-6 text-sm font-bold shadow-none sm:w-auto">
-            <a href="#colecao">ESCOLHER MINHA BALACLAVA <ArrowRight aria-hidden /></a>
+          <Button
+            asChild
+            size="lg"
+            className="mt-5 min-h-12 w-full rounded-md px-6 text-sm font-bold shadow-none sm:w-auto"
+          >
+            <a href="#colecao">
+              ESCOLHER MINHA BALACLAVA <ArrowRight aria-hidden />
+            </a>
           </Button>
-          <p className="mt-3 text-sm text-muted-foreground">Frete e total informados antes de pagar.</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Frete e total informados antes de pagar.
+          </p>
           <div className="mt-7 flex flex-col gap-3 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-6">
-            <span className="flex items-center gap-2"><LockKeyhole aria-hidden className="h-4 w-4 shrink-0" />Pagamento pelo Mercado Pago</span>
-            <span className="flex items-center gap-2"><Truck aria-hidden className="h-4 w-4 shrink-0" />Envio pelo Melhor Envio</span>
+            <span className="flex items-center gap-2">
+              <LockKeyhole aria-hidden className="h-4 w-4 shrink-0" />
+              Pagamento pelo Mercado Pago
+            </span>
+            <span className="flex items-center gap-2">
+              <Truck aria-hidden className="h-4 w-4 shrink-0" />
+              Envio pelo Melhor Envio
+            </span>
           </div>
         </div>
       </div>

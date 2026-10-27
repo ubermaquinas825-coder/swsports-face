@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AtacadoRouteImport } from './routes/atacado'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ExperienciaRouteImport } from './routes/experiencia'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
@@ -44,6 +45,11 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperienciaRoute = ExperienciaRouteImport.update({
+  id: '/experiencia',
+  path: '/experiencia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PagamentoRoute = PagamentoRouteImport.update({
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/atacado'
     | '/auth'
     | '/checkout'
+    | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/atacado'
     | '/auth'
     | '/checkout'
+    | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/atacado'
     | '/auth'
     | '/checkout'
+    | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   AtacadoRoute: typeof AtacadoRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  ExperienciaRoute: typeof ExperienciaRoute
   PagamentoRoute: typeof PagamentoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
@@ -216,6 +229,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiencia': {
+      id: '/experiencia'
+      path: '/experiencia'
+      fullPath: '/experiencia'
+      preLoaderRoute: typeof ExperienciaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pagamento': {
@@ -289,6 +309,7 @@ const rootRouteChildren: RootRouteChildren = {
   AtacadoRoute: AtacadoRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  ExperienciaRoute: ExperienciaRoute,
   PagamentoRoute: PagamentoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,

@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
-import { formatBRL, productFor, UNIT_PRICE, type Product } from "@/lib/products";
+import { formatBRL, products, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
+import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 
 function ProductCard({ product }: { product: Product }) {
@@ -14,11 +15,9 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <article className="flex min-w-0 flex-col">
       <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-[#141414] p-3 sm:p-5">
-        <img
-          src={product.image}
+        <ProductImage
+          product={product}
           alt={`Balaclava ${product.name}`}
-          width={800}
-          height={600}
           loading="lazy"
           decoding="async"
           className="h-full w-full object-contain"
@@ -52,17 +51,7 @@ export function Collection() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-x-4 gap-y-9 min-[375px]:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3">
-          {[
-            "boca-de-beijo",
-            "velhinho-bigodudo",
-            "gato-divertido",
-            "bebe-chupeta",
-            "vovo-rebelde",
-            "sorriso-banguela",
-          ].map((id) => {
-            const product = productFor(id);
-            return product ? <ProductCard key={id} product={product} /> : null;
-          })}
+          {products.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
       </div>
     </section>

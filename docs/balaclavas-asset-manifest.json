@@ -1,0 +1,50 @@
+[
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "01.jpeg",
+    "product_id": "sorriso-grisalho",
+    "url": "/products/balaclavas/sorriso-grisalho.jpeg",
+    "bytes": 210862,
+    "sha256": "f89fd60cd232862c928f93f1f98f60835af82cc580126a6c0862afa2993df90c"
+  },
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "02.jpeg",
+    "product_id": "grisalho-com-charuto",
+    "url": "/products/balaclavas/grisalho-com-charuto.jpeg",
+    "bytes": 212048,
+    "sha256": "b59197e3ddbda306ea9fe9be497c36cda2e79ba5773fa88cdaea2b5beeb25f18"
+  },
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "03.jpeg",
+    "product_id": "bigodudo-irreverente",
+    "url": "/products/balaclavas/bigodudo-irreverente.jpeg",
+    "bytes": 186296,
+    "sha256": "6272d4eeddb7dbe617213856666be859c92d36e23d301f3a5ae60ba689cf1c97"
+  },
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "04.jpeg",
+    "product_id": "sorriso-rebelde",
+    "url": "/products/balaclavas/sorriso-rebelde.jpeg",
+    "bytes": 179319,
+    "sha256": "3a2a7c5a8a971b87682aec6f75214d520df129ab8a07525689da13e481401f4c"
+  },
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "05.jpeg",
+    "product_id": "bigode-branco",
+    "url": "/products/balaclavas/bigode-branco.jpeg",
+    "bytes": 194246,
+    "sha256": "14f2d067ebb529644f08e2ba04ae3fb53094c374e8a352d4320d802c9553f4b2"
+  },
+  {
+    "source_archive": "balaclavas.zip",
+    "source_file": "06.jpeg",
+    "product_id": "grisalho-sorridente",
+    "url": "/products/balaclavas/grisalho-sorridente.jpeg",
+    "bytes": 203840,
+    "sha256": "ee13ccd930d19aaf5ce9234d9d96b534b2a2b56af7a43c88098e246f3d00dded"
+  }
+]
