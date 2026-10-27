@@ -71,7 +71,7 @@ const structuredData = {
           "@type": "Product",
           name: `Balaclava ${product.name}`,
           description: product.description,
-          image: product.image,
+          image: new URL(product.image, SITE_URL).href,
           brand: { "@type": "Brand", name: "SW Sports" },
           offers: {
             "@type": "Offer",

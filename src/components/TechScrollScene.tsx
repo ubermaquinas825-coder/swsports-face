@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { products, UNIT_PRICE, formatBRL, type Product } from "@/lib/products";
+import { UNIT_PRICE, formatBRL, productFor, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
 
 function DepthProduct({
@@ -66,7 +66,7 @@ export function TechScrollScene() {
   const target = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target, offset: ["start start", "end end"] });
   const rotate = useTransform(scrollYProgress, [0, 1], [-25, 100]);
-  const featured = [products[0], products[4], products[3]];
+  const featured = ["bigodudo-irreverente", "sorriso-rebelde", "grisalho-sorridente"].map(productFor);
   return (
     <section
       ref={target}

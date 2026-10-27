@@ -18,7 +18,7 @@ export function Hero() {
             Estampas que não passam <span className="text-brand">despercebidas.</span>
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
-            Poliéster com elastano. Seis modelos para escolher a sua cara.
+            Poliéster com elastano. {products.length} modelos para escolher a sua cara.
           </p>
         </div>
 

@@ -8,7 +8,7 @@ import { Collection } from "@/components/Collection";
 import { Benefits } from "@/components/Benefits";
 import { Faq } from "@/components/Faq";
 import { SiteFooter } from "@/components/SiteFooter";
-import { products } from "@/lib/products";
+import { products, productFor } from "@/lib/products";
 
 export const Route = createFileRoute("/experiencia")({
   head: () => ({
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/experiencia")({
       },
       {
         property: "og:image",
-        content: new URL(products[1].image, "https://www.balaclavaswsports.com.br").href,
+        content: new URL((productFor("sorriso-grisalho") ?? products[1]).image, "https://www.balaclavaswsports.com.br").href,
       },
       { name: "robots", content: "noindex, follow" },
     ],

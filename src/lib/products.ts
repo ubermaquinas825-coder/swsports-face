@@ -54,6 +54,42 @@ export const products: Product[] = [
     description: "Cara de bebê rabugento com chupeta azul de ursinho.",
     image: bebeAsset.url,
   },
+  {
+    id: "sorriso-grisalho",
+    name: "Sorriso Grisalho",
+    description: "Estampa de rosto com cabelos grisalhos e sorriso banguela.",
+    image: "/products/balaclavas/sorriso-grisalho.jpeg",
+  },
+  {
+    id: "grisalho-com-charuto",
+    name: "Grisalho com Charuto",
+    description: "Estampa de rosto grisalho, bigode e charuto no canto da boca.",
+    image: "/products/balaclavas/grisalho-com-charuto.jpeg",
+  },
+  {
+    id: "bigodudo-irreverente",
+    name: "Bigodudo Irreverente",
+    description: "Estampa de bigode branco, língua de fora e expressão irreverente.",
+    image: "/products/balaclavas/bigodudo-irreverente.jpeg",
+  },
+  {
+    id: "sorriso-rebelde",
+    name: "Sorriso Rebelde",
+    description: "Estampa de cabelos grisalhos, sorriso e cigarro no canto da boca.",
+    image: "/products/balaclavas/sorriso-rebelde.jpeg",
+  },
+  {
+    id: "bigode-branco",
+    name: "Bigode Branco",
+    description: "Estampa de rosto com bigode branco e charuto.",
+    image: "/products/balaclavas/bigode-branco.jpeg",
+  },
+  {
+    id: "grisalho-sorridente",
+    name: "Grisalho Sorridente",
+    description: "Estampa de cabelos claros, sorriso e cigarro no canto da boca.",
+    image: "/products/balaclavas/grisalho-sorridente.jpeg",
+  },
 ];
 
 export function formatBRL(value: number): string {

@@ -13,7 +13,7 @@ export function TechShowcase() {
   const lift = useTransform(scrollYProgress, [0, 1], [0, -45]);
   const depth = useTransform(scrollYProgress, [0, 1], [0, 9]);
   const cubeTurn = useTransform(scrollYProgress, [0, 1], [-25, 100]);
-  const [selected, setSelected] = useState(1);
+  const [selected, setSelected] = useState(() => Math.max(0, products.findIndex((item) => item.id === "sorriso-grisalho")));
   const product = products[selected];
   const { add, openCart } = useCart();
   if (!product) return null;

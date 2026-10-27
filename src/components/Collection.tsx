@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { formatBRL, productFor, UNIT_PRICE, type Product } from "@/lib/products";
+import { formatBRL, products, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 
@@ -52,17 +52,7 @@ export function Collection() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-x-4 gap-y-9 min-[375px]:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3">
-          {[
-            "boca-de-beijo",
-            "velhinho-bigodudo",
-            "gato-divertido",
-            "bebe-chupeta",
-            "vovo-rebelde",
-            "sorriso-banguela",
-          ].map((id) => {
-            const product = productFor(id);
-            return product ? <ProductCard key={id} product={product} /> : null;
-          })}
+          {products.map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
       </div>
     </section>

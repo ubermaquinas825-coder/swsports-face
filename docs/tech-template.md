@@ -4,7 +4,7 @@ Versão alternativa em `/experiencia`, na branch `feat/sw-sports-tech-template`.
 
 ## Interações implementadas
 
-- Vitrine com seis seletores de estampa, anterior/próxima e compra direta da opção selecionada pelo carrinho existente.
+- Vitrine com doze seletores de estampa, anterior/próxima e compra direta da opção selecionada pelo carrinho existente.
 - Fundo com luz vermelha que responde ao ponteiro, grade discreta e cubo geométrico de seis faces construído em CSS 3D.
 - Produto em uma camada com perspectiva e deslocamento ligados ao scroll.
 - Cena sticky no desktop: três planos com fotos oficiais giram e mudam de profundidade conforme a rolagem, mantendo os botões de compra funcionais.
@@ -16,9 +16,9 @@ As fotos são planos com perspectiva, não modelos 3D dos produtos. O cubo é ge
 
 ## Verificação
 
-180 testes locais em 23 arquivos, incluindo a nova rota; lint e builds normal e Vercel Preview. Suíte financeira PostgreSQL isolada preservada. Browser em 320, 375, 390, 430, 768 e 1440 px, mais movimento reduzido em 390 e 1440 px:
+188 testes locais em 24 arquivos, incluindo a nova rota; lint e builds normal e Vercel Preview. Suíte financeira PostgreSQL isolada preservada. Browser em 320, 375, 390, 430, 768 e 1440 px, mais movimento reduzido em 390 e 1440 px:
 
-- um H1, seis controles de seleção, áreas de toque com largura mínima de 44px;
+- um H1, doze controles de seleção, áreas de toque com largura mínima de 44px;
 - compra do modelo selecionado, quantidade/subtotal, guard sem frete e compra a partir da cena;
 - transformação 3D realmente diferente após scroll em desktop;
 - fallback estático sem overflow e sem avisos de hidratação em movimento reduzido;
@@ -26,10 +26,21 @@ As fotos são planos com perspectiva, não modelos 3D dos produtos. O cubo é ge
 
 Resultados e capturas da sessão: `/workspace/swsports-audit/tech-browser-results.json` e `tech-*.png` (fora do Git). Preview publicado não equivale a validação visual remota quando a Vercel exige login. Nenhuma alteração ou teste transacional em produção.
 
-## Seis fotos novas: requisito ainda pendente
+## Seis fotos novas importadas
 
-As seis fotos aparecem na conversa, mas não foram disponibilizadas como arquivos ou IDs de download no ambiente. A busca nos diretórios de uploads, compartilhados e scratch não encontrou esses arquivos. O Template Creator não está disponível nas ferramentas da sessão; esta versão foi implementada diretamente no projeto, sem afirmar uso do plugin ou do Figma.
+O ZIP `balaclavas.zip` contém somente `01.jpeg` a `06.jpeg`. As seis imagens de 1254×1254 foram importadas sem recorte, geração, recompressão ou alteração de cores; o manifesto `docs/balaclavas-asset-manifest.json` relaciona cada arquivo original ao ID do produto, caminho público, tamanho e SHA-256.
 
-[PENDENTE — IMPORTAR AS SEIS IMAGENS ORIGINAIS] — fornecer os arquivos em ZIP ou um link de download autorizado. Não reconstruir as fotos com IA, não alterar as estampas, não inserir URLs de imagens inexistentes e não substituir por fotos dos modelos antigos.
+| Arquivo | Nome de exibição | ID |
+| --- | --- | --- |
+| 01.jpeg | Sorriso Grisalho | sorriso-grisalho |
+| 02.jpeg | Grisalho com Charuto | grisalho-com-charuto |
+| 03.jpeg | Bigodudo Irreverente | bigodudo-irreverente |
+| 04.jpeg | Sorriso Rebelde | sorriso-rebelde |
+| 05.jpeg | Bigode Branco | bigode-branco |
+| 06.jpeg | Grisalho Sorridente | grisalho-sorridente |
 
-Quando os arquivos estiverem disponíveis: identificar cada modelo sem duplicar produtos, preservar os originais, preparar imagens otimizadas, manter preço de R$ 49,90 via `UNIT_PRICE` e validar carrinho, cotação e cadastro correspondente em homologação. Não inventar estoque nem criar dados em produção. Até lá, a vitrine usa explicitamente o catálogo já existente; nenhum dos seis novos modelos foi cadastrado ou anunciado como disponível.
+Os nomes são descrições para identificar as seis fotos numeradas, não SKUs de estoque. IDs, nomes, ordem e imagens dos seis produtos anteriores foram preservados. Os novos itens compartilham `UNIT_PRICE` (R$ 49,90) e aparecem na coleção, seleção interativa, carrinho e dados estruturados. A vitrine tecnológica abre com Sorriso Grisalho e a cena 3D destaca três novas fotos.
+
+A validação passa a aceitar até o número de modelos cadastrados, mantendo rejeição de IDs desconhecidos, itens duplicados e quantidades inválidas. A capacidade das embalagens e os cálculos não foram alterados: um carrinho de doze unidades continua sem embalagem elegível na configuração padrão, cuja capacidade máxima é dez. Não foram criados registros de estoque, pedidos, pagamentos, migrações ou dados de produção.
+
+Os testes adicionais verificam os bytes originais, cada novo item a 4.990 centavos, carrinho misto com sete modelos, subtotal, guard de frete e preservação dos limites de embalagem. Template Creator/Figma não foram usados; a proposta foi implementada diretamente no projeto.
