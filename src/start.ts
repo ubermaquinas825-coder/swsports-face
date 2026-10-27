@@ -1,6 +1,7 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -15,18 +16,6 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       headers: { "content-type": "text/html; charset=utf-8" },
     });
   }
-});
-
-// Keep Supabase out of the initial storefront bundle. The auth client is only
-// needed when a server function is actually called; at that point we attach
-// the same bearer token that the generated auth attacher previously used.
-const attachSupabaseAuth = createMiddleware({ type: "function" }).client(async ({ next }) => {
-  const { supabase } = await import("@/integrations/supabase/client");
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  return next({
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
 });
 
 // Start installs this automatically when src/start.ts is absent; defining the
