@@ -11,6 +11,28 @@ const vercelNitro = { preset: "vercel", vercel: { functions: { maxDuration: 300 
 
 export default defineConfig({
   ...(process.env["VERCEL"] === "1" ? { nitro: vercelNitro } : {}),
+  vite: {
+    build: {
+      rolldownOptions: {
+        output: {
+          // Preserve module execution semantics while splitting the previously
+          // oversized client entry into smaller route-aware chunks.
+          strictExecutionOrder: true,
+          codeSplitting: {
+            groups: [
+              {
+                name: (moduleId) => (moduleId.includes("node_modules") ? "vendor" : "app"),
+                minSize: 80_000,
+                maxSize: 220_000,
+                entriesAware: true,
+                priority: 10,
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
