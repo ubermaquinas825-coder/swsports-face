@@ -51,23 +51,23 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#090909]/95 shadow-[0_10px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/70 to-transparent" />
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#090909]/98 shadow-[0_8px_28px_rgba(0,0,0,0.24)] md:bg-[#090909]/95 md:backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 hidden h-px bg-gradient-to-r from-transparent via-brand/70 to-transparent md:block" />
 
-      <div className="mx-auto flex h-[82px] max-w-7xl items-center justify-between gap-4 px-4 md:h-[88px] md:px-6">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-3 px-4 md:h-[82px] md:gap-4 md:px-6">
         <Link
           to="/"
-          className="group relative flex min-h-11 items-center rounded-2xl px-1 transition-transform duration-300 hover:scale-[1.02]"
+          className="group relative flex min-h-11 items-center rounded-xl px-0.5 md:rounded-2xl md:px-1 md:transition-transform md:duration-300 md:hover:scale-[1.02]"
         >
-          <span className="pointer-events-none absolute inset-1 rounded-2xl bg-brand/0 blur-xl transition-colors duration-300 group-hover:bg-brand/5" />
+          <span className="pointer-events-none absolute inset-1 hidden rounded-2xl bg-brand/0 blur-xl transition-colors duration-300 group-hover:bg-brand/5 md:block" />
           <img
             src="/products/optimized/sw-sports-logo-192.webp"
             srcSet="/products/optimized/sw-sports-logo-192.webp 192w, /products/optimized/sw-sports-logo-384.webp 384w"
-            sizes="(min-width: 768px) 156px, 124px"
+            sizes="(min-width: 768px) 144px, 112px"
             alt="SW Sports"
             width={453}
             height={255}
-            className="relative h-14 w-31 object-contain md:h-[70px] md:w-[156px]"
+            className="relative h-12 w-28 object-contain md:h-16 md:w-36"
           />
         </Link>
 
@@ -90,20 +90,20 @@ export function SiteHeader() {
             href={MELHOR_RASTREIO_URL}
             target="_blank"
             rel="noreferrer"
-            className="ml-1 inline-flex min-h-10 items-center gap-2 rounded-full border border-brand/30 bg-brand/[0.08] px-4 text-sm font-semibold text-white transition-all duration-200 hover:border-brand/60 hover:bg-brand/[0.13] hover:shadow-[0_0_24px_rgba(255,215,0,0.08)]"
+            className="ml-1 inline-flex min-h-10 items-center gap-2 rounded-full border border-brand/30 bg-brand/[0.08] px-4 text-sm font-semibold text-white transition-all duration-200 hover:border-brand/60 hover:bg-brand/[0.13]"
           >
             <PackageSearch className="h-4 w-4 text-brand" />
             Rastrear pedido
           </a>
         </nav>
 
-        <div className="flex items-center gap-2.5 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram da SW Sports"
-            className="hidden h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/65 transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07] hover:text-white sm:grid"
+            className="hidden h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/65 transition-colors duration-200 hover:border-white/20 hover:bg-white/[0.07] hover:text-white sm:grid"
           >
             <Instagram className="h-[17px] w-[17px]" />
           </a>
@@ -113,11 +113,11 @@ export function SiteHeader() {
             size="icon"
             onClick={openCart}
             aria-label="Abrir carrinho"
-            className="relative grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/80 transition-all duration-200 hover:border-brand/40 hover:bg-brand/[0.08] hover:text-brand"
+            className="relative grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/80 transition-colors duration-200 hover:border-brand/40 hover:bg-brand/[0.08] hover:text-brand"
           >
             <ShoppingBag className="h-[17px] w-[17px]" />
             {count > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border-2 border-[#090909] bg-brand px-1 text-[10px] font-extrabold text-black shadow-lg">
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border-2 border-[#090909] bg-brand px-1 text-[10px] font-extrabold text-black">
                 {count}
               </span>
             )}
@@ -138,10 +138,10 @@ export function SiteHeader() {
 
       {menuOpen && (
         <nav
-          className="border-t border-white/10 bg-[#0b0b0b]/98 px-3 pb-4 pt-3 shadow-2xl backdrop-blur-xl md:hidden"
+          className="border-t border-white/10 bg-[#0b0b0b] px-3 pb-4 pt-3 shadow-2xl md:hidden"
           aria-label="Navegação mobile"
         >
-          <div className="mx-auto flex max-w-7xl flex-col gap-1.5 rounded-2xl border border-white/10 bg-white/[0.025] p-2">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1 rounded-2xl border border-white/10 bg-white/[0.025] p-2">
             {NAV.map((item) => (
               <Button
                 variant="ghost"
