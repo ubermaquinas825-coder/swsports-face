@@ -3,15 +3,17 @@ import { manualShippingHold } from "./manual-shipping-eligibility";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import { labelSenderSchema, shippingConfigSchema } from "./shipping";
-import { melhorEnvioRequest } from "./melhor-envio.server";
+import {
+  assertMelhorEnvioCartAccess,
+  melhorEnvioPanelUrl,
+  melhorEnvioRequest,
+} from "./melhor-envio.server";
 import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import { business } from "./business";
 import { validateDeliveryAddress } from "./delivery-address";
 import { orderItemsSchema } from "./order-items";
 import { SITE_ORIGIN } from "./site";
-
-const dashboardUrl = "https://melhorenvio.com.br/";
 
 const volumeSchema = z.object({
   height: z.coerce.number().positive(),
@@ -100,9 +102,11 @@ function buildMelhorEnvioPayload(input: {
     volumes: [service.package],
     options: {
       platform: "SW Sports",
+      reminder: `Pedido SW Sports ${input.orderId.slice(0, 8)}`,
       insurance_value: input.subtotalCents / 100,
       receipt: false,
       own_hand: false,
+      reverse: false,
       tags: [{ tag: input.orderId, url: SITE_ORIGIN }],
     },
   };
@@ -110,6 +114,7 @@ function buildMelhorEnvioPayload(input: {
 
 export async function prepareMelhorEnvioCart(orderId: string) {
   assertFinancialOperationsEnabled();
+  await assertMelhorEnvioCartAccess();
   const settings = await supabaseAdmin
     .from("shipping_settings")
     .select("config")
@@ -158,9 +163,8 @@ export async function prepareMelhorEnvioCart(orderId: string) {
   });
 
   // Manual handoff: use the service/package already chosen and saved with the
-  // customer's order. Do not reprice the shipment here. The Melhor Envio cart is
-  // the source of truth for the current label price, which the administrator will
-  // review and pay manually in the provider dashboard.
+  // customer's order. Do not reprice or buy the shipment here. The administrator
+  // reviews and pays the label inside the Melhor Envio cart.
   const claim = await supabaseAdmin.rpc("claim_manual_shipping_cart", {
     _order_id: orderId,
     _revision: order.financial_revision,
@@ -196,23 +200,17 @@ export async function prepareMelhorEnvioCart(orderId: string) {
       .from("shipping_events")
       .update({
         provider: "melhor_envio",
-        state: "Dados do pedido enviados ao carrinho do Melhor Envio para revisão e pagamento manual. Nenhum débito efetuado pelo site.",
+        state: "Pedido enviado ao carrinho do Melhor Envio para revisão, pagamento e emissão manual da etiqueta. Nenhum débito efetuado pelo site.",
       })
       .eq("order_id", orderId)
       .eq("provider", "superfrete")
       .eq("kind", "manual_cart");
 
-    phase = "conferência do item no carrinho";
-    const info = createdSchema.parse(
-      await melhorEnvioRequest(`/api/v2/me/cart/${encodeURIComponent(created.id)}`),
-    );
-    if (info.id !== created.id) throw new Error("Identificador do envio divergente.");
-
     return {
       shipmentId: created.id,
-      dashboardUrl,
+      dashboardUrl: melhorEnvioPanelUrl("/carrinho"),
       message:
-        "Dados enviados ao carrinho do Melhor Envio. Confira o valor atual, revise o envio e faça o pagamento da etiqueta diretamente no Melhor Envio.",
+        "Pedido enviado ao carrinho do Melhor Envio. Revise os dados, pague o frete e faça a emissão da etiqueta diretamente no Melhor Envio.",
     };
   } catch {
     if (createdId) {
