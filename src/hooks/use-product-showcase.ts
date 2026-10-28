@@ -5,7 +5,7 @@ export const SHOWCASE_IMAGE_SIZES =
   "(min-width: 1280px) 600px, (min-width: 1024px) 45vw, calc(100vw - 32px)";
 
 const SLIDE_INTERVAL = 6000;
-const FADE_DURATION = 420;
+const FADE_DURATION = 650;
 
 type ProductShowcaseOptions = {
   uninterruptedAutoplay?: boolean;
