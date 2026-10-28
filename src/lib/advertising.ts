@@ -116,8 +116,16 @@ export function trackStorefrontPage(region: string | null, path: string, optOut:
   }
 }
 
+function browserOptOut() {
+  return (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
+    || navigator.doNotTrack === "1";
+}
+
 function canTrackCommerce() {
-  return Boolean(readConsent()?.history.at(-1)?.accepted && window.fbq);
+  const accepted = readConsent()?.history.at(-1)?.accepted === true;
+  if (!accepted || browserOptOut()) return false;
+  applyAdvertisingPermission(true);
+  return Boolean(window.fbq);
 }
 
 export function trackAddToCart(product: { id: string; name: string }, qty: number, unitPrice: number) {
