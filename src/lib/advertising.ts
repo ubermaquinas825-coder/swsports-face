@@ -1,4 +1,4 @@
-export const META_PIXEL_ID = "1664422701692558";
+export const META_PIXEL_ID = "1853720048965709";
 export const GOOGLE_ADS_ID = "AW-875949502";
 export const CONSENT_KEY = "sw-advertising-consent-v1";
 export const NOTICE_VERSION = "2026-10-23-v1";
