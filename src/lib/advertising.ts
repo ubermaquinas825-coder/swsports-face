@@ -103,13 +103,17 @@ export function applyAdvertisingPermission(allowed: boolean) {
   if (allowed) loadAdvertisingScripts();
 }
 export function trackStorefrontPage(region: string | null, path: string, optOut: boolean) {
-  if (!["/", "/atacado"].includes(path) || !isPublicAdvertisingUrl()) { applyAdvertisingPermission(false); return; }
+  const trackedPaths = new Set(["/", "/atacado", "/checkout"]);
+  if (!trackedPaths.has(path) || !isPublicAdvertisingUrl()) { applyAdvertisingPermission(false); return; }
   const allowed = advertisingAllowed(region, readConsent()?.history.at(-1), optOut);
   applyAdvertisingPermission(allowed);
   if (!allowed || lastPage === path) return;
   lastPage = path;
   window.gtag?.("event", "page_view", { send_to: GOOGLE_ADS_ID, page_location: `${location.origin}${path}`, page_referrer: "", page_title: "SW Sports" });
   window.fbq?.("track", "PageView");
+  if (path === "/checkout") {
+    window.fbq?.("track", "InitiateCheckout", { currency: "BRL" });
+  }
 }
 
 function canTrackCommerce() {
