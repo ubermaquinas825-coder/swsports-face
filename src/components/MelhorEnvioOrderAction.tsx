@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { money } from "@/lib/sales";
+import { money, record, text } from "@/lib/sales";
 import {
   prepareMelhorEnvioShipping,
   inspectMelhorEnvioShipping,
@@ -18,8 +18,25 @@ type Props = {
     provider_shipment_id?: string | null;
     tracking_code?: string | null;
     label_url?: string | null;
+    shipping_service?: unknown;
+    quoted_cep?: string | null;
+    freight_cents?: number | null;
   };
 };
+
+function numberValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function formatCep(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D/g, "");
+  return digits.length === 8 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : value || "Não registrado";
+}
 
 export function MelhorEnvioOrderAction({ order }: Props) {
   const prepare = useServerFn(prepareMelhorEnvioShipping);
@@ -33,6 +50,21 @@ export function MelhorEnvioOrderAction({ order }: Props) {
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ shipmentId: string; dashboardUrl: string } | null>(null);
   const linked = prepared?.shipmentId || order.provider_shipment_id;
+  const service = record(order.shipping_service);
+  const packageInfo = record(service["package"]);
+  const serviceId = text(service["id"]) || (numberValue(service["id"]) !== null ? String(numberValue(service["id"])) : "");
+  const serviceName = [text(service["company"]), text(service["name"])].filter(Boolean).join(" · ");
+  const servicePriceCents = numberValue(service["priceCents"]) ?? order.freight_cents ?? null;
+  const deliveryDays = numberValue(service["deliveryDays"]);
+  const originCep = text(service["originCep"]);
+  const length = numberValue(packageInfo["length"]);
+  const width = numberValue(packageInfo["width"]);
+  const height = numberValue(packageInfo["height"]);
+  const weight = numberValue(packageInfo["weight"]);
+  const packageLabel =
+    length !== null && width !== null && height !== null && weight !== null
+      ? `${length} × ${width} × ${height} cm · ${weight} kg`
+      : "Não registrado";
   const hold =
     order.shipping_hold ||
     (order.payment_status !== "approved" ? "O pagamento deste pedido ainda não está aprovado." : null) ||
@@ -53,13 +85,41 @@ export function MelhorEnvioOrderAction({ order }: Props) {
   return (
     <section className="min-w-0 rounded-xl border border-border bg-card p-5 sm:p-6">
       <h4 className="text-base font-semibold">Envio pelo Melhor Envio</h4>
-      <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
-        O site envia os dados do pedido para o carrinho do Melhor Envio. Você confere o valor atual e faz a emissão da etiqueta diretamente na sua conta.
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+        Confira os dados abaixo. Ao clicar, o pedido é enviado para o carrinho do Melhor Envio; o pagamento e a emissão da etiqueta são feitos diretamente na sua conta.
       </p>
+
+      <dl className="my-5 grid gap-3 rounded-lg border border-border bg-background p-4 text-sm sm:grid-cols-2">
+        <div className="min-w-0 sm:col-span-2">
+          <dt className="text-xs text-muted-foreground">Transportadora / serviço</dt>
+          <dd className="mt-1 font-medium [overflow-wrap:anywhere]">{serviceName || "Não registrado"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">ID do serviço</dt>
+          <dd className="mt-1 font-medium">{serviceId || "Não registrado"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Valor cotado</dt>
+          <dd className="mt-1 font-medium">{servicePriceCents === null ? "Não registrado" : money(servicePriceCents)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Prazo estimado</dt>
+          <dd className="mt-1 font-medium">{deliveryDays === null ? "Não registrado" : `${deliveryDays} dia(s) útil(eis)`}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">CEP origem → destino</dt>
+          <dd className="mt-1 font-medium">{formatCep(originCep)} → {formatCep(order.quoted_cep)}</dd>
+        </div>
+        <div className="min-w-0 sm:col-span-2">
+          <dt className="text-xs text-muted-foreground">Embalagem enviada ao Melhor Envio</dt>
+          <dd className="mt-1 font-medium [overflow-wrap:anywhere]">{packageLabel}</dd>
+        </div>
+      </dl>
+
       {linked ? (
         <>
           <p className="mb-4 rounded-lg bg-background p-3 text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]">
-            Identificador do envio
+            Identificador do envio no Melhor Envio
             <span className="mt-1 block font-mono text-foreground">{linked}</span>
           </p>
           <Button
@@ -95,7 +155,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
           )}
           {!blocked && (
             <Button asChild variant="outline" className="w-full">
-              <a href="https://melhorenvio.com.br/" target="_blank" rel="noreferrer">Abrir Melhor Envio</a>
+              <a href="https://melhorenvio.com.br/carrinho" target="_blank" rel="noreferrer">Abrir carrinho no Melhor Envio</a>
             </Button>
           )}
         </>
@@ -122,7 +182,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
             }
           }}
         >
-          {busy ? "Enviando dados…" : "Enviar pedido para o Melhor Envio"}
+          {busy ? "Enviando ao carrinho…" : "Enviar para o carrinho do Melhor Envio"}
         </Button>
       )}
       {canReset && (
@@ -159,7 +219,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
         <p className="mt-2">
-          O site usa remetente, destinatário, produtos, serviço e volume já salvos no pedido e adiciona o envio ao carrinho do Melhor Envio. O site não recalcula nem exige que o preço antigo continue igual ao preço atual, não compra a etiqueta e não debita sua Melhor Carteira. Você revisa e paga no Melhor Envio.
+          O site usa remetente, destinatário, produtos, serviço e volume já salvos no pedido e adiciona o envio ao carrinho do Melhor Envio. O site não compra a etiqueta e não debita sua Melhor Carteira. Você revisa, paga e emite a etiqueta no Melhor Envio.
         </p>
       </details>
     </section>
