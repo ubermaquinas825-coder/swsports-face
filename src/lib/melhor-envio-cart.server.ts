@@ -28,6 +28,99 @@ const savedServiceSchema = z.object({
 });
 const createdSchema = z.object({ id: z.string().min(1).max(200) }).passthrough();
 
+type RetainedManualJob = {
+  stage: string;
+  payload: unknown;
+  shipment_id: string | null;
+};
+
+type ManualCartClaim =
+  | { kind: "rpc"; token: string }
+  | { kind: "retained"; revision: string };
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function isRetainedManualJob(job: RetainedManualJob | null) {
+  if (!job || job.stage !== "review") return false;
+  const payload = record(job.payload);
+  return payload?.["manual_payment"] === true;
+}
+
+async function loadRetainedManualJob(orderId: string): Promise<RetainedManualJob | null> {
+  const result = await supabaseAdmin
+    .from("shipping_label_jobs")
+    .select("stage,payload,shipment_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
+  if (result.error)
+    throw new Error("Não foi possível conferir a tentativa anterior de etiqueta.");
+  return (result.data as RetainedManualJob | null) ?? null;
+}
+
+async function claimRetainedManualRetry(order: {
+  id: string;
+  financial_revision: string;
+}) {
+  const job = await loadRetainedManualJob(order.id);
+  if (!isRetainedManualJob(job)) return null;
+
+  // This path is used only after an administrator reset left the intentionally
+  // read-only historical review job in place. The conditional state transition is
+  // the retry mutex: only one caller can move paid -> awaiting_label. The database
+  // trigger rotates financial_revision on that write; return the new revision and
+  // require it when the external shipment is linked below.
+  const claimed = await supabaseAdmin
+    .from("shipping_orders")
+    .update({ shipping_status: "awaiting_label" })
+    .eq("id", order.id)
+    .eq("financial_revision", order.financial_revision)
+    .eq("payment_status", "approved")
+    .eq("shipping_status", "paid")
+    .is("provider_shipment_id", null)
+    .select("id,financial_revision")
+    .maybeSingle();
+  if (claimed.error)
+    throw new Error("Não foi possível reservar o pedido para uma nova tentativa de envio.");
+  if (!claimed.data) return null;
+  return { revision: claimed.data.financial_revision as string };
+}
+
+async function completeRetainedManualRetry(
+  orderId: string,
+  revision: string,
+  shipmentId: string,
+) {
+  const saved = await supabaseAdmin
+    .from("shipping_orders")
+    .update({
+      provider_shipment_id: shipmentId,
+      shipping_status: "awaiting_label_payment",
+    })
+    .eq("id", orderId)
+    .eq("financial_revision", revision)
+    .eq("payment_status", "approved")
+    .eq("shipping_status", "awaiting_label")
+    .is("provider_shipment_id", null)
+    .select("id")
+    .maybeSingle();
+  if (saved.error || !saved.data) return false;
+
+  const event = await supabaseAdmin.from("shipping_events").insert({
+    order_id: orderId,
+    provider: "melhor_envio",
+    kind: "manual_cart",
+    state:
+      "Nova tentativa enviada ao carrinho do Melhor Envio após reinício administrativo seguro. Nenhum débito efetuado pelo site.",
+  });
+  if (event.error)
+    console.warn("Manual Melhor Envio retry completed but audit event could not be recorded.");
+  return true;
+}
+
 async function loadOrder(id: string) {
   const result = await supabaseAdmin.from("shipping_orders").select("*").eq("id", id).single();
   if (result.error || !result.data) throw new Error("Não foi possível carregar o pedido.");
@@ -165,15 +258,26 @@ export async function prepareMelhorEnvioCart(orderId: string) {
   // Manual handoff: use the service/package already chosen and saved with the
   // customer's order. Do not reprice or buy the shipment here. The administrator
   // reviews and pays the label inside the Melhor Envio cart.
-  const claim = await supabaseAdmin.rpc("claim_manual_shipping_cart", {
+  const rpcClaim = await supabaseAdmin.rpc("claim_manual_shipping_cart", {
     _order_id: orderId,
     _revision: order.financial_revision,
     _payload: cartPayload,
   });
-  if (claim.error)
+  if (rpcClaim.error)
     throw new Error("Preparação manual indisponível no banco. Confira as migrações de logística antes de continuar.");
-  if (!claim.data)
-    throw new Error("O pedido mudou ou já existe uma tentativa de envio. Atualize o painel.");
+
+  let claim: ManualCartClaim;
+  if (rpcClaim.data) {
+    claim = { kind: "rpc", token: String(rpcClaim.data) };
+  } else {
+    const retained = await claimRetainedManualRetry({
+      id: orderId,
+      financial_revision: order.financial_revision,
+    });
+    if (!retained)
+      throw new Error("O pedido mudou ou já existe uma tentativa de envio. Atualize o painel.");
+    claim = { kind: "retained", revision: retained.revision };
+  }
 
   let createdId: string | null = null;
   let phase = "envio dos dados ao Melhor Envio";
@@ -187,24 +291,28 @@ export async function prepareMelhorEnvioCart(orderId: string) {
     createdId = created.id;
 
     phase = "vinculação do envio ao pedido";
-    const saved = await supabaseAdmin.rpc("complete_manual_shipping_cart", {
-      _order_id: orderId,
-      _token: claim.data,
-      _shipment_id: created.id,
-    });
-    if (saved.error || !saved.data) throw new Error("Não foi possível vincular o envio.");
+    if (claim.kind === "rpc") {
+      const saved = await supabaseAdmin.rpc("complete_manual_shipping_cart", {
+        _order_id: orderId,
+        _token: claim.token,
+        _shipment_id: created.id,
+      });
+      if (saved.error || !saved.data) throw new Error("Não foi possível vincular o envio.");
 
-    // The historical RPC records provider=superfrete. Correct only the new event
-    // for this order; legacy events are preserved unchanged.
-    await supabaseAdmin
-      .from("shipping_events")
-      .update({
-        provider: "melhor_envio",
-        state: "Pedido enviado ao carrinho do Melhor Envio para revisão, pagamento e emissão manual da etiqueta. Nenhum débito efetuado pelo site.",
-      })
-      .eq("order_id", orderId)
-      .eq("provider", "superfrete")
-      .eq("kind", "manual_cart");
+      // The historical RPC records provider=superfrete. Correct only the new event
+      // for this order; legacy events are preserved unchanged.
+      await supabaseAdmin
+        .from("shipping_events")
+        .update({
+          provider: "melhor_envio",
+          state: "Pedido enviado ao carrinho do Melhor Envio para revisão, pagamento e emissão manual da etiqueta. Nenhum débito efetuado pelo site.",
+        })
+        .eq("order_id", orderId)
+        .eq("provider", "superfrete")
+        .eq("kind", "manual_cart");
+    } else if (!(await completeRetainedManualRetry(orderId, claim.revision, created.id))) {
+      throw new Error("Não foi possível vincular o envio recuperado.");
+    }
 
     return {
       shipmentId: created.id,
