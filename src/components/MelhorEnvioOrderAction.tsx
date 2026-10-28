@@ -18,7 +18,7 @@ type Props = {
     provider_shipment_id?: string | null;
     tracking_code?: string | null;
     label_url?: string | null;
-    shipping_service?: unknown;
+    shipping_service?: Parameters<typeof record>[0];
     quoted_cep?: string | null;
     freight_cents?: number | null;
   };
