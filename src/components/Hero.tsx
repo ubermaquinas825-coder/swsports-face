@@ -37,7 +37,7 @@ export function Hero() {
               </h1>
 
               <p className="mt-5 max-w-xl text-[15px] leading-6 text-white/55 sm:mt-6 sm:text-lg sm:leading-7">
-                Balaclavas em poliéster com elastano, conforto para o uso diário e {products.length} modelos exclusivos para escolher.
+                Balaclavas em tecido elastano com proteção solar UV50+.
               </p>
             </div>
 
