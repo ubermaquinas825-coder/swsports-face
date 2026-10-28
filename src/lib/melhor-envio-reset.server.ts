@@ -17,6 +17,46 @@ const resettableStates = new Set([
   "logistics_failed",
 ]);
 
+type ManualReviewJob = {
+  stage: string;
+  payload: unknown;
+  shipment_id: string | null;
+};
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function isPermissionDenied(error: unknown) {
+  const value = record(error);
+  const code = typeof value?.["code"] === "string" ? value["code"] : null;
+  const message = typeof value?.["message"] === "string" ? value["message"] : "";
+  return code === "42501" || /permission denied.*shipping_label_jobs/i.test(message);
+}
+
+function isRecoverableManualReviewJob(
+  job: ManualReviewJob | null,
+  shipmentId: string | null,
+) {
+  if (!job || job.stage !== "review") return false;
+  const payload = record(job.payload);
+  if (payload?.["manual_payment"] !== true) return false;
+  return !job.shipment_id || !shipmentId || job.shipment_id === shipmentId;
+}
+
+async function loadLabelJob(orderId: string): Promise<ManualReviewJob | null> {
+  const result = await supabaseAdmin
+    .from("shipping_label_jobs")
+    .select("stage,payload,shipment_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
+  if (result.error)
+    throw new Error("Não foi possível conferir a tentativa anterior de etiqueta.");
+  return (result.data as ManualReviewJob | null) ?? null;
+}
+
 async function loadOrder(orderId: string) {
   const result = await supabaseAdmin
     .from("shipping_orders")
@@ -92,6 +132,7 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
       message: "Este pedido não possui uma tentativa de emissão para reiniciar.",
     };
 
+  const previousShipmentId = order.provider_shipment_id ?? null;
   const attemptProvider = await latestAttemptProvider(orderId);
 
   if (order.provider_shipment_id && attemptProvider !== "superfrete") {
@@ -138,12 +179,24 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
   if (currentHold) throw new Error(currentHold);
   assertNoIssuedLabel(order);
 
+  // The table intentionally grants service_role SELECT only. Older manual-cart
+  // attempts therefore cannot be deleted directly by PostgREST. Keep the narrow
+  // ACL: when the delete is rejected, retain only a verified manual review job as
+  // an inert historical lock. The cart preparation flow has an equally narrow
+  // recovery path for this state, so no broad DELETE privilege is needed.
+  let retainedManualJob = false;
   const deletedJob = await supabaseAdmin
     .from("shipping_label_jobs")
     .delete()
     .eq("order_id", orderId);
-  if (deletedJob.error)
-    throw new Error("Não foi possível liberar a tentativa anterior de etiqueta.");
+  if (deletedJob.error) {
+    if (!isPermissionDenied(deletedJob.error))
+      throw new Error("Não foi possível liberar a tentativa anterior de etiqueta.");
+    const existingJob = await loadLabelJob(orderId);
+    if (!isRecoverableManualReviewJob(existingJob, previousShipmentId))
+      throw new Error("Não foi possível liberar a tentativa anterior de etiqueta.");
+    retainedManualJob = true;
+  }
 
   const reset = await supabaseAdmin
     .from("shipping_orders")
@@ -165,9 +218,11 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     order_id: orderId,
     provider: legacy ? "superfrete" : "melhor_envio",
     kind: "manual_reset",
-    state: legacy
-      ? "Tentativa legada SuperFrete sem rastreio/documento liberada por administrador para nova emissão no Melhor Envio."
-      : "Tentativa incompleta removida do carrinho e vínculo local reiniciado por administrador. Nenhum pagamento ou etiqueta foi criado pelo reset.",
+    state: retainedManualJob
+      ? "Tentativa manual anterior removida do provedor e vínculo local reiniciado. O registro histórico de revisão foi preservado por segurança; nenhum pagamento ou etiqueta foi criado pelo reset."
+      : legacy
+        ? "Tentativa legada SuperFrete sem rastreio/documento liberada por administrador para nova emissão no Melhor Envio."
+        : "Tentativa incompleta removida do carrinho e vínculo local reiniciado por administrador. Nenhum pagamento ou etiqueta foi criado pelo reset.",
   });
   if (event.error)
     console.warn("Shipping reset completed but audit event could not be recorded.");
