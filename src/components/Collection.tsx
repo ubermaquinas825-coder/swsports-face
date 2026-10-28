@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Maximize2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Maximize2, ShieldCheck, ShoppingBag } from "lucide-react";
 import { formatBRL, products, UNIT_PRICE, type Product } from "@/lib/products";
 import { useCart } from "@/hooks/use-cart";
 import { ProductImage } from "@/components/ProductImage";
@@ -67,13 +67,12 @@ function ProductCard({ product, onPreview }: { product: Product; onPreview: (pro
 
 export function Collection() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { add, openCart } = useCart();
+  const { add } = useCart();
 
-  const buySelected = () => {
+  const addSelectedToCart = () => {
     if (!selectedProduct) return;
     add(selectedProduct.id);
     setSelectedProduct(null);
-    openCart();
   };
 
   return (
@@ -138,13 +137,16 @@ export function Collection() {
               </div>
 
               <Button
-                onClick={buySelected}
+                onClick={addSelectedToCart}
                 size="lg"
                 className="mt-5 min-h-13 w-full rounded-xl text-sm font-bold shadow-none sm:min-h-14"
               >
-                COMPRAR ESTA BALACLAVA
-                <ArrowRight aria-hidden className="h-4 w-4" />
+                <ShoppingBag aria-hidden className="h-4 w-4" />
+                ADICIONAR AO CARRINHO
               </Button>
+              <p className="mt-3 text-center text-[11px] leading-4 text-white/40 sm:text-xs">
+                O produto será adicionado ao carrinho e você poderá continuar escolhendo outras estampas.
+              </p>
             </div>
           </DialogContent>
         )}
