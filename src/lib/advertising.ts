@@ -36,7 +36,53 @@ declare global {
 }
 let initialized = false;
 let lastPage: string | undefined;
+const CAMPAIGN_KEYS = new Set(["fbclid", "gclid", "gbraid", "wbraid", "utm_source", "utm_medium", "utm_campaign", "utm_id", "utm_term", "utm_content"]);
+const ADVERTISING_SCRIPTS = [
+  ["sw-google-ads", `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`],
+  ["sw-meta-pixel", "https://connect.facebook.net/en_US/fbevents.js"],
+] as const;
+
+function loadAdvertisingScripts() {
+  for (const [id, src] of ADVERTISING_SCRIPTS) {
+    const existing = document.getElementById(id);
+    if (existing && existing.dataset["loadState"] !== "failed") continue;
+    existing?.remove();
+    const script = document.createElement("script");
+    script.id = id; script.async = true; script.src = src;
+    script.dataset["loadState"] = "loading";
+    script.onload = () => { script.dataset["loadState"] = "loaded"; };
+    script.onerror = () => { script.dataset["loadState"] = "failed"; };
+    document.head.append(script);
+  }
+}
+
+function discardPendingEvents() {
+  // A visitor can withdraw while an SDK is still downloading. Never replay
+  // their queued visits when that download eventually completes.
+  if (window.fbq && !window.fbq.callMethod) {
+    const queue = window.fbq.queue;
+    for (let i = queue.length - 1; i >= 0; i--) {
+      if (["track", "trackSingle", "trackCustom"].includes(String(queue[i]?.[0]))) queue.splice(i, 1);
+    }
+  }
+  if (document.getElementById("sw-google-ads")?.dataset["loadState"] !== "loaded") {
+    const queue = window.dataLayer;
+    if (queue) for (let i = queue.length - 1; i >= 0; i--) {
+      const entry = queue[i];
+      if (Array.isArray(entry) && entry[0] === "event") queue.splice(i, 1);
+    }
+  }
+}
+
+// The Meta SDK reads the browser URL itself. Only allow campaign identifiers
+// and known storefront anchors; arbitrary parameters can contain personal data.
+export function isPublicAdvertisingUrl() {
+  const params = new URLSearchParams(location.search);
+  return [...params].every(([key, value]) => CAMPAIGN_KEYS.has(key) && /^[\p{L}\p{N}_.~+ -]{0,500}$/u.test(value))
+    && ["", "#colecao", "#personalidade", "#kits", "#faq"].includes(location.hash);
+}
 export function applyAdvertisingPermission(allowed: boolean) {
+  if (!allowed) { lastPage = undefined; discardPendingEvents(); }
   if (!initialized && !allowed) return;
   if (!initialized) {
     window.dataLayer = window.dataLayer ?? [];
@@ -54,22 +100,21 @@ export function applyAdvertisingPermission(allowed: boolean) {
     window.fbq = pixel; window._fbq = pixel;
     pixel("set", "autoConfig", false, META_PIXEL_ID);
     pixel("init", META_PIXEL_ID, {}, { agent: "lovable" });
-    for (const [id, src] of [["sw-google-ads", `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`], ["sw-meta-pixel", "https://connect.facebook.net/en_US/fbevents.js"]] as const) {
-      if (document.getElementById(id)) continue;
-      const script = document.createElement("script"); script.id = id; script.async = true; script.src = src; document.head.append(script);
-    }
     initialized = true;
   }
   window.gtag?.("consent", "update", { ad_storage: allowed ? "granted" : "denied", analytics_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
   window.fbq?.("consent", allowed ? "grant" : "revoke");
+  // Retry failed downloads only on a new permitted page/consent/online update.
+  // Keep the existing queue and pixel initialization to avoid duplicate events.
+  if (allowed) loadAdvertisingScripts();
 }
 export function trackStorefrontPage(region: string | null, path: string, optOut: boolean) {
-  if (!["/", "/atacado"].includes(path)) { applyAdvertisingPermission(false); return; }
+  if (!["/", "/atacado"].includes(path) || !isPublicAdvertisingUrl()) { applyAdvertisingPermission(false); return; }
   const allowed = advertisingAllowed(region, readConsent()?.history.at(-1), optOut);
   applyAdvertisingPermission(allowed);
   if (!allowed || lastPage === path) return;
   lastPage = path;
-  // Never transmit query strings, fragments, referrers or form values.
+  // Google receives a clean URL. Meta reads the validated campaign URL itself.
   window.gtag?.("event", "page_view", { send_to: GOOGLE_ADS_ID, page_location: `${location.origin}${path}`, page_referrer: "", page_title: "SW Sports" });
-  if (!location.search && !location.hash) window.fbq?.("track", "PageView");
+  window.fbq?.("track", "PageView");
 }

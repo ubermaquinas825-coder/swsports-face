@@ -20,6 +20,7 @@ function ProductCard({ product }: { product: Product }) {
           alt={`Balaclava ${product.name}`}
           loading="lazy"
           decoding="async"
+          sizes="(min-width: 1280px) 355px, (min-width: 1024px) calc((100vw - 216px) / 3), (min-width: 640px) calc((100vw - 152px) / 2), (min-width: 375px) calc((100vw - 96px) / 2), calc(100vw - 56px)"
           className="h-full w-full object-contain"
         />
       </div>

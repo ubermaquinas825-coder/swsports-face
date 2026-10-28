@@ -8,7 +8,6 @@ import { SHOWCASE_IMAGE_SIZES, useProductShowcase } from "@/hooks/use-product-sh
 export function Hero() {
   const { isOpen } = useCart();
   const showcase = useProductShowcase(isOpen, {
-    uninterruptedAutoplay: true,
     intervalMs: 4500,
   });
   const featured = showcase.product;

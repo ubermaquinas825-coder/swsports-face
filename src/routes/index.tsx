@@ -8,6 +8,7 @@ import { Faq } from "@/components/Faq";
 import { SiteFooter } from "@/components/SiteFooter";
 import { products, UNIT_PRICE } from "@/lib/products";
 import { business } from "@/lib/business";
+import { SHOWCASE_IMAGE_SIZES } from "@/hooks/use-product-showcase";
 
 const SITE_URL = "https://www.balaclavaswsports.com.br/";
 
@@ -39,7 +40,17 @@ export const Route = createFileRoute("/")({
         content: "Balaclavas com estampas realistas e divertidas por R$ 49,90.",
       },
     ],
-    links: [{ rel: "canonical", href: SITE_URL }],
+    links: [
+      { rel: "canonical", href: SITE_URL },
+      {
+        rel: "preload",
+        as: "image",
+        href: "/products/optimized/sorriso-grisalho-400.webp",
+        imageSrcSet: "/products/optimized/sorriso-grisalho-400.webp 400w, /products/optimized/sorriso-grisalho-800.webp 800w",
+        imageSizes: SHOWCASE_IMAGE_SIZES,
+        fetchPriority: "high",
+      },
+    ],
   }),
   component: Home,
 });

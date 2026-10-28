@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -12,10 +13,9 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { CartProvider } from "@/hooks/use-cart";
-import { CartDrawer } from "@/components/CartDrawer";
+import { DeferredCartDrawer } from "@/components/DeferredCartDrawer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { AdvertisingConsent } from "@/components/AdvertisingConsent";
-import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -107,12 +107,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap",
-      },
     ],
   }),
   shellComponent: RootShell,
@@ -139,21 +133,35 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const needsAuth = useRouterState({
+    select: (state) => state.matches.some((match) => match.routeId === "/_authenticated")
+      || state.location.pathname.startsWith("/admin/")
+      || ["/auth", "/redefinir-senha"].includes(state.location.pathname),
+  });
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    if (!needsAuth) return;
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    void import("@/integrations/supabase/client").then(({ supabase }) => {
+      if (!active) return;
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+        router.invalidate();
+        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      });
+      unsubscribe = () => data.subscription.unsubscribe();
+    }).catch((error) => {
+      if (active) reportLovableError(error, { boundary: "auth_subscription" });
     });
-    return () => data.subscription.unsubscribe();
-  }, [router, queryClient]);
+    return () => { active = false; unsubscribe?.(); };
+  }, [needsAuth, router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <Outlet />
-        <CartDrawer />
+        <DeferredCartDrawer />
         <WhatsAppFloat />
         <AdvertisingConsent />
       </CartProvider>

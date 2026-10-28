@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TechShowcase } from "@/components/TechShowcase";
+import { Hero } from "@/components/Hero";
 import { products } from "@/lib/products";
 
 const cart = vi.hoisted(() => ({
@@ -255,5 +256,43 @@ describe("Premium product showcase", () => {
     });
     await advance(18000);
     expectSelected(initialIndex);
+  });
+});
+
+describe("Campaign landing hero", () => {
+  function expectHeroProduct(index: number) {
+    expect(screen.getByRole("img", {
+      name: `Balaclava ${products[index]!.name} da SW Sports, vista de frente`,
+    })).toBeInTheDocument();
+  }
+
+  it("does not decode or rotate more images while the hero is off screen", async () => {
+    intersecting = false;
+    render(<Hero />);
+    await advance(18000);
+    expectHeroProduct(initialIndex);
+    expect(decodeRequests).toHaveLength(0);
+    setIntersection(true);
+    await advance(4500);
+    expectHeroProduct(nextIndex);
+  });
+
+  it("honors reduced motion instead of downloading automatic slides", async () => {
+    reducedMotion = true;
+    render(<Hero />);
+    await advance(18000);
+    expectHeroProduct(initialIndex);
+    expect(decodeRequests).toHaveLength(0);
+  });
+
+  it("keeps the current image visible when the next photo fails to decode", async () => {
+    decodeImmediately = false;
+    render(<Hero />);
+    await advance(4500);
+    expectHeroProduct(initialIndex);
+    await act(async () => { decodeRequests[0]!.reject(new Error("Offline")); });
+    await advance(9000);
+    expectHeroProduct(initialIndex);
+    expect(decodeRequests).toHaveLength(1);
   });
 });

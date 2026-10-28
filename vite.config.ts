@@ -8,9 +8,19 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { NitroConfig } from "nitro/types";
 
 const vercelNitro = { preset: "vercel", vercel: { functions: { maxDuration: 300 } } } satisfies NitroConfig;
+// Cache only public assets. Never cache checkout, admin, API or SSR responses.
+const publicAssetNitro = {
+  routeRules: {
+    "/fonts/**": { headers: { "cache-control": "public, max-age=31536000, immutable" } },
+    "/products/optimized/**": { headers: { "cache-control": "public, max-age=86400, stale-while-revalidate=604800" } },
+  },
+} satisfies NitroConfig;
 
 export default defineConfig({
-  ...(process.env["VERCEL"] === "1" ? { nitro: vercelNitro } : {}),
+  nitro: {
+    ...publicAssetNitro,
+    ...(process.env["VERCEL"] === "1" ? vercelNitro : {}),
+  },
   vite: {
     build: {
       rolldownOptions: {

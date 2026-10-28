@@ -175,15 +175,28 @@ function CheckoutPage() {
     const controller = new AbortController();
     const cep = shipping.cep.replace(/\D/g, "");
     if (cep.length !== 8) return;
+    let active = true;
+    const manualAddressMessage =
+      "Não foi possível preencher o endereço automaticamente. Complete os campos manualmente.";
 
     setAddressBusy(true);
     setAddressMessage("Buscando endereço...");
+    // Address autocomplete is optional. A slow provider must not keep payment
+    // disabled, and a late response must not overwrite a manually entered address.
+    const timeout = window.setTimeout(() => {
+      if (!active) return;
+      active = false;
+      controller.abort();
+      setAddressMessage(manualAddressMessage);
+      setAddressBusy(false);
+    }, 8000);
     fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error("CEP indisponível");
         return response.json() as Promise<ViaCepResult>;
       })
       .then((data) => {
+        if (!active) return;
         if (data.erro) throw new Error("CEP não encontrado");
         setStreet(data.logradouro ?? "");
         setDistrict(data.bairro ?? "");
@@ -191,15 +204,19 @@ function CheckoutPage() {
         setState(data.uf ?? "");
         setAddressMessage("Endereço localizado. Confira o número e os dados pessoais.");
       })
-      .catch((cause) => {
-        if (cause instanceof DOMException && cause.name === "AbortError") return;
-        setAddressMessage(
-          "Não foi possível preencher o endereço automaticamente. Complete os campos manualmente.",
-        );
+      .catch(() => {
+        if (active) setAddressMessage(manualAddressMessage);
       })
-      .finally(() => setAddressBusy(false));
+      .finally(() => {
+        window.clearTimeout(timeout);
+        if (active) setAddressBusy(false);
+      });
 
-    return () => controller.abort();
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
   }, [shipping?.cep]);
 
   const total = subtotal + (shipping ? shipping.option.priceCents / 100 : 0);

@@ -4,6 +4,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Same-origin variable fonts: no blocking Google Fonts CSS or third-party handshake.
+ * Latin includes Portuguese accents. See public/fonts for source licenses. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-latin-wght-normal-5.2.8.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin-wght-normal-5.2.10.woff2") format("woff2");
+}
+
 /*
  * SW Sports — storefront design system.
  * Permanently dark theme grounded on the brand palette:

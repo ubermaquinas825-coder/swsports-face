@@ -35,7 +35,7 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 vi.mock("@/lib/sales.functions", () => ({ getSalesAdmin: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
-import { SalesAdmin } from "@/routes/_authenticated/admin";
+import { SalesAdmin } from "@/components/admin/SalesAdmin";
 beforeEach(() => {
   response.isError = false;
   response.data = {

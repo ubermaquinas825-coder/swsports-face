@@ -5,6 +5,7 @@ import { CONSENT_KEY, NOTICE_TEXT, readConsent, requiresConsent, saveChoice, tra
 
 export function AdvertisingConsent() {
   const path = useRouterState({ select: (state) => state.location.pathname });
+  const href = useRouterState({ select: (state) => state.location.href });
   const [region, setRegion] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
@@ -25,10 +26,12 @@ export function AdvertisingConsent() {
     }).finally(() => clearTimeout(timeout));
     const changed = (event: StorageEvent) => { if (event.key === CONSENT_KEY || event.key === null) setRevision((value) => value + 1); };
     const settings = () => setOpen(true);
+    const connected = () => setRevision((value) => value + 1);
     window.addEventListener("storage", changed); window.addEventListener("sw-cookie-settings", settings);
-    return () => { active = false; controller.abort(); clearTimeout(timeout); window.removeEventListener("storage", changed); window.removeEventListener("sw-cookie-settings", settings); };
+    window.addEventListener("online", connected);
+    return () => { active = false; controller.abort(); clearTimeout(timeout); window.removeEventListener("storage", changed); window.removeEventListener("sw-cookie-settings", settings); window.removeEventListener("online", connected); };
   }, []);
-  useEffect(() => { if (ready) trackStorefrontPage(region, path, optOut()); }, [ready, region, path, revision]);
+  useEffect(() => { if (ready) trackStorefrontPage(region, path, optOut()); }, [ready, region, path, href, revision]);
   function choose(accepted: boolean) {
     try { saveChoice(accepted, region); } catch { return; }
     trackStorefrontPage(region, path, optOut());
