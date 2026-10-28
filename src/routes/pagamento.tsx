@@ -5,6 +5,7 @@ import { z } from "zod";
 import { CheckCircle2, Clock3, LoaderCircle, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
+import { trackPurchase } from "@/lib/advertising";
 import { getMercadoPagoOrderStatus } from "@/lib/mercadopago-status.functions";
 
 const searchSchema = z.object({
@@ -42,10 +43,16 @@ function PaymentReturnPage() {
     const poll = async () => {
       try {
         const result = await verifyPayment({ data: { orderId } });
+
         if (!active) return;
+
         setPaymentState(result.state);
 
         if (result.state === "approved") {
+          if (typeof result.value === "number") {
+            trackPurchase(orderId, result.value);
+          }
+
           clear();
           window.sessionStorage.removeItem("swsports-checkout-shipping-v1");
           return;
@@ -56,6 +63,7 @@ function PaymentReturnPage() {
         }
       } catch {
         if (!active) return;
+
         setPaymentState("pending");
         timer = setTimeout(() => void poll(), 5_000);
       }
@@ -65,7 +73,10 @@ function PaymentReturnPage() {
 
     return () => {
       active = false;
-      if (timer) clearTimeout(timer);
+
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, [clear, orderId, verifyPayment]);
 
@@ -103,12 +114,16 @@ function PaymentReturnPage() {
               title: "Pagamento ainda em confirmação",
               message:
                 "O Mercado Pago ainda não confirmou o pagamento. Esta página continuará consultando o status automaticamente e mostrará a aprovação assim que ela for confirmada.",
-              help: "Se você já pagou, evite pagar novamente. Aguarde a confirmação ou use o botão Verificar agora.",
+              help:
+                "Se você já pagou, evite pagar novamente. Aguarde a confirmação ou use o botão Verificar agora.",
             }
           : {
               icon: <Clock3 className="h-14 w-14 text-amber-500" aria-hidden="true" />,
               eyebrow: "STATUS NÃO CONFIRMADO",
-              title: resultado === "falha" ? "Pagamento não concluído" : "Não conseguimos confirmar o pagamento",
+              title:
+                resultado === "falha"
+                  ? "Pagamento não concluído"
+                  : "Não conseguimos confirmar o pagamento",
               message:
                 orderId
                   ? "Ainda não foi possível confirmar o pagamento. Continuaremos verificando automaticamente."
@@ -126,8 +141,15 @@ function PaymentReturnPage() {
         aria-busy={paymentState === "checking"}
       >
         <div className="mb-5 flex justify-center">{state.icon}</div>
-        <p className="text-xs font-bold tracking-[0.22em] text-brand">{state.eyebrow}</p>
-        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">{state.title}</h1>
+
+        <p className="text-xs font-bold tracking-[0.22em] text-brand">
+          {state.eyebrow}
+        </p>
+
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          {state.title}
+        </h1>
+
         <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
           {state.message}
         </p>
@@ -136,10 +158,17 @@ function PaymentReturnPage() {
           {state.help}
         </div>
 
-        {orderId && (paymentState === "checking" || paymentState === "pending" || paymentState === "unknown") ? (
+        {orderId &&
+        (paymentState === "checking" ||
+          paymentState === "pending" ||
+          paymentState === "unknown") ? (
           <div className="mx-auto mt-4 flex max-w-md items-center justify-center gap-2 rounded-2xl bg-muted px-4 py-3 text-xs text-muted-foreground">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
-            A confirmação é feita diretamente no servidor, sem confiar apenas na tela de retorno.
+            <ShieldCheck
+              className="h-4 w-4 shrink-0 text-brand"
+              aria-hidden="true"
+            />
+            A confirmação é feita diretamente no servidor, sem confiar apenas na
+            tela de retorno.
           </div>
         ) : null}
 
@@ -153,8 +182,15 @@ function PaymentReturnPage() {
                   : "VOLTAR PARA A LOJA"}
             </Link>
           </Button>
-          {orderId && paymentState !== "approved" && paymentState !== "failed" ? (
-            <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+
+          {orderId &&
+          paymentState !== "approved" &&
+          paymentState !== "failed" ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
               VERIFICAR AGORA
             </Button>
           ) : null}
@@ -162,7 +198,8 @@ function PaymentReturnPage() {
 
         {(paymentState === "checking" || paymentState === "pending") && (
           <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-            Você pode manter esta página aberta. O status é atualizado automaticamente.
+            Você pode manter esta página aberta. O status é atualizado
+            automaticamente.
           </p>
         )}
       </section>
