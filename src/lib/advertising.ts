@@ -112,15 +112,46 @@ export function trackStorefrontPage(region: string | null, path: string, optOut:
   window.fbq?.("track", "PageView");
 }
 
+function canTrackCommerce() {
+  return Boolean(readConsent()?.history.at(-1)?.accepted && window.fbq);
+}
+
 export function trackAddToCart(product: { id: string; name: string }, qty: number, unitPrice: number) {
-  const choice = readConsent()?.history.at(-1);
-  if (!choice?.accepted || !window.fbq) return;
-  window.fbq("track", "AddToCart", {
+  if (!canTrackCommerce()) return;
+  window.fbq?.("track", "AddToCart", {
     content_ids: [product.id],
     content_name: `Balaclava ${product.name}`,
     content_type: "product",
     currency: "BRL",
     value: unitPrice * qty,
     num_items: qty,
+  });
+}
+
+export function trackInitiateCheckout(lines: Array<{ product: { id: string; name: string }; qty: number }>, value: number) {
+  if (!canTrackCommerce() || !lines.length) return;
+  window.fbq?.("track", "InitiateCheckout", {
+    content_ids: lines.map((line) => line.product.id),
+    contents: lines.map((line) => ({ id: line.product.id, quantity: line.qty })),
+    content_type: "product",
+    currency: "BRL",
+    value,
+    num_items: lines.reduce((sum, line) => sum + line.qty, 0),
+  });
+}
+
+export function trackPurchase(orderId: string, value: number) {
+  if (!canTrackCommerce()) return;
+  const key = `sw-meta-purchase-${orderId}`;
+  try {
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+  } catch {
+    // If storage is unavailable, prefer reporting the verified purchase.
+  }
+  window.fbq?.("track", "Purchase", {
+    currency: "BRL",
+    value,
+    order_id: orderId,
   });
 }
