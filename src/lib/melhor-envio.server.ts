@@ -8,7 +8,9 @@ const tokenSchema = z.object({
   scope: z.string().optional(),
 });
 
+const REQUIRED_CART_SCOPES = ["cart-read", "cart-write"] as const;
 const SCOPES = [
+  ...REQUIRED_CART_SCOPES,
   "shipping-calculate",
   "shipping-companies",
   "shipping-generate",
@@ -28,6 +30,7 @@ type ConnectionRow = {
   refresh_token: string;
   expires_at: string;
   refresh_expires_at: string;
+  scopes: string | null;
   environment: "sandbox" | "production";
   updated_at: string;
 };
@@ -58,6 +61,19 @@ function baseUrl() {
     : "https://sandbox.melhorenvio.com.br";
 }
 
+function scopeSet(scopes: string | null | undefined) {
+  return new Set((scopes ?? "").split(/\s+/).map((value) => value.trim()).filter(Boolean));
+}
+
+function missingCartScopes(scopes: string | null | undefined) {
+  const granted = scopeSet(scopes);
+  return REQUIRED_CART_SCOPES.filter((scope) => !granted.has(scope));
+}
+
+export function melhorEnvioPanelUrl(path = "/") {
+  return new URL(path, baseUrl()).toString();
+}
+
 export function melhorEnvioAuthorizationUrl(state: string) {
   const { clientId, redirectUri } = config();
   const url = new URL("/oauth/authorize", baseUrl());
@@ -85,15 +101,16 @@ async function tokenRequest(params: URLSearchParams) {
   return tokenSchema.parse(await response.json());
 }
 
-async function saveToken(token: z.infer<typeof tokenSchema>) {
+async function saveToken(token: z.infer<typeof tokenSchema>, fallbackScopes: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const now = Date.now();
+  const grantedScopes = token.scope?.trim() || fallbackScopes;
   const saved = await supabaseAdmin.from("melhor_envio_connections" as never).upsert({
     id: true,
     access_token: token.access_token,
     refresh_token: token.refresh_token,
     token_type: token.token_type,
-    scopes: token.scope ?? SCOPES,
+    scopes: grantedScopes,
     environment: config().environment,
     expires_at: new Date(now + token.expires_in * 1000).toISOString(),
     refresh_expires_at: new Date(now + 45 * 24 * 60 * 60 * 1000).toISOString(),
@@ -107,7 +124,7 @@ async function loadConnection(): Promise<ConnectionRow | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const result = await supabaseAdmin
     .from("melhor_envio_connections" as never)
-    .select("access_token,refresh_token,expires_at,refresh_expires_at,environment,updated_at")
+    .select("access_token,refresh_token,expires_at,refresh_expires_at,scopes,environment,updated_at")
     .eq("id", true)
     .maybeSingle();
   if (result.error)
@@ -126,10 +143,10 @@ export async function exchangeMelhorEnvioCode(code: string) {
       code,
     }),
   );
-  await saveToken(token);
+  await saveToken(token, SCOPES);
 }
 
-export async function refreshMelhorEnvioToken(refreshToken: string) {
+export async function refreshMelhorEnvioToken(refreshToken: string, currentScopes = "") {
   const { clientId, clientSecret } = config();
   const token = await tokenRequest(
     new URLSearchParams({
@@ -139,7 +156,7 @@ export async function refreshMelhorEnvioToken(refreshToken: string) {
       refresh_token: refreshToken,
     }),
   );
-  await saveToken(token);
+  await saveToken(token, currentScopes);
   return token.access_token;
 }
 
@@ -157,9 +174,22 @@ async function accessToken(forceRefresh = false) {
     const refreshExpiresAt = Date.parse(row.refresh_expires_at);
     if (!Number.isFinite(refreshExpiresAt) || refreshExpiresAt <= Date.now())
       throw new Error("A autorização do Melhor Envio expirou. Autorize novamente.");
-    return refreshMelhorEnvioToken(row.refresh_token);
+    return refreshMelhorEnvioToken(row.refresh_token, row.scopes ?? "");
   }
   return row.access_token;
+}
+
+export async function assertMelhorEnvioCartAccess() {
+  const row = await loadConnection();
+  if (!row)
+    throw new Error("Melhor Envio ainda não foi autorizado. Conecte a conta em Frete e envios.");
+  if (row.environment !== config().environment)
+    throw new Error("A autorização do Melhor Envio pertence a outro ambiente. Autorize novamente.");
+  const missing = missingCartScopes(row.scopes);
+  if (missing.length)
+    throw new Error(
+      "A autorização atual do Melhor Envio não permite enviar etiquetas ao carrinho. Acesse Frete e envios e autorize novamente a conta para liberar as permissões de carrinho.",
+    );
 }
 
 export async function melhorEnvioRequest(path: string, init: RequestInit = {}) {
@@ -202,9 +232,19 @@ export async function melhorEnvioConnectionStatus() {
       reason: "environment_mismatch" as const,
       updated_at: row.updated_at,
     };
+  const missing_scopes = missingCartScopes(row.scopes);
+  if (missing_scopes.length)
+    return {
+      connected: false as const,
+      environment,
+      reason: "missing_cart_scopes" as const,
+      missing_scopes,
+      updated_at: row.updated_at,
+    };
   return {
     connected: true as const,
     environment,
+    missing_scopes: [] as string[],
     expires_at: row.expires_at,
     refresh_expires_at: row.refresh_expires_at,
     updated_at: row.updated_at,
