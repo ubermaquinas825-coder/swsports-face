@@ -53,10 +53,14 @@ export const verifyShippingIntegrations = createServerFn({ method: "POST" }).mid
   const [melhorEnvio, appmax] = await Promise.all([
     check(async () => {
       const status = await melhorEnvioConnectionStatus();
-      if (!status.connected) throw new Error("Conta ainda não autorizada no Melhor Envio.");
+      if (!status.connected) {
+        if ("reason" in status && status.reason === "missing_cart_scopes")
+          throw new Error("A conta está conectada, mas a autorização antiga não permite enviar etiquetas ao carrinho. Clique em Conectar Melhor Envio novamente para atualizar as permissões.");
+        throw new Error("Conta ainda não autorizada no Melhor Envio.");
+      }
       const options = await quoteFreight("01310100", [{ id: "gato-divertido", qty: 1 }]);
       if (!options.length) throw new Error("Autorização válida, mas a cotação de teste não retornou opções.");
-      return `Conectado em ${status.environment}. Cotação real recebida: ${options.length} opção(ões).`;
+      return `Conectado em ${status.environment}. Permissões de carrinho válidas e cotação real recebida: ${options.length} opção(ões).`;
     }),
     check(async () => { await authenticateAppmax(); return "Credenciais aceitas. Nenhum link ou cobrança criado."; }),
   ]);
