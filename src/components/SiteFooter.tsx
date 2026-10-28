@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowUpRight, Clock3, Instagram, MapPin, MessageCircle, PackageSearch, Phone } from "lucide-react";
 import { INSTAGRAM_URL, WHATSAPP_NUMBER, waLink } from "@/lib/products";
 import { business } from "@/lib/business";
 import { Button } from "@/components/ui/button";
+
+const MELHOR_RASTREIO_URL = "https://melhorrastreio.com.br/";
 
 export function SiteFooter() {
   return (
@@ -38,6 +40,7 @@ export function SiteFooter() {
           <a href={`mailto:${business.email}`} className="inline-flex min-h-11 items-center hover:text-foreground">{business.email}</a>
           <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground"><Instagram className="h-4 w-4 text-brand" />@swsport.s</a>
           <a href={waLink("Olá, equipe SW Sports! Gostaria de ajuda com uma compra.")} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 text-whatsapp transition-colors hover:text-whatsapp/80"><MessageCircle className="h-4 w-4 text-whatsapp" />WhatsApp</a>
+          <a href={MELHOR_RASTREIO_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground"><PackageSearch className="h-4 w-4 text-brand" />Rastrear pedido</a>
           <a href="/privacidade#privacidade" className="inline-flex min-h-11 items-center hover:text-foreground">Política de Privacidade</a>
           <a href="/privacidade#cookies" className="inline-flex min-h-11 items-center hover:text-foreground">Política de Cookies</a>
           <a href="/privacidade#trocas" className="inline-flex min-h-11 items-center hover:text-foreground">Trocas, Devoluções e Reembolsos</a>
