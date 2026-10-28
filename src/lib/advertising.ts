@@ -57,8 +57,6 @@ function loadAdvertisingScripts() {
 }
 
 function discardPendingEvents() {
-  // A visitor can withdraw while an SDK is still downloading. Never replay
-  // their queued visits when that download eventually completes.
   if (window.fbq && !window.fbq.callMethod) {
     const queue = window.fbq.queue;
     for (let i = queue.length - 1; i >= 0; i--) {
@@ -74,8 +72,6 @@ function discardPendingEvents() {
   }
 }
 
-// The Meta SDK reads the browser URL itself. Only allow campaign identifiers
-// and known storefront anchors; arbitrary parameters can contain personal data.
 export function isPublicAdvertisingUrl() {
   const params = new URLSearchParams(location.search);
   return [...params].every(([key, value]) => CAMPAIGN_KEYS.has(key) && /^[\p{L}\p{N}_.~+ -]{0,500}$/u.test(value))
@@ -104,8 +100,6 @@ export function applyAdvertisingPermission(allowed: boolean) {
   }
   window.gtag?.("consent", "update", { ad_storage: allowed ? "granted" : "denied", analytics_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
   window.fbq?.("consent", allowed ? "grant" : "revoke");
-  // Retry failed downloads only on a new permitted page/consent/online update.
-  // Keep the existing queue and pixel initialization to avoid duplicate events.
   if (allowed) loadAdvertisingScripts();
 }
 export function trackStorefrontPage(region: string | null, path: string, optOut: boolean) {
@@ -114,7 +108,19 @@ export function trackStorefrontPage(region: string | null, path: string, optOut:
   applyAdvertisingPermission(allowed);
   if (!allowed || lastPage === path) return;
   lastPage = path;
-  // Google receives a clean URL. Meta reads the validated campaign URL itself.
   window.gtag?.("event", "page_view", { send_to: GOOGLE_ADS_ID, page_location: `${location.origin}${path}`, page_referrer: "", page_title: "SW Sports" });
   window.fbq?.("track", "PageView");
+}
+
+export function trackAddToCart(product: { id: string; name: string }, qty: number, unitPrice: number) {
+  const choice = readConsent()?.history.at(-1);
+  if (!choice?.accepted || !window.fbq) return;
+  window.fbq("track", "AddToCart", {
+    content_ids: [product.id],
+    content_name: `Balaclava ${product.name}`,
+    content_type: "product",
+    currency: "BRL",
+    value: unitPrice * qty,
+    num_items: qty,
+  });
 }
