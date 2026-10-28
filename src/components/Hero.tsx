@@ -70,7 +70,7 @@ export function Hero() {
               </Button>
 
               <p className="mt-3 text-xs leading-5 text-white/38 sm:text-[13px]">
-                Frete e valor final informados antes do pagamento.
+                Compra segura, pagamento protegido e conexão criptografada durante todo o processo.
               </p>
 
               <div className="mt-5 grid grid-cols-1 gap-2.5 border-t border-white/10 pt-4 text-xs text-white/55 min-[430px]:grid-cols-3">
