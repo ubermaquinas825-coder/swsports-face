@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Instagram, Menu, ShoppingBag, X } from "lucide-react";
+import { Instagram, Menu, PackageSearch, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { INSTAGRAM_URL } from "@/lib/products";
 import { Button } from "@/components/ui/button";
+
+const MELHOR_RASTREIO_URL = "https://melhorrastreio.com.br/";
 
 const NAV = [
   { label: "Coleção", to: "/", hash: "#colecao" },
@@ -80,6 +82,15 @@ export function SiteHeader() {
               {item.label}
             </Button>
           ))}
+          <a
+            href={MELHOR_RASTREIO_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <PackageSearch className="h-4 w-4" />
+            Rastrear pedido
+          </a>
         </nav>
 
         <div className="flex items-center gap-2 md:gap-3">
@@ -137,6 +148,16 @@ export function SiteHeader() {
                 {item.label}
               </Button>
             ))}
+            <a
+              href={MELHOR_RASTREIO_URL}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+            >
+              <PackageSearch className="h-4 w-4" />
+              Rastrear pedido
+            </a>
           </div>
         </nav>
       )}
