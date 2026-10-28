@@ -24,17 +24,16 @@ export function Hero() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.94fr)_minmax(440px,1.06fr)] lg:items-stretch lg:gap-10 xl:gap-14">
           <div className="flex min-w-0 flex-col justify-center lg:py-4">
             <div className="max-w-2xl">
-              <p className="mb-5 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
-                <span aria-hidden className="h-px w-8 bg-brand sm:w-10" />
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
                 Balaclavas SW Sports
               </p>
 
               <h1
                 id="hero-title"
-                className="max-w-[10.5ch] font-display text-[2.55rem] font-bold leading-[0.96] tracking-[-0.04em] text-white sm:text-[3.6rem] lg:text-[4.35rem] xl:text-[4.9rem]"
+                className="max-w-[11.5ch] font-display text-[2.45rem] font-bold leading-[0.98] tracking-[-0.04em] text-white sm:text-[3.5rem] lg:text-[4.2rem] xl:text-[4.75rem]"
               >
-                Sua estampa.
-                <span className="block text-brand">Sua presença.</span>
+                Balaclavas com personalidade.
+                <span className="mt-2 block text-brand">Estilo que diverte.</span>
               </h1>
 
               <p className="mt-5 max-w-xl text-[15px] leading-6 text-white/55 sm:mt-6 sm:text-lg sm:leading-7">
