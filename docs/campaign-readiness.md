@@ -20,7 +20,7 @@
 
 ## Medição publicitária
 
-O Pixel Meta `725374147272634` mede **PageView** em `/` e `/atacado`, respeitando
+O Pixel Meta `1664422701692558` mede **PageView** em `/` e `/atacado`, respeitando
 o consentimento e a preferência de privacidade do navegador. Não mede compra
 confirmada nem envia dados de cadastro ou pagamento.
 

@@ -32,7 +32,7 @@ describe("advertising SDK lifecycle", () => {
       ad.trackStorefrontPage("BR", "/", false);
       ad.trackStorefrontPage("BR", "/", false);
       expect(document.querySelector<HTMLScriptElement>("#sw-meta-pixel")?.src).toBe("https://connect.facebook.net/en_US/fbevents.js");
-      expect(window.fbq?.queue).toContainEqual(["init", "725374147272634", {}, { agent: "lovable" }]);
+      expect(window.fbq?.queue).toContainEqual(["init", "1664422701692558", {}, { agent: "lovable" }]);
       expect(window.fbq?.queue).toContainEqual(["consent", "grant"]);
       expect(window.fbq?.queue.filter((call) => call[0] === "track")).toEqual([["track", "PageView"]]);
       expect(document.querySelectorAll("#sw-meta-pixel")).toHaveLength(1);

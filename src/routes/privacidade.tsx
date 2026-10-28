@@ -59,7 +59,7 @@ function Privacy() {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Medição de anúncios</h3>
               <p className="text-sm text-muted-foreground">{NOTICE_TEXT}</p>
-              <p className="text-sm text-muted-foreground">Usamos a tag Google Ads AW-875949502 e Meta Pixel 725374147272634 para medir visitas à vitrine e desempenho publicitário. Informações técnicas podem incluir endereço IP, navegador, página visitada e cookies publicitários. Não ativamos correspondência de clientes, coleta automática de formulários, personalização de anúncios ou envio de compras confirmadas nesta instalação.</p>
+              <p className="text-sm text-muted-foreground">Usamos a tag Google Ads AW-875949502 e Meta Pixel 1664422701692558 para medir visitas à vitrine e desempenho publicitário. Informações técnicas podem incluir endereço IP, navegador, página visitada e cookies publicitários. Não ativamos correspondência de clientes, coleta automática de formulários, personalização de anúncios ou envio de compras confirmadas nesta instalação.</p>
               <p className="text-sm text-muted-foreground">As páginas administrativas e os dados de entrega e pagamento não são enviados por estes rastreadores. O código AW é do Google Ads; Google Analytics 4 não está instalado por esse código.</p>
               <p className="text-sm"><a className="text-brand underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacidade do Google</a>{" · "}<a className="text-brand underline" href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noreferrer">Privacidade da Meta</a></p>
             </div>

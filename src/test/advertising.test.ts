@@ -3,7 +3,7 @@ import { advertisingAllowed, CONSENT_KEY, GOOGLE_ADS_ID, META_PIXEL_ID, NOTICE_T
 describe("advertising consent", () => {
   beforeEach(() => localStorage.clear());
   it("uses the owner's exact advertising IDs", () => {
-    expect(GOOGLE_ADS_ID).toBe("AW-875949502"); expect(META_PIXEL_ID).toBe("725374147272634");
+    expect(GOOGLE_ADS_ID).toBe("AW-875949502"); expect(META_PIXEL_ID).toBe("1664422701692558");
   });
   it("requires regional acceptance and blocks unresolved regions", () => {
     for (const region of ["BR", "DE", "GB", "CH", "XX", "T1", null]) {
