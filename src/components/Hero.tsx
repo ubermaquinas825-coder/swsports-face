@@ -1,9 +1,14 @@
 import { ArrowRight, LockKeyhole, ShieldCheck, Truck } from "lucide-react";
-import { UNIT_PRICE, formatBRL } from "@/lib/products";
 import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
 import { SHOWCASE_IMAGE_SIZES, useProductShowcase } from "@/hooks/use-product-showcase";
+
+const BENEFITS = [
+  "Proteção solar UV50+",
+  "Tecido com elastano",
+  "Conforto e respirabilidade",
+];
 
 export function Hero() {
   const { isOpen } = useCart();
@@ -94,20 +99,29 @@ export function Hero() {
           </figure>
 
           <div className="order-3 rounded-2xl border border-white/10 bg-white/[0.025] p-3.5 sm:p-4 lg:col-start-1 lg:row-start-2 lg:max-w-[500px] lg:self-start lg:p-5">
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-white/35 sm:text-[10px]">
-                  Preço por unidade
+                  Destaques da balaclava
                 </p>
-                <div className="mt-1 flex items-end gap-2">
-                  <span className="font-display text-[1.85rem] font-bold leading-none tracking-[-0.035em] text-white sm:text-[2.35rem]">
-                    {formatBRL(UNIT_PRICE)}
-                  </span>
-                </div>
+                <p className="mt-1.5 text-sm font-semibold text-white sm:text-base">
+                  Proteção, conforto e estilo para o dia todo.
+                </p>
               </div>
               <span className="hidden rounded-full border border-white/10 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45 sm:inline-flex">
-                Compra online
+                12 modelos
               </span>
+            </div>
+
+            <div className="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-2.5">
+              {BENEFITS.map((benefit) => (
+                <div
+                  key={benefit}
+                  className="flex min-h-11 items-center rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5 text-[11px] font-medium leading-4 text-white/72 sm:min-h-[52px] sm:text-xs"
+                >
+                  {benefit}
+                </div>
+              ))}
             </div>
 
             <Button
