@@ -72,6 +72,23 @@ beforeEach(() => {
   };
 });
 describe("Administrative sales page", () => {
+  it("excludes freight from paid revenue and average ticket while preserving the customer total", () => {
+    const data = response.data as { count: number; orders: Array<Record<string, unknown>> };
+    const original = data.orders[0];
+    data.orders.push(
+      { ...original, id: "second-paid", subtotal_cents: 6000, discount_cents: 1000, freight_cents: 3000 },
+      { ...original, id: "pending-order", payment_status: "pending" },
+      { ...original, id: "failed-order", payment_status: "failed" },
+    );
+    data.count = data.orders.length;
+    render(<SalesAdmin />);
+    const revenue = screen.getByText("Faturamento pago").closest("section")!;
+    const ticket = screen.getByText("Ticket médio").closest("section")!;
+    expect(revenue).toHaveTextContent(/R\$\s*140,00/);
+    expect(ticket).toHaveTextContent(/R\$\s*70,00/);
+    const row = screen.getByRole("button", { name: "Ver pedido test-order" }).closest("tr")!;
+    expect(row).toHaveTextContent(/R\$\s*110,00/);
+  });
   it("opens buyer, delivery and product details without inventing payment dates", () => {
     render(<SalesAdmin />);
     fireEvent.click(screen.getByRole("button", { name: "Ver pedido test-order" }));

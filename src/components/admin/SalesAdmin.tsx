@@ -34,7 +34,7 @@ export function SalesAdmin() {
   const awaitingShippingOrders = approvedOrders.filter((order) =>
     ["awaiting_payment", "awaiting_label", "awaiting_label_payment"].includes(order.shipping_status),
   );
-  const paidRevenue = approvedOrders.reduce((sum, order) => sum + orderTotal(order), 0);
+  const paidRevenue = approvedOrders.reduce((sum, order) => sum + order.subtotal_cents - order.discount_cents, 0);
   const averageTicket = approvedOrders.length ? Math.round(paidRevenue / approvedOrders.length) : 0;
   const filtered = orders.filter((order) => {
     const address = record(order.delivery_address);
