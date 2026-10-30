@@ -18,9 +18,10 @@ const { response } = vi.hoisted(() => ({
     error: { message: "Acesso exclusivo para administradores." },
     isFetching: false,
     refetch: vi.fn(),
+    queryFn: undefined as undefined | (() => unknown),
   },
 }));
-vi.mock("@tanstack/react-query", () => ({ useQuery: () => response, useQueryClient: () => ({}) }));
+vi.mock("@tanstack/react-query", () => ({ useQuery: (options: { queryFn: () => unknown }) => { response.queryFn = options.queryFn; return response; }, useQueryClient: () => ({}) }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (config: unknown) => config,
   useNavigate: () => vi.fn(),
@@ -35,6 +36,7 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 vi.mock("@/lib/sales.functions", () => ({ getSalesAdmin: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
+import { getSalesAdmin } from "@/lib/sales.functions";
 import { SalesAdmin } from "@/components/admin/SalesAdmin";
 beforeEach(() => {
   response.isError = false;
@@ -72,6 +74,22 @@ beforeEach(() => {
   };
 });
 describe("Administrative sales page", () => {
+  it.each([
+    ["Aguardando pagamento", "pending"],
+    ["Aguardando envio", "shipping"],
+  ])("opens the %s group and returns to all orders", (label, view) => {
+    render(<SalesAdmin />);
+    fireEvent.change(screen.getByPlaceholderText("Cliente, telefone, pedido ou produto"), { target: { value: "Maria" } });
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(label) }));
+    expect(screen.getByRole("heading", { name: label })).toBeVisible();
+    expect(screen.getByPlaceholderText("Cliente, telefone, pedido ou produto")).toHaveValue("");
+    response.queryFn?.();
+    expect(getSalesAdmin).toHaveBeenLastCalledWith({ data: { page: 0, view } });
+    fireEvent.click(screen.getByRole("button", { name: "Voltar para todos os pedidos" }));
+    response.queryFn?.();
+    expect(getSalesAdmin).toHaveBeenLastCalledWith({ data: { page: 0, view: "all" } });
+    expect(screen.getByRole("heading", { name: "Resumo operacional" })).toBeVisible();
+  });
   it("excludes freight from paid revenue and average ticket while preserving the customer total", () => {
     const data = response.data as { count: number; orders: Array<Record<string, unknown>> };
     const original = data.orders[0];

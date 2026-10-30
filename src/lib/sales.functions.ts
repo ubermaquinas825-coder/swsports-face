@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const getSalesAdmin = createServerFn({ method: "GET" })
   .validator((input: unknown) =>
-    z.object({ page: z.number().int().min(0).max(100000) }).parse(input),
+    z.object({ page: z.number().int().min(0).max(100000), view: z.enum(["all", "pending", "shipping"]).default("all") }).parse(input),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
@@ -15,12 +15,15 @@ export const getSalesAdmin = createServerFn({ method: "GET" })
     });
     if (role.error || !role.data) throw new Error("Acesso exclusivo para administradores.");
     // Explicit projection excludes internal leases, export tokens and provider payloads.
-    const result = await context.supabase
+    let query = context.supabase
       .from("shipping_orders")
       .select(
         "id,created_at,delivery_address,items,subtotal_cents,discount_cents,freight_cents,payment_status,payment_link_id,provider_payment_id,appmax_payment_verified_at,shipping_service,shipping_status,tracking_code,provider_shipment_id,quoted_cep,bling_sync_status,bling_sync_error",
         { count: "exact" },
-      )
+      );
+    if (data.view === "pending") query = query.eq("payment_status", "pending");
+    if (data.view === "shipping") query = query.eq("payment_status", "approved").in("shipping_status", ["awaiting_payment", "awaiting_label", "awaiting_label_payment"]);
+    const result = await query
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .range(data.page * 50, data.page * 50 + 49);
