@@ -79,6 +79,79 @@ describe("Mercado Pago order reconciliation", () => {
     );
   });
 
+  it("accepts an accredited order when transaction amount matches the gross order even if paid_amount differs", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "remote-1",
+            type: "online",
+            external_reference: "order-1",
+            status: "processed",
+            status_detail: "accredited",
+            total_amount: "62.24",
+            total_paid_amount: "59.12",
+            transactions: {
+              payments: [
+                {
+                  id: "payment-1",
+                  status: "processed",
+                  status_detail: "accredited",
+                  amount: "62.24",
+                  paid_amount: "59.12",
+                },
+              ],
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    await expect(verifyMercadoPagoStoredOrder(storedOrder)).resolves.toMatchObject({
+      state: "approved",
+      providerPaymentId: "payment-1",
+      status: "processed",
+      statusDetail: "accredited",
+    });
+  });
+
+  it("rejects an accredited order when transaction amount does not compose the expected gross total", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "remote-1",
+            type: "online",
+            external_reference: "order-1",
+            status: "processed",
+            status_detail: "accredited",
+            total_amount: "62.24",
+            total_paid_amount: "59.12",
+            transactions: {
+              payments: [
+                {
+                  id: "payment-1",
+                  status: "processed",
+                  status_detail: "accredited",
+                  amount: "60.00",
+                  paid_amount: "59.12",
+                },
+              ],
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    await expect(verifyMercadoPagoStoredOrder(storedOrder)).rejects.toThrow(
+      "Pagamento Mercado Pago aprovado com composição de valor divergente",
+    );
+  });
+
   it("demotes an expected historical 404 without logging the provider body", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("private-provider-body", { status: 404 })));
     const errorLogger = vi.spyOn(console, "error").mockImplementation(() => {});
