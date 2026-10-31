@@ -182,6 +182,15 @@ export async function verifyMercadoPagoStoredOrder(order: StoredOrder) {
     };
   }
 
+  console.info("Mercado Pago order remains pending", {
+    status: remote.status,
+    statusDetail: statusDetail || "sem_detalhe",
+    paymentStates: remote.transactions.payments.slice(0, 20).map((payment) => ({
+      status: payment.status,
+      statusDetail: payment.status_detail ?? "sem_detalhe",
+    })),
+  });
+
   return { state: "pending" as const, providerPaymentId: null, status: remote.status, statusDetail };
 }
 
