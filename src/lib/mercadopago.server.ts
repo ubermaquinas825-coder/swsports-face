@@ -19,6 +19,7 @@ const mercadoPagoPaymentSchema = z.object({
   id: z.string().min(1),
   status: z.string().min(1),
   status_detail: z.string().min(1).nullable().optional(),
+  amount: z.union([z.string(), z.number()]).nullable().optional(),
   paid_amount: z.union([z.string(), z.number()]).nullable().optional(),
 });
 
@@ -143,16 +144,30 @@ export async function verifyMercadoPagoStoredOrder(order: StoredOrder) {
   if (approved) {
     if (remote.total_paid_amount === null || remote.total_paid_amount === undefined)
       throw new MercadoPagoManualReviewError("Pagamento aprovado sem total pago verificável. Revisão manual necessária.");
-    if (paid.length !== 1 || paid[0]?.paid_amount === null || paid[0]?.paid_amount === undefined)
+    const totalPaidCents = centsFromMoney(remote.total_paid_amount);
+    if (totalPaidCents <= 0)
+      throw new MercadoPagoManualReviewError("Pagamento aprovado com total pago inválido. Revisão manual necessária.");
+    if (paid.length === 0 || paid.some((payment) => payment.amount === null || payment.amount === undefined))
       throw new MercadoPagoManualReviewError("Pagamento aprovado sem composição verificável. Revisão manual necessária.");
-    if (
-      centsFromMoney(remote.total_paid_amount) !== expectedCents ||
-      centsFromMoney(paid[0].paid_amount) !== expectedCents
-    )
+
+    // Mercado Pago documents transactions.payments[].amount as the amount that
+    // composes the order total. paid_amount may differ because of discounts,
+    // financing or other payment-side adjustments and must not be compared with
+    // the merchant's gross order value.
+    const accreditedAmountCents = paid.reduce(
+      (sum, payment) => sum + centsFromMoney(payment.amount as string | number),
+      0,
+    );
+    if (accreditedAmountCents !== expectedCents)
       throw new MercadoPagoManualReviewError("Pagamento Mercado Pago aprovado com composição de valor divergente. Revisão manual necessária.");
+
+    const providerPaymentId = [...paid].sort((a, b) => a.id.localeCompare(b.id))[0]?.id;
+    if (!providerPaymentId)
+      throw new MercadoPagoManualReviewError("Pagamento aprovado sem identificador financeiro verificável. Revisão manual necessária.");
+
     return {
       state: "approved" as const,
-      providerPaymentId: paid[0].id,
+      providerPaymentId,
       status: remote.status,
       statusDetail,
     };
@@ -225,7 +240,9 @@ export async function processMercadoPagoWebhook(providerOrderId: string) {
       .update({
         payment_status: "approved",
         provider_payment_id: verified.providerPaymentId,
-        bling_sync_status: order.bling_sync_status === "awaiting_payment" ? "queued" : order.bling_sync_status,
+        bling_sync_status: ["awaiting_payment", "reconciliation_required"].includes(order.bling_sync_status)
+          ? "queued"
+          : order.bling_sync_status,
         bling_sync_error: null,
       })
       .eq("id", order.id)

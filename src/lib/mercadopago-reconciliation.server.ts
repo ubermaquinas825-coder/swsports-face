@@ -5,15 +5,15 @@ import {
   processMercadoPagoWebhook,
 } from "./mercadopago.server";
 
-export async function reconcilePendingMercadoPagoOrders(limit = 10) {
+export async function reconcilePendingMercadoPagoOrders(limit = 25) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const pending = await supabaseAdmin
     .from("shipping_orders")
     .select("id,payment_link_id")
     .eq("payment_status", "pending")
     .like("payment_link_id", "mp:%")
-    .not("bling_sync_status", "in", "(blocked,reconciliation_required)")
-    .order("created_at", { ascending: true })
+    .neq("bling_sync_status", "blocked")
+    .order("created_at", { ascending: false })
     .limit(limit);
 
   if (pending.error) {
@@ -62,7 +62,7 @@ export async function reconcilePendingMercadoPagoOrders(limit = 10) {
         if (error instanceof MercadoPagoManualReviewError) {
           await holdForManualReview(
             order.id,
-            "Resposta Mercado Pago incompatível com a conferência automática. Conferência manual necessária; o status do pagamento foi preservado.",
+            `Mercado Pago: ${error.message} O status do pagamento foi preservado.`,
           );
           continue;
         }
