@@ -244,15 +244,13 @@ export async function processMercadoPagoWebhook(providerOrderId: string) {
       await applyInventoryForPaidOrder(supabaseAdmin, order.id);
       return { found: true, state: "approved" as const };
     }
+    const shouldQueue = order.bling_sync_status === "awaiting_payment";
     const saved = await supabaseAdmin
       .from("shipping_orders")
       .update({
         payment_status: "approved",
         provider_payment_id: verified.providerPaymentId,
-        bling_sync_status: ["awaiting_payment", "reconciliation_required"].includes(order.bling_sync_status)
-          ? "queued"
-          : order.bling_sync_status,
-        bling_sync_error: null,
+        ...(shouldQueue ? { bling_sync_status: "queued", bling_sync_error: null } : {}),
       })
       .eq("id", order.id)
       .eq("payment_status", "pending")
