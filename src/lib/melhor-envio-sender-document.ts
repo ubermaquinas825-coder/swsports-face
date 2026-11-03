@@ -28,11 +28,11 @@ export type SenderDocumentSelection = {
 export function senderDocuments(
   sender: SenderDocumentSelection,
   companyCnpj: string,
-): { document?: string; company_document?: string; state_register: string } {
+): { document?: string; company_document?: string; state_register?: string } {
   if (sender.document_type === "cpf") {
     if (!validCpf(sender.document ?? ""))
       throw new Error("Informe um CPF válido do remetente em Frete e envios.");
-    return { document: documentDigits(sender.document ?? ""), state_register: "" };
+    return { document: documentDigits(sender.document ?? "") };
   }
   // Legacy company configuration remains unchanged. This branch must not be
   // used to represent a personal shipment as a company-owned consignment.
