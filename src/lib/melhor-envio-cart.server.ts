@@ -11,6 +11,7 @@ import {
 import { mercadoPagoOrderIdFromLink, verifyMercadoPagoStoredOrder } from "./mercadopago.server";
 import { reconcileAppmaxOrder } from "./payment-reconciliation.server";
 import { business } from "./business";
+import { senderDocuments } from "./melhor-envio-sender-document";
 import { validateDeliveryAddress } from "./delivery-address";
 import { orderItemsSchema } from "./order-items";
 import { SITE_ORIGIN } from "./site";
@@ -161,9 +162,8 @@ function buildMelhorEnvioPayload(input: {
     from: {
       name: sender.name,
       email: sender.email,
-      phone: digits(business.phone),
-      company_document: digits(business.cnpj),
-      state_register: "",
+      phone: digits(sender.document_type === "cpf" ? (sender.phone ?? "") : (sender.phone || business.phone)),
+      ...senderDocuments(sender, business.cnpj),
       address: sender.address,
       complement: sender.complement,
       number: sender.number,
