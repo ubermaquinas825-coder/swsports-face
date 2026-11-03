@@ -13,9 +13,15 @@ export const labelSenderSchema = z.object({
   // Optional for compatibility with existing saved sender settings.
   document_type: z.enum(["cpf", "cnpj"]).optional(),
   document: z.string().trim().max(14).optional(),
+  phone: z.string().trim().max(20).optional(),
 }).superRefine((sender, ctx) => {
-  if (sender.document_type === "cpf" && !validCpf(sender.document ?? "")) {
-    ctx.addIssue({ code: "custom", path: ["document"], message: "Informe um CPF válido para o remetente pessoa física." });
+  if (sender.document_type === "cpf") {
+    if (!validCpf(sender.document ?? "")) {
+      ctx.addIssue({ code: "custom", path: ["document"], message: "Informe um CPF válido para o remetente pessoa física." });
+    }
+    if (!/^\d{10,11}$/.test((sender.phone ?? "").replace(/\D/g, ""))) {
+      ctx.addIssue({ code: "custom", path: ["phone"], message: "Informe um telefone válido do remetente com DDD." });
+    }
   }
 });
 export const labelAutomationSchema = z.object({ enabled: z.boolean(), sender: labelSenderSchema.nullable() }).superRefine((value, ctx) => {
