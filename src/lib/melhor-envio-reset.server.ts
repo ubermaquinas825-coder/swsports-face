@@ -1,4 +1,5 @@
 import { manualShippingHold } from "./manual-shipping-eligibility";
+import { isRecoverableManualReviewJob, type ManualReviewJob, type ManualShippingAttempt } from "./melhor-envio-reset-evidence";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
 import {
@@ -17,12 +18,6 @@ const resettableStates = new Set([
   "logistics_failed",
 ]);
 
-type ManualReviewJob = {
-  stage: string;
-  payload: unknown;
-  shipment_id: string | null;
-};
-
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -36,20 +31,10 @@ function isPermissionDenied(error: unknown) {
   return code === "42501" || /permission denied.*shipping_label_jobs/i.test(message);
 }
 
-function isRecoverableManualReviewJob(
-  job: ManualReviewJob | null,
-  shipmentId: string | null,
-) {
-  if (!job || job.stage !== "review") return false;
-  const payload = record(job.payload);
-  if (payload?.["manual_payment"] !== true) return false;
-  return !job.shipment_id || !shipmentId || job.shipment_id === shipmentId;
-}
-
 async function loadLabelJob(orderId: string): Promise<ManualReviewJob | null> {
   const result = await supabaseAdmin
     .from("shipping_label_jobs")
-    .select("stage,payload,shipment_id")
+    .select("stage,payload,shipment_id,updated_at")
     .eq("order_id", orderId)
     .maybeSingle();
   if (result.error)
@@ -67,7 +52,7 @@ async function loadOrder(orderId: string) {
   return result.data;
 }
 
-async function latestAttemptProvider(orderId: string) {
+async function latestShippingAttempt(orderId: string): Promise<ManualShippingAttempt | null> {
   const result = await supabaseAdmin
     .from("shipping_events")
     .select("provider,kind,created_at")
@@ -77,7 +62,28 @@ async function latestAttemptProvider(orderId: string) {
     .limit(1)
     .maybeSingle();
   if (result.error) throw new Error("Não foi possível conferir o histórico logístico do pedido.");
-  return result.data?.provider ?? null;
+  return (result.data as ManualShippingAttempt | null) ?? null;
+}
+
+async function previousManualResetAt(orderId: string, job: ManualReviewJob, attempt: ManualShippingAttempt | null) {
+  if (!job.shipment_id || attempt?.kind !== "manual_cart" || attempt.provider !== "melhor_envio")
+    return null;
+  // A retained historical job is safe to reuse only if a *previous completed*
+  // administrative reset occurred AFTER that job was last changed and BEFORE the
+  // subsequent new Melhor Envio cart attempt. The old job never changes during
+  // retained manual retries, so its shipment_id intentionally remains stale.
+  const result = await supabaseAdmin
+    .from("shipping_events")
+    .select("created_at")
+    .eq("order_id", orderId)
+    .eq("kind", "manual_reset")
+    .gt("created_at", job.updated_at)
+    .lt("created_at", attempt.created_at)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (result.error) throw new Error("Não foi possível validar o histórico da tentativa anterior de etiqueta.");
+  return result.data?.created_at ?? null;
 }
 
 async function trackingState(shipmentId: string) {
@@ -133,7 +139,8 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     };
 
   const previousShipmentId = order.provider_shipment_id ?? null;
-  const attemptProvider = await latestAttemptProvider(orderId);
+  const latestAttempt = await latestShippingAttempt(orderId);
+  const attemptProvider = latestAttempt?.provider ?? null;
 
   if (order.provider_shipment_id && attemptProvider !== "superfrete") {
     const shipmentId = order.provider_shipment_id;
@@ -179,11 +186,12 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
   if (currentHold) throw new Error(currentHold);
   assertNoIssuedLabel(order);
 
-  // The table intentionally grants service_role SELECT only. Older manual-cart
-  // attempts therefore cannot be deleted directly by PostgREST. Keep the narrow
-  // ACL: when the delete is rejected, retain only a verified manual review job as
-  // an inert historical lock. The cart preparation flow has an equally narrow
-  // recovery path for this state, so no broad DELETE privilege is needed.
+  // shipping_label_jobs intentionally grants service_role SELECT only. A
+  // previously verified manual-cart job stays as an inert historical lock;
+  // automated workers cannot act on stage=review. A prior successful reset may
+  // leave this job holding an older shipment ID while the order references the
+  // new Melhor Envio shipment. Recognize that case only with a chronological
+  // reset audit trail; never bypass non-manual or unverified jobs.
   let retainedManualJob = false;
   const deletedJob = await supabaseAdmin
     .from("shipping_label_jobs")
@@ -193,9 +201,12 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     if (!isPermissionDenied(deletedJob.error))
       throw new Error("Não foi possível liberar a tentativa anterior de etiqueta.");
     const existingJob = await loadLabelJob(orderId);
-    if (!isRecoverableManualReviewJob(existingJob, previousShipmentId))
-      throw new Error("Não foi possível liberar a tentativa anterior de etiqueta.");
-    retainedManualJob = true;
+    if (existingJob) {
+      const priorResetAt = await previousManualResetAt(orderId, existingJob, latestAttempt);
+      if (!isRecoverableManualReviewJob(existingJob, previousShipmentId, latestAttempt, priorResetAt))
+        throw new Error("Não foi possível liberar a tentativa anterior de etiqueta. Histórico de revisão divergente; confira o envio com o provedor.");
+      retainedManualJob = true;
+    }
   }
 
   const reset = await supabaseAdmin
@@ -208,6 +219,10 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     })
     .eq("id", orderId)
     .eq("payment_status", "approved")
+    .eq("financial_revision", order.financial_revision)
+    .eq("shipping_status", order.shipping_status)
+    .is("tracking_code", null)
+    .is("label_url", null)
     .select("id")
     .maybeSingle();
   if (reset.error || !reset.data)
