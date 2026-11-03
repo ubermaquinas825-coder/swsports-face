@@ -186,6 +186,9 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
   if (currentHold) throw new Error(currentHold);
   assertNoIssuedLabel(order);
 
+  if (order.provider_shipment_id !== previousShipmentId)
+    throw new Error("O vínculo logístico foi alterado durante a conferência. Atualize o pedido e tente novamente.");
+
   // shipping_label_jobs intentionally grants service_role SELECT only. A
   // previously verified manual-cart job stays as an inert historical lock;
   // automated workers cannot act on stage=review. A prior successful reset may
@@ -209,7 +212,7 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     }
   }
 
-  const reset = await supabaseAdmin
+  const resetQuery = supabaseAdmin
     .from("shipping_orders")
     .update({
       provider_shipment_id: null,
@@ -222,7 +225,10 @@ export async function resetMelhorEnvioShippingAttempt(orderId: string) {
     .eq("financial_revision", order.financial_revision)
     .eq("shipping_status", order.shipping_status)
     .is("tracking_code", null)
-    .is("label_url", null)
+    .is("label_url", null);
+  const reset = await (previousShipmentId === null
+    ? resetQuery.is("provider_shipment_id", null)
+    : resetQuery.eq("provider_shipment_id", previousShipmentId))
     .select("id")
     .maybeSingle();
   if (reset.error || !reset.data)
