@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { productFor, UNIT_PRICE } from "@/lib/products";
+import { validCpf } from "@/lib/melhor-envio-sender-document";
 
 export const cepSchema = z.string().transform((v) => v.replace(/\D/g, "")).refine((v) => /^\d{8}$/.test(v) && !/^(\d)\1{7}$/.test(v), "Informe um CEP válido com 8 dígitos.");
 export const packageSchema = z.object({ name: z.string().min(1), weightKg: z.number().positive(), lengthCm: z.number().positive(), widthCm: z.number().positive(), heightCm: z.number().positive(), capacity: z.number().int().positive(), packagingWeightKg: z.number().nonnegative().nullable() });
@@ -9,6 +10,13 @@ export const labelSenderSchema = z.object({
   complement: z.string().trim().max(20), district: z.string().trim().min(1).max(50),
   city: z.string().trim().min(1).max(50), state_abbr: z.string().regex(/^(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/),
   postal_code: cepSchema, email: z.string().trim().email().max(200),
+  // Optional for compatibility with existing saved sender settings.
+  document_type: z.enum(["cpf", "cnpj"]).optional(),
+  document: z.string().trim().max(14).optional(),
+}).superRefine((sender, ctx) => {
+  if (sender.document_type === "cpf" && !validCpf(sender.document ?? "")) {
+    ctx.addIssue({ code: "custom", path: ["document"], message: "Informe um CPF válido para o remetente pessoa física." });
+  }
 });
 export const labelAutomationSchema = z.object({ enabled: z.boolean(), sender: labelSenderSchema.nullable() }).superRefine((value, ctx) => {
   if (value.enabled && !value.sender) ctx.addIssue({ code: "custom", message: "Preencha os dados do remetente antes de ativar etiquetas automáticas." });
