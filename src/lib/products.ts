@@ -144,8 +144,14 @@ export const shirtModels: ShirtModel[] = [
     name: "Camisa iFood Entregador — Ref. 02",
     description: "Camisa iFood SW SPORTS em vermelho, preto e branco, com manga longa, gola com zíper e caimento slim. Tecido DrySport e proteção solar UV 50+ para a rotina de entregas e o uso diário. Modelo unissex.",
     priceCents: 7990,
-    image: null,
-    gallery: [],
+    image: "/products/camisetas/ref-02-frente.png",
+    gallery: [
+      { src: "/products/camisetas/ref-02-frente.png", alt: "Camisa iFood Ref. 02 vermelha, preta e branca, vista de frente", label: "Frente" },
+      { src: "/products/camisetas/ref-02-costas.png", alt: "Camisa iFood Ref. 02 vermelha, preta e branca, vista de costas", label: "Costas" },
+      { src: "/products/camisetas/ref-02-modelo-frente.png", alt: "Camisa iFood Ref. 02 vestida por modelo, vista de frente", label: "No modelo" },
+      { src: "/products/camisetas/ref-02-uso.png", alt: "Camisa iFood Ref. 02 em uso", label: "Em uso" },
+      { src: "/products/camisetas/ref-02-detalhe-gola.png", alt: "Detalhe da gola com zíper da camisa iFood Ref. 02", label: "Gola" },
+    ],
     sizes: ["PP", "P", "M", "G", "GG", "XG", "XGG"],
     sizeChart: null,
     features: [
@@ -163,8 +169,11 @@ export const shirtModels: ShirtModel[] = [
     name: "Camisa iFood Entregador — Ref. 03",
     description: "Camisa iFood SW SPORTS com estampa diagonal em vermelho, preto e branco e gola com zíper. Manga longa em tecido DrySport, com proteção solar UV 50+ para acompanhar a rotina de entregas e o uso diário. Modelo unissex.",
     priceCents: 7990,
-    image: null,
-    gallery: [],
+    image: "/products/camisetas/ref-03-frente.png",
+    gallery: [
+      { src: "/products/camisetas/ref-03-frente.png", alt: "Camisa iFood Ref. 03 com estampa diagonal vermelha, preta e branca, vista de frente", label: "Frente" },
+      { src: "/products/camisetas/ref-03-costas.png", alt: "Camisa iFood Ref. 03 com estampa diagonal vermelha, preta e branca, vista de costas", label: "Costas" },
+    ],
     sizes: ["P", "M", "G", "GG", "XG", "XGG"],
     sizeChart: shirtSizeChart.map((measurement) => ({ ...measurement })),
     features: [
@@ -182,8 +191,14 @@ export const shirtModels: ShirtModel[] = [
     name: "Camisa iFood Entregador — Ref. 01",
     description: "Camisa iFood SW SPORTS em preto e branco, com gola com zíper e manga longa. Tecido DrySport e proteção solar UV 50+ para a rotina de entregas e o uso diário. Modelo unissex.",
     priceCents: 7990,
-    image: null,
-    gallery: [],
+    image: "/products/camisetas/ref-01-frente.png",
+    gallery: [
+      { src: "/products/camisetas/ref-01-frente.png", alt: "Camisa iFood Ref. 01 preta e branca, vista de frente", label: "Frente" },
+      { src: "/products/camisetas/ref-01-costas.png", alt: "Camisa iFood Ref. 01 preta e branca, vista de costas", label: "Costas" },
+      { src: "/products/camisetas/ref-01-modelo-frente.png", alt: "Camisa iFood Ref. 01 vestida por modelo, vista de frente", label: "No modelo" },
+      { src: "/products/camisetas/ref-01-modelo-lateral.png", alt: "Camisa iFood Ref. 01 vestida por modelo, vista lateral", label: "Lateral" },
+      { src: "/products/camisetas/ref-01-detalhe.png", alt: "Detalhe da camisa iFood Ref. 01 preta e branca", label: "Detalhe" },
+    ],
     sizes: ["PP", "P", "M", "G", "GG", "XG", "XGG"],
     sizeChart: shirtSizeChart.map((measurement) => ({ ...measurement })),
     features: [

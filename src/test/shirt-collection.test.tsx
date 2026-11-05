@@ -17,7 +17,7 @@ vi.mock("@/lib/products", async (importOriginal) => {
   const variants = model.sizes.map((size) => actual.shirtVariantFor(model, size)!);
   return {
     ...actual,
-    shirtModels: [model, actual.shirtModels[1]!],
+    shirtModels: [model, { ...actual.shirtModels[1]!, image: null, gallery: [], checkoutReady: false }],
     productFor: (id: string) => variants.find((variant) => variant.id === id) ?? actual.productFor(id),
   };
 });

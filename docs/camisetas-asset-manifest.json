@@ -1,0 +1,139 @@
+{
+  "source": "User-provided ZIP extracted to /workspace/work/camisetas-upload",
+  "image_processing": "None. Original PNG bytes copied unchanged; filenames only renamed.",
+  "input_files": 13,
+  "unique_assets": 12,
+  "assets": [
+    {
+      "original_filename": "image(20261105-213239).png",
+      "target_path": "public/products/camisetas/ref-03-frente.png",
+      "reference": "03",
+      "view": "frente",
+      "bytes": 727805,
+      "sha256": "3aac8c77953d32f5dab6e437240b44896d791d2c1da5b4aa2fb322e631d616bd",
+      "width": 804,
+      "height": 1035
+    },
+    {
+      "original_filename": "image(20261105-213251).png",
+      "target_path": "public/products/camisetas/ref-03-frente.png",
+      "reference": "03",
+      "view": "frente",
+      "bytes": 727805,
+      "sha256": "3aac8c77953d32f5dab6e437240b44896d791d2c1da5b4aa2fb322e631d616bd",
+      "width": 804,
+      "height": 1035,
+      "duplicate_of": "image(20261105-213239).png"
+    },
+    {
+      "original_filename": "image(20261105-213257).png",
+      "target_path": "public/products/camisetas/ref-03-costas.png",
+      "reference": "03",
+      "view": "costas",
+      "bytes": 762351,
+      "sha256": "77ae4aaeadbe7590ffcbfca7351446221b1b06a8e606d83b0a74ebcf4f281ac6",
+      "width": 815,
+      "height": 1062
+    },
+    {
+      "original_filename": "image(20261105-213308).png",
+      "target_path": "public/products/camisetas/ref-01-modelo-frente.png",
+      "reference": "01",
+      "view": "modelo-frente",
+      "bytes": 716951,
+      "sha256": "c09ceb8336573db4b670956e1817d1a3783e6848142af72b262c2db09c5bc1a5",
+      "width": 896,
+      "height": 1152
+    },
+    {
+      "original_filename": "image(20261105-213312).png",
+      "target_path": "public/products/camisetas/ref-01-frente.png",
+      "reference": "01",
+      "view": "frente",
+      "bytes": 515198,
+      "sha256": "6c3091f782f1a5549d498f3cc1a6fee8a9608034e0df4ce225e3e13d3c64431c",
+      "width": 850,
+      "height": 1200
+    },
+    {
+      "original_filename": "image(20261105-213319).png",
+      "target_path": "public/products/camisetas/ref-01-costas.png",
+      "reference": "01",
+      "view": "costas",
+      "bytes": 524487,
+      "sha256": "ed4d892f685f11d77c025d3c57c94d6f6b7317544c41db4de7b2821f3c77546d",
+      "width": 837,
+      "height": 1200
+    },
+    {
+      "original_filename": "image(20261105-213328).png",
+      "target_path": "public/products/camisetas/ref-01-detalhe.png",
+      "reference": "01",
+      "view": "detalhe",
+      "bytes": 794770,
+      "sha256": "faefc3b2ddca9289bdd0927b819fb7b190f9bf4ac4e14a8942fa4b07ae772ae9",
+      "width": 896,
+      "height": 1152
+    },
+    {
+      "original_filename": "image(20261105-213335).png",
+      "target_path": "public/products/camisetas/ref-01-modelo-lateral.png",
+      "reference": "01",
+      "view": "modelo-lateral",
+      "bytes": 801187,
+      "sha256": "59806ee18d82895803eebc2761120373d3158a5ce1e995b15a577ff926177a9b",
+      "width": 928,
+      "height": 1152
+    },
+    {
+      "original_filename": "image(20261105-213355).png",
+      "target_path": "public/products/camisetas/ref-02-modelo-frente.png",
+      "reference": "02",
+      "view": "modelo-frente",
+      "bytes": 655437,
+      "sha256": "9e83de993ccf667d5716f3aad826584e4b097405bd08b3092d1323abfc4d0309",
+      "width": 799,
+      "height": 1200
+    },
+    {
+      "original_filename": "image(20261105-213401).png",
+      "target_path": "public/products/camisetas/ref-02-frente.png",
+      "reference": "02",
+      "view": "frente",
+      "bytes": 801679,
+      "sha256": "ee0a0dd6eb1ef2b807f3e85786401cbca357d035afbd1afc5a0d007920bb7706",
+      "width": 849,
+      "height": 1199
+    },
+    {
+      "original_filename": "image(20261105-213411).png",
+      "target_path": "public/products/camisetas/ref-02-uso.png",
+      "reference": "02",
+      "view": "uso",
+      "bytes": 922291,
+      "sha256": "2225e4d5ca87e3d2c67bd6e131767d5265bef5033c63eef8ade5c254084268f1",
+      "width": 799,
+      "height": 1200
+    },
+    {
+      "original_filename": "image(20261105-213416).png",
+      "target_path": "public/products/camisetas/ref-02-costas.png",
+      "reference": "02",
+      "view": "costas",
+      "bytes": 805272,
+      "sha256": "9406dd79d546038da1d3af5524dc0e558602d416859ed607f2b08a5bb42f5867",
+      "width": 837,
+      "height": 1200
+    },
+    {
+      "original_filename": "image(20261105-213421).png",
+      "target_path": "public/products/camisetas/ref-02-detalhe-gola.png",
+      "reference": "02",
+      "view": "detalhe-gola",
+      "bytes": 1331286,
+      "sha256": "57a202a07df53c046199b6601d39c370e4eed952e9c391933dc034883b549511",
+      "width": 896,
+      "height": 1152
+    }
+  ]
+}
