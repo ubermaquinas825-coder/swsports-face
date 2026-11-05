@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { assertFinancialOperationsEnabled } from "./financial-maintenance.server";
-import { productFor, UNIT_PRICE } from "./products";
+import { productFor, productTitle, unitPriceCents } from "./products";
 import { validatedTotal } from "./shipping";
 import type { CheckoutLine, ShippingOption } from "./checkout";
 import { validateDeliveryAddress, type DeliveryAddress } from "./delivery-address";
@@ -302,17 +302,17 @@ export async function mercadoPagoPaymentLink(
   const deliveryAddress = validateDeliveryAddress(address, cep);
   const totalCents = validatedTotal(lines, 0, option.priceCents);
   const subtotalCents = validatedTotal(lines, 0, 0);
+  const orderItems = lines.map((line) => {
+    const product = productFor(line.id);
+    if (!product) throw new Error("Item inválido.");
+    return { id: line.id, name: productTitle(product), qty: line.qty, unit_price_cents: unitPriceCents(product) };
+  });
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const pending = await supabaseAdmin
     .from("shipping_orders")
     .insert({
       delivery_address: deliveryAddress,
-      items: lines.map((line) => ({
-        id: line.id,
-        name: productFor(line.id)?.name ?? line.id,
-        qty: line.qty,
-        unit_price_cents: Math.round(UNIT_PRICE * 100),
-      })),
+      items: orderItems,
       subtotal_cents: subtotalCents,
       freight_cents: option.priceCents,
       quoted_cep: cep,
@@ -326,10 +326,10 @@ export async function mercadoPagoPaymentLink(
 
   const origin = publicSiteUrl();
   const orderReference = encodeURIComponent(pending.data.id);
-  const items = lines.map((line) => ({
-    title: productFor(line.id)?.name ?? line.id,
+  const items = orderItems.map((line) => ({
+    title: line.name,
     quantity: line.qty,
-    unit_price: moneyFromCents(Math.round(UNIT_PRICE * 100)),
+    unit_price: moneyFromCents(line.unit_price_cents),
   }));
   if (option.priceCents > 0) {
     items.push({

@@ -15,6 +15,9 @@ export type Product = {
   name: string;
   description: string;
   image: string;
+  category?: "balaclava" | "camiseta";
+  priceCents?: number;
+  size?: string;
 };
 
 export const products: Product[] = [
@@ -96,8 +99,144 @@ export function formatBRL(value: number): string {
   return `R$ ${value.toFixed(2).replace(".", ",")}`;
 }
 
+export type ShirtGalleryImage = { src: string; alt: string; label: string };
+export type ShirtSizeMeasurement = { size: string; widthCm: number; heightCm: number };
+
+export type ShirtModel = {
+  id: string;
+  reference: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  image: string | null;
+  gallery: ShirtGalleryImage[];
+  sizes: string[];
+  sizeChart: ShirtSizeMeasurement[] | null;
+  features: { label: string; value: string }[];
+  sourceUrl: string;
+  // Enable only after sizes, original photos, internal stock SKUs and shipping are confirmed.
+  checkoutReady: boolean;
+};
+
+// Product data and measurements confirmed from the owner's listing screenshots.
+// Original image files, measured shipping and stock SKUs are confirmed separately.
+const shirtSizeChart: ShirtSizeMeasurement[] = [
+  { size: "PP", widthCm: 49, heightCm: 66 },
+  { size: "P", widthCm: 50, heightCm: 68 },
+  { size: "M", widthCm: 52, heightCm: 70 },
+  { size: "G", widthCm: 55, heightCm: 76 },
+  { size: "GG", widthCm: 57, heightCm: 79 },
+  { size: "XG", widthCm: 60, heightCm: 80 },
+  { size: "XGG", widthCm: 62, heightCm: 84 },
+];
+const commonShirtFeatures = [
+  { label: "Marca", value: "SW SPORTS" },
+  { label: "Tecido", value: "DrySport" },
+  { label: "Modelo", value: "Unissex" },
+  { label: "Manga", value: "Longa" },
+  { label: "Proteção solar", value: "UV 50+" },
+];
+
+export const shirtModels: ShirtModel[] = [
+  {
+    id: "camisa-ifood-ref-02",
+    reference: "02",
+    name: "Camisa iFood Entregador — Ref. 02",
+    description: "Camisa iFood SW SPORTS em vermelho, preto e branco, com manga longa, gola com zíper e caimento slim. Tecido DrySport e proteção solar UV 50+ para a rotina de entregas e o uso diário. Modelo unissex.",
+    priceCents: 7990,
+    image: null,
+    gallery: [],
+    sizes: ["PP", "P", "M", "G", "GG", "XG", "XGG"],
+    sizeChart: null,
+    features: [
+      ...commonShirtFeatures,
+      { label: "Cores", value: "Vermelho, preto e branco" },
+      { label: "Gola", value: "Com zíper" },
+      { label: "Caimento", value: "Slim" },
+    ],
+    sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-02-protecao-uv50/up/MLBU4740694356",
+    checkoutReady: false,
+  },
+  {
+    id: "camisa-ifood-ref-03",
+    reference: "03",
+    name: "Camisa iFood Entregador — Ref. 03",
+    description: "Camisa iFood SW SPORTS com estampa diagonal em vermelho, preto e branco e gola com zíper. Manga longa em tecido DrySport, com proteção solar UV 50+ para acompanhar a rotina de entregas e o uso diário. Modelo unissex.",
+    priceCents: 7990,
+    image: null,
+    gallery: [],
+    sizes: ["P", "M", "G", "GG", "XG", "XGG"],
+    sizeChart: shirtSizeChart.map((measurement) => ({ ...measurement })),
+    features: [
+      ...commonShirtFeatures,
+      { label: "Cores", value: "Vermelho, preto e branco" },
+      { label: "Estampa", value: "Diagonal" },
+      { label: "Gola", value: "Com zíper" },
+    ],
+    sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-03-protecao-uv50/up/MLBU4714185455",
+    checkoutReady: false,
+  },
+  {
+    id: "camisa-ifood-ref-01",
+    reference: "01",
+    name: "Camisa iFood Entregador — Ref. 01",
+    description: "Camisa iFood SW SPORTS em preto e branco, com gola com zíper e manga longa. Tecido DrySport e proteção solar UV 50+ para a rotina de entregas e o uso diário. Modelo unissex.",
+    priceCents: 7990,
+    image: null,
+    gallery: [],
+    sizes: ["PP", "P", "M", "G", "GG", "XG", "XGG"],
+    sizeChart: shirtSizeChart.map((measurement) => ({ ...measurement })),
+    features: [
+      ...commonShirtFeatures,
+      { label: "Cores", value: "Preto e branco" },
+      { label: "Gola", value: "Com zíper" },
+    ],
+    sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-01-protecao-uv50/up/MLBU4741204286",
+    checkoutReady: false,
+  },
+];
+
+export function shirtVariantFor(model: ShirtModel, size: string): Product | undefined {
+  const normalizedSizes = model.sizes.map((value) => value.trim().toLowerCase());
+  if (!model.checkoutReady || !model.image?.trim() || !size.trim() || size !== size.trim()
+    || model.sizes.some((value) => !value.trim() || value !== value.trim())
+    || new Set(normalizedSizes).size !== normalizedSizes.length || !model.sizes.includes(size)
+    || !Number.isSafeInteger(model.priceCents) || model.priceCents <= 0) return;
+  return {
+    id: `${model.id}-${encodeURIComponent(size.toLowerCase())}`,
+    name: model.name,
+    description: model.description,
+    image: model.image,
+    category: "camiseta",
+    priceCents: model.priceCents,
+    size,
+  };
+}
+
+export const purchasableProducts: Product[] = [
+  ...products,
+  ...shirtModels.flatMap((model) => model.sizes.flatMap((size) => {
+    const variant = shirtVariantFor(model, size);
+    return variant ? [variant] : [];
+  })),
+];
+
 export function productFor(id: string): Product | undefined {
-  return products.find((p) => p.id === id);
+  return purchasableProducts.find((p) => p.id === id);
+}
+
+export function unitPriceCents(product: Product): number {
+  const cents = product.category === "camiseta" ? product.priceCents : Math.round(UNIT_PRICE * 100);
+  if (!Number.isSafeInteger(cents) || cents === undefined || cents <= 0) {
+    throw new Error("Preço do produto não confirmado.");
+  }
+  return cents;
+}
+
+export function productTitle(product: Pick<Product, "name" | "category" | "size">): string {
+  return product.category === "camiseta"
+    ? `${product.name}${product.size ? ` · Tamanho ${product.size}` : ""}`
+    : `Balaclava ${product.name}`;
 }
 
 export function waLink(message: string): string {
@@ -108,9 +247,9 @@ export type OrderLine = { product: Product; qty: number };
 
 export function buildOrderMessage(lines: OrderLine[]): string {
   const code = `SW-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-  const total = lines.reduce((sum, l) => sum + l.qty * UNIT_PRICE, 0);
+  const total = lines.reduce((sum, l) => sum + l.qty * unitPriceCents(l.product) / 100, 0);
   const items = lines
-    .map((l) => `${l.qty}x Balaclava ${l.product.name} — ${formatBRL(UNIT_PRICE)}`)
+    .map((l) => `${l.qty}x ${productTitle(l.product)} — ${formatBRL(unitPriceCents(l.product) / 100)}`)
     .join("\n");
   return [
     "Olá, equipe SW Sports!",

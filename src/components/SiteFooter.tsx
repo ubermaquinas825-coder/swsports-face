@@ -47,8 +47,13 @@ export function SiteFooter() {
             </Link>
 
             <p className="mt-5 max-w-sm text-sm leading-6 text-white/55">
-              Balaclavas com personalidade, estilo e proteção para o dia a dia.
+              Balaclavas com personalidade e camisas manga longa com proteção solar UV 50+.
             </p>
+
+            <nav aria-label="Coleções da loja" className="mt-4 flex flex-wrap gap-x-5">
+              <Link to="/" hash="colecao" className="inline-flex min-h-11 items-center text-sm text-white/70 transition-colors hover:text-brand">Balaclavas</Link>
+              <Link to="/camisetas" className="inline-flex min-h-11 items-center text-sm text-white/70 transition-colors hover:text-brand">Camisetas UV 50+</Link>
+            </nav>
 
             <div className="mt-5 space-y-2 text-sm text-white/45">
               <p>Pagamento seguro via Mercado Pago</p>

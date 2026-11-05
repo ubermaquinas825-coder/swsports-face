@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 const MELHOR_RASTREIO_URL = "https://melhorrastreio.com.br/";
 
 const NAV = [
-  { label: "Coleção", to: "/", hash: "#colecao" },
+  { label: "Balaclavas", to: "/", hash: "#colecao" },
+  { label: "Camisetas", to: "/camisetas", hash: "" },
   { label: "Atacado", to: "/atacado", hash: "" },
   { label: "Dúvidas", to: "/", hash: "#faq" },
 ] as const;
@@ -18,7 +19,7 @@ export function SiteHeader() {
   const { count, openCart } = useCart();
   const navigate = useNavigate();
 
-  const go = (to: "/" | "/atacado", hash: string) => {
+  const go = (to: "/" | "/atacado" | "/camisetas", hash: string) => {
     setMenuOpen(false);
 
     if (to !== "/") {
@@ -72,7 +73,7 @@ export function SiteHeader() {
         </Link>
 
         <nav
-          className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] p-1.5 shadow-inner shadow-white/[0.02] md:flex"
+          className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] p-1.5 shadow-inner shadow-white/[0.02] lg:flex"
           aria-label="Navegação principal"
         >
           {NAV.map((item) => (
@@ -80,7 +81,7 @@ export function SiteHeader() {
               variant="ghost"
               key={item.label}
               onClick={() => go(item.to, item.hash)}
-              className="min-h-10 rounded-full px-5 text-sm font-medium text-white/70 transition-all duration-200 hover:bg-white/[0.07] hover:text-white"
+              className="min-h-10 rounded-full px-4 text-sm font-medium text-white/70 transition-all duration-200 hover:bg-white/[0.07] hover:text-white"
             >
               {item.label}
             </Button>
@@ -129,7 +130,7 @@ export function SiteHeader() {
             onClick={() => setMenuOpen((value) => !value)}
             aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={menuOpen}
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/80 transition-colors hover:bg-white/[0.07] md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white/80 transition-colors hover:bg-white/[0.07] lg:hidden"
           >
             {menuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
           </Button>
@@ -138,7 +139,7 @@ export function SiteHeader() {
 
       {menuOpen && (
         <nav
-          className="border-t border-white/10 bg-[#0b0b0b] px-3 pb-4 pt-3 shadow-2xl md:hidden"
+          className="border-t border-white/10 bg-[#0b0b0b] px-3 pb-4 pt-3 shadow-2xl lg:hidden"
           aria-label="Navegação mobile"
         >
           <div className="mx-auto flex max-w-7xl flex-col gap-1 rounded-2xl border border-white/10 bg-white/[0.025] p-2">

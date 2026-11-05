@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { productFor, UNIT_PRICE, type Product } from "@/lib/products";
+import { productFor, productTitle, unitPriceCents, type Product } from "@/lib/products";
 import { trackAddToCart } from "@/lib/advertising";
 
 export type CartItem = { id: string; qty: number };
@@ -52,15 +52,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, hydrated]);
 
   const add = useCallback((id: string, qty = 1) => {
+    const product = productFor(id);
+    if (!product || !Number.isInteger(qty) || qty < 1) return;
     setItems((prev) => {
       const existing = prev.find((i) => i.id === id);
       return existing ? prev.map((i) => (i.id === id ? { ...i, qty: i.qty + qty } : i)) : [...prev, { id, qty }];
     });
-    const product = productFor(id);
-    if (product) {
-      trackAddToCart(product, qty, UNIT_PRICE);
-      toast("Adicionada ao carrinho", { description: `Balaclava ${product.name}` });
-    }
+    trackAddToCart(product, qty, unitPriceCents(product) / 100);
+    toast("Adicionada ao carrinho", { description: productTitle(product) });
   }, []);
 
   const remove = useCallback((id: string) => { setItems((prev) => prev.filter((i) => i.id !== id)); }, []);
@@ -77,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return product ? { product, qty: i.qty } : null;
     }).filter((l): l is { product: Product; qty: number } => l !== null);
     const count = lines.reduce((sum, l) => sum + l.qty, 0);
-    const subtotal = lines.reduce((sum, l) => sum + l.qty * UNIT_PRICE, 0);
+    const subtotal = lines.reduce((sum, l) => sum + l.qty * unitPriceCents(l.product), 0) / 100;
     return { items, lines, count, subtotal, isOpen, openCart, closeCart, add, remove, setQty, clear };
   }, [items, isOpen, openCart, closeCart, add, remove, setQty, clear]);
 

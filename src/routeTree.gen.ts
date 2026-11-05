@@ -13,13 +13,20 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AtacadoRouteImport } from './routes/atacado'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CamisetasRouteImport } from './routes/camisetas'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ExperienciaRouteImport } from './routes/experiencia'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedFreteEnviosRouteImport } from './routes/_authenticated/frete-envios'
+import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as AdminEstoqueRouteImport } from './routes/admin/estoque'
+import { Route as ApiMelhorEnvioAuthorizeRouteImport } from './routes/api/melhor-envio/authorize'
+import { Route as ApiMelhorEnvioCallbackRouteImport } from './routes/api/melhor-envio/callback'
 import { Route as ApiPublicCronSyncOrdersRouteImport } from './routes/api/public/cron/sync-orders'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago/webhook'
 
@@ -40,6 +47,11 @@ const AtacadoRoute = AtacadoRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CamisetasRoute = CamisetasRouteImport.update({
+  id: '/camisetas',
+  path: '/camisetas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -72,12 +84,42 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFreteEnviosRoute =
   AuthenticatedFreteEnviosRouteImport.update({
     id: '/frete-envios',
     path: '/frete-envios',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AdminEstoqueRoute = AdminEstoqueRouteImport.update({
+  id: '/admin/estoque',
+  path: '/admin/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMelhorEnvioAuthorizeRoute = ApiMelhorEnvioAuthorizeRouteImport.update({
+  id: '/api/melhor-envio/authorize',
+  path: '/api/melhor-envio/authorize',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMelhorEnvioCallbackRoute = ApiMelhorEnvioCallbackRouteImport.update({
+  id: '/api/melhor-envio/callback',
+  path: '/api/melhor-envio/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronSyncOrdersRoute = ApiPublicCronSyncOrdersRouteImport.update({
   id: '/api/public/cron/sync-orders',
   path: '/api/public/cron/sync-orders',
@@ -94,13 +136,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/camisetas': typeof CamisetasRoute
   '/checkout': typeof CheckoutRoute
   '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/clientes': typeof AuthenticatedClientesRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/api/melhor-envio/authorize': typeof ApiMelhorEnvioAuthorizeRoute
+  '/api/melhor-envio/callback': typeof ApiMelhorEnvioCallbackRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -108,13 +157,20 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/camisetas': typeof CamisetasRoute
   '/checkout': typeof CheckoutRoute
   '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/clientes': typeof AuthenticatedClientesRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/api/melhor-envio/authorize': typeof ApiMelhorEnvioAuthorizeRoute
+  '/api/melhor-envio/callback': typeof ApiMelhorEnvioCallbackRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -124,13 +180,20 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/atacado': typeof AtacadoRoute
   '/auth': typeof AuthRoute
+  '/camisetas': typeof CamisetasRoute
   '/checkout': typeof CheckoutRoute
   '/experiencia': typeof ExperienciaRoute
   '/pagamento': typeof PagamentoRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/clientes': typeof AuthenticatedClientesRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/frete-envios': typeof AuthenticatedFreteEnviosRoute
+  '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
+  '/api/melhor-envio/authorize': typeof ApiMelhorEnvioAuthorizeRoute
+  '/api/melhor-envio/callback': typeof ApiMelhorEnvioCallbackRoute
   '/api/public/cron/sync-orders': typeof ApiPublicCronSyncOrdersRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -140,13 +203,20 @@ export interface FileRouteTypes {
     | '/'
     | '/atacado'
     | '/auth'
+    | '/camisetas'
     | '/checkout'
     | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/admin'
+    | '/clientes'
+    | '/financeiro'
     | '/frete-envios'
+    | '/relatorios'
+    | '/admin/estoque'
+    | '/api/melhor-envio/authorize'
+    | '/api/melhor-envio/callback'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -154,13 +224,20 @@ export interface FileRouteTypes {
     | '/'
     | '/atacado'
     | '/auth'
+    | '/camisetas'
     | '/checkout'
     | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/admin'
+    | '/clientes'
+    | '/financeiro'
     | '/frete-envios'
+    | '/relatorios'
+    | '/admin/estoque'
+    | '/api/melhor-envio/authorize'
+    | '/api/melhor-envio/callback'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   id:
@@ -169,13 +246,20 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/atacado'
     | '/auth'
+    | '/camisetas'
     | '/checkout'
     | '/experiencia'
     | '/pagamento'
     | '/privacidade'
     | '/redefinir-senha'
     | '/_authenticated/admin'
+    | '/_authenticated/clientes'
+    | '/_authenticated/financeiro'
     | '/_authenticated/frete-envios'
+    | '/_authenticated/relatorios'
+    | '/admin/estoque'
+    | '/api/melhor-envio/authorize'
+    | '/api/melhor-envio/callback'
     | '/api/public/cron/sync-orders'
     | '/api/public/mercadopago/webhook'
   fileRoutesById: FileRoutesById
@@ -185,11 +269,15 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AtacadoRoute: typeof AtacadoRoute
   AuthRoute: typeof AuthRoute
+  CamisetasRoute: typeof CamisetasRoute
   CheckoutRoute: typeof CheckoutRoute
   ExperienciaRoute: typeof ExperienciaRoute
   PagamentoRoute: typeof PagamentoRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  AdminEstoqueRoute: typeof AdminEstoqueRoute
+  ApiMelhorEnvioAuthorizeRoute: typeof ApiMelhorEnvioAuthorizeRoute
+  ApiMelhorEnvioCallbackRoute: typeof ApiMelhorEnvioCallbackRoute
   ApiPublicCronSyncOrdersRoute: typeof ApiPublicCronSyncOrdersRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -222,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/camisetas': {
+      id: '/camisetas'
+      path: '/camisetas'
+      fullPath: '/camisetas'
+      preLoaderRoute: typeof CamisetasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -266,12 +361,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/clientes': {
+      id: '/_authenticated/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof AuthenticatedClientesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/frete-envios': {
       id: '/_authenticated/frete-envios'
       path: '/frete-envios'
       fullPath: '/frete-envios'
       preLoaderRoute: typeof AuthenticatedFreteEnviosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/relatorios': {
+      id: '/_authenticated/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/admin/estoque': {
+      id: '/admin/estoque'
+      path: '/admin/estoque'
+      fullPath: '/admin/estoque'
+      preLoaderRoute: typeof AdminEstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/melhor-envio/authorize': {
+      id: '/api/melhor-envio/authorize'
+      path: '/api/melhor-envio/authorize'
+      fullPath: '/api/melhor-envio/authorize'
+      preLoaderRoute: typeof ApiMelhorEnvioAuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/melhor-envio/callback': {
+      id: '/api/melhor-envio/callback'
+      path: '/api/melhor-envio/callback'
+      fullPath: '/api/melhor-envio/callback'
+      preLoaderRoute: typeof ApiMelhorEnvioCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/sync-orders': {
       id: '/api/public/cron/sync-orders'
@@ -292,12 +429,18 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedFreteEnviosRoute: typeof AuthenticatedFreteEnviosRoute
+  AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedClientesRoute: AuthenticatedClientesRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedFreteEnviosRoute: AuthenticatedFreteEnviosRoute,
+  AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -308,11 +451,15 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AtacadoRoute: AtacadoRoute,
   AuthRoute: AuthRoute,
+  CamisetasRoute: CamisetasRoute,
   CheckoutRoute: CheckoutRoute,
   ExperienciaRoute: ExperienciaRoute,
   PagamentoRoute: PagamentoRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  AdminEstoqueRoute: AdminEstoqueRoute,
+  ApiMelhorEnvioAuthorizeRoute: ApiMelhorEnvioAuthorizeRoute,
+  ApiMelhorEnvioCallbackRoute: ApiMelhorEnvioCallbackRoute,
   ApiPublicCronSyncOrdersRoute: ApiPublicCronSyncOrdersRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }

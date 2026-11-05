@@ -5,20 +5,24 @@ type ProductImageProps = Omit<
   ImgHTMLAttributes<HTMLImageElement>,
   "src" | "srcSet" | "width" | "height"
 > & {
-  product: Pick<Product, "id" | "name">;
+  product: Pick<Product, "id" | "name"> & Partial<Pick<Product, "category" | "image" | "size">>;
   variant?: "responsive" | "thumbnail";
 };
 
-/** A small selector never downloads the full-size product photo. */
+/** Balaclava selectors use the optimized thumbnail instead of the full-size photo. */
 export function ProductImage({
   product,
   variant = "responsive",
-  alt = `Balaclava ${product.name}`,
+  alt = product.category === "camiseta" ? `${product.name} — tamanho ${product.size}` : `Balaclava ${product.name}`,
   sizes = "(min-width: 1024px) 360px, (min-width: 375px) 45vw, 90vw",
   loading = "lazy",
   decoding = "async",
   ...props
 }: ProductImageProps) {
+  if (product.category === "camiseta") {
+    return <img {...props} src={product.image} alt={alt} width={800} height={800}
+      loading={loading} decoding={decoding} sizes={sizes} />;
+  }
   const base = `/products/optimized/${product.id}`;
   if (variant === "thumbnail") {
     return (

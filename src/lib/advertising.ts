@@ -1,3 +1,5 @@
+import { productTitle, type Product } from "./products";
+
 export const META_PIXEL_ID = "1853720048965709";
 export const GOOGLE_ADS_ID = "AW-875949502";
 export const CONSENT_KEY = "sw-advertising-consent-v1";
@@ -128,11 +130,11 @@ function canTrackCommerce() {
   return Boolean(window.fbq);
 }
 
-export function trackAddToCart(product: { id: string; name: string }, qty: number, unitPrice: number) {
+export function trackAddToCart(product: Pick<Product, "id" | "name" | "category" | "size">, qty: number, unitPrice: number) {
   if (!canTrackCommerce()) return;
   window.fbq?.("track", "AddToCart", {
     content_ids: [product.id],
-    content_name: `Balaclava ${product.name}`,
+    content_name: productTitle(product),
     content_type: "product",
     currency: "BRL",
     value: unitPrice * qty,

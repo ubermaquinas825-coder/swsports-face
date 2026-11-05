@@ -1,9 +1,21 @@
 import { z } from "zod";
-import { productFor, UNIT_PRICE } from "@/lib/products";
+import { productFor, unitPriceCents } from "@/lib/products";
 import { validCpf } from "@/lib/melhor-envio-sender-document";
 
 export const cepSchema = z.string().transform((v) => v.replace(/\D/g, "")).refine((v) => /^\d{8}$/.test(v) && !/^(\d)\1{7}$/.test(v), "Informe um CEP válido com 8 dígitos.");
 export const packageSchema = z.object({ name: z.string().min(1), weightKg: z.number().positive(), lengthCm: z.number().positive(), widthCm: z.number().positive(), heightCm: z.number().positive(), capacity: z.number().int().positive(), packagingWeightKg: z.number().nonnegative().nullable() });
+// Each entry is an exact measured cart combination, including its packaging.
+// Never scale a shirt's weight/dimensions from the balaclava-only rules.
+export const apparelPackageSchema = z.object({
+  name: z.string().trim().min(1),
+  shirtQuantity: z.number().int().positive(),
+  balaclavaQuantity: z.number().int().nonnegative(),
+  weightKg: z.number().finite().positive(),
+  lengthCm: z.number().finite().positive(),
+  widthCm: z.number().finite().positive(),
+  heightCm: z.number().finite().positive(),
+});
+export type ApparelPackage = z.infer<typeof apparelPackageSchema>;
 export const labelSenderSchema = z.object({
   name: z.string().trim().min(3).max(50).refine((v) => v.split(/\s+/).length > 1, "Informe nome e sobrenome ou nome da loja."),
   address: z.string().trim().min(1).max(50), number: z.string().trim().max(10),
@@ -27,8 +39,14 @@ export const labelSenderSchema = z.object({
 export const labelAutomationSchema = z.object({ enabled: z.boolean(), sender: labelSenderSchema.nullable() }).superRefine((value, ctx) => {
   if (value.enabled && !value.sender) ctx.addIssue({ code: "custom", message: "Preencha os dados do remetente antes de ativar etiquetas automáticas." });
 });
-export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable(), labelAutomation: labelAutomationSchema.default({ enabled: false, sender: null }) }).superRefine((value, ctx) => {
+export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), apparelPackages: z.array(apparelPackageSchema).optional(), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable(), labelAutomation: labelAutomationSchema.default({ enabled: false, sender: null }) }).superRefine((value, ctx) => {
   if (value.labelAutomation.enabled && value.labelAutomation.sender?.postal_code !== value.originCep) ctx.addIssue({ code: "custom", message: "O CEP do remetente deve ser igual ao CEP de origem do frete." });
+  const combinations = new Set<string>();
+  value.apparelPackages?.forEach((packaging, index) => {
+    const key = `${packaging.shirtQuantity}:${packaging.balaclavaQuantity}`;
+    if (combinations.has(key)) ctx.addIssue({ code: "custom", path: ["apparelPackages", index], message: "Cadastre apenas uma embalagem por combinação de camisetas e balaclavas." });
+    combinations.add(key);
+  });
 });
 export type ShippingConfig = z.infer<typeof shippingConfigSchema>;
 export const defaultShippingConfig: ShippingConfig = {
@@ -50,11 +68,31 @@ export function choosePackage(quantity: number, config: ShippingConfig) {
   if (!packaging || packaging.packagingWeightKg === null) return null;
   return { ...packaging, weightKg: Math.round((config.productWeightKg * quantity + packaging.packagingWeightKg) * 1000) / 1000 };
 }
+export function chooseCartPackage(lines: { id: string; qty: number }[], config: ShippingConfig) {
+  if (!lines.length) throw new Error("Carrinho vazio.");
+  let shirtQuantity = 0;
+  let balaclavaQuantity = 0;
+  const seen = new Set<string>();
+  for (const line of lines) {
+    const product = productFor(line.id);
+    if (!product || !Number.isSafeInteger(line.qty) || line.qty < 1 || seen.has(line.id)) {
+      throw new Error("Item inválido.");
+    }
+    seen.add(line.id);
+    if (product.category === "camiseta") shirtQuantity += line.qty;
+    else balaclavaQuantity += line.qty;
+  }
+  if (shirtQuantity === 0) return choosePackage(balaclavaQuantity, config);
+  return config.apparelPackages?.find((packaging) =>
+    packaging.shirtQuantity === shirtQuantity && packaging.balaclavaQuantity === balaclavaQuantity,
+  ) ?? null;
+}
 export function validatedTotal(lines: { id: string; qty: number }[], discountCents: number, freightCents: number) {
   if (lines.length === 0 || !Number.isInteger(discountCents) || discountCents < 0 || !Number.isInteger(freightCents) || freightCents < 0) throw new Error("Valores inválidos.");
   const subtotal = lines.reduce((sum, line) => {
-    if (!productFor(line.id) || !Number.isInteger(line.qty) || line.qty < 1) throw new Error("Item inválido.");
-    return sum + Math.round(UNIT_PRICE * 100) * line.qty;
+    const product = productFor(line.id);
+    if (!product || !Number.isInteger(line.qty) || line.qty < 1) throw new Error("Item inválido.");
+    return sum + unitPriceCents(product) * line.qty;
   }, 0);
   if (discountCents > subtotal) throw new Error("Desconto inválido.");
   return subtotal - discountCents + freightCents;

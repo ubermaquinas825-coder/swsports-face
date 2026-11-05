@@ -2,7 +2,7 @@ import { LockKeyhole, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { ProductImage } from "@/components/ProductImage";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
-import { formatBRL, UNIT_PRICE } from "@/lib/products";
+import { formatBRL, productTitle, unitPriceCents } from "@/lib/products";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { currentShipping, type ShippingSelection } from "@/lib/checkout";
 import { useMemo, useState } from "react";
@@ -59,7 +59,7 @@ export function CartDrawer() {
             <ShoppingBag className="h-10 w-10 text-muted-foreground" />
             <p className="font-display font-bold">Carrinho vazio</p>
             <p className="text-sm text-muted-foreground">
-              Escolha uma personalidade na coleção para começar.
+              Escolha um produto na coleção para começar.
             </p>
             <button
               onClick={closeCart}
@@ -79,18 +79,18 @@ export function CartDrawer() {
                   <ProductImage
                     product={product}
                     variant="thumbnail"
-                    alt={`Balaclava ${product.name}`}
+                    alt={productTitle(product)}
                     loading="lazy"
                     decoding="async"
                     className="h-16 w-16 shrink-0 rounded-xl bg-background object-contain"
                   />
                   <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-                    <p className="truncate text-sm font-semibold">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatBRL(UNIT_PRICE)} / un.</p>
+                    <p className="text-sm font-semibold">{productTitle(product)}</p>
+                    <p className="text-xs text-muted-foreground">{formatBRL(unitPriceCents(product) / 100)} / un.</p>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setQty(product.id, qty - 1)}
-                        aria-label={`Diminuir quantidade de ${product.name}`}
+                        aria-label={`Diminuir quantidade de ${productTitle(product)}`}
                         className="grid h-11 w-11 place-items-center rounded-md border border-border"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -103,14 +103,14 @@ export function CartDrawer() {
                       </span>
                       <button
                         onClick={() => setQty(product.id, qty + 1)}
-                        aria-label={`Aumentar quantidade de ${product.name}`}
+                        aria-label={`Aumentar quantidade de ${productTitle(product)}`}
                         className="grid h-11 w-11 place-items-center rounded-md border border-border"
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => remove(product.id)}
-                        aria-label={`Remover ${product.name}`}
+                        aria-label={`Remover ${productTitle(product)}`}
                         className="ml-auto grid h-11 w-11 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />

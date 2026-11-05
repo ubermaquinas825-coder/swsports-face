@@ -3,6 +3,7 @@ import { ProductImage } from "@/components/ProductImage";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Hero } from "@/components/Hero";
 import { Collection } from "@/components/Collection";
+import { ShirtCollection } from "@/components/ShirtCollection";
 import { Benefits } from "@/components/Benefits";
 import { Faq } from "@/components/Faq";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -15,17 +16,17 @@ const SITE_URL = "https://www.balaclavaswsports.com.br/";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Balaclavas Divertidas e Personalizadas | SW Sports" },
+      { title: "Balaclavas e Camisetas UV 50+ | SW Sports" },
       {
         name: "description",
         content:
-          "Balaclavas SW Sports com estampas realistas e divertidas. Modelos exclusivos por R$ 49,90. Calcule seu frete e compre com pagamento seguro pelo Mercado Pago.",
+          "Balaclavas com estampas realistas por R$ 49,90 e camisas manga longa UV 50+ por R$ 79,90. Conheça as coleções SW Sports.",
       },
-      { property: "og:title", content: "Balaclavas Divertidas e Personalizadas | SW Sports" },
+      { property: "og:title", content: "Balaclavas e Camisetas UV 50+ | SW Sports" },
       {
         property: "og:description",
         content:
-          "Modelos exclusivos por R$ 49,90, frete calculado pelo Melhor Envio e pagamento seguro pelo Mercado Pago.",
+          "Balaclavas por R$ 49,90 e camisas manga longa UV 50+ por R$ 79,90. Conheça as coleções SW Sports.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
@@ -34,10 +35,10 @@ export const Route = createFileRoute("/")({
       { property: "og:image:alt", content: "Balaclava Sorriso Grisalho da SW Sports" },
       { name: "twitter:image", content: new URL("/products/optimized/sorriso-grisalho-800.webp", SITE_URL).href },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Balaclavas Divertidas e Personalizadas | SW Sports" },
+      { name: "twitter:title", content: "Balaclavas e Camisetas UV 50+ | SW Sports" },
       {
         name: "twitter:description",
-        content: "Balaclavas com estampas realistas e divertidas por R$ 49,90.",
+        content: "Balaclavas por R$ 49,90 e camisas manga longa UV 50+ por R$ 79,90.",
       },
     ],
     links: [
@@ -125,6 +126,7 @@ function Home() {
       <SiteHeader />
       <main>
         <Hero />
+        <ShirtCollection featured />
         <div id="personalidade" className="scroll-mt-24"><Collection /></div>
         <Benefits />
         <WholesaleStrip />

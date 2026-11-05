@@ -17,7 +17,7 @@ import { useCart } from "@/hooks/use-cart";
 import { checkoutCartKey, type ShippingSelection } from "@/lib/checkout";
 import { createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { deliveryAddressSchema, validTaxDocument } from "@/lib/delivery-address";
-import { formatBRL, UNIT_PRICE } from "@/lib/products";
+import { formatBRL, productTitle, unitPriceCents } from "@/lib/products";
 
 const CHECKOUT_SHIPPING_KEY = "swsports-checkout-shipping-v1";
 
@@ -611,9 +611,9 @@ function CheckoutPage() {
                     className="h-14 w-14 rounded-md bg-background object-contain"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{product.name}</p>
+                    <p className="text-sm font-semibold">{productTitle(product)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {qty}x · {formatBRL(UNIT_PRICE)}
+                      {qty}x · {formatBRL(unitPriceCents(product) / 100)}
                     </p>
                   </div>
                 </div>
