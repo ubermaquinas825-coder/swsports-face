@@ -7,6 +7,7 @@ import {
   prepareMelhorEnvioShipping,
   inspectMelhorEnvioShipping,
   resetMelhorEnvioShipping,
+  checkMelhorEnvioPaymentHold,
 } from "@/lib/melhor-envio-cart.functions";
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
     payment_status: string;
     shipping_status: string;
     shipping_hold?: string | null;
+    shipping_review_reason?: string | null;
     provider_shipment_id?: string | null;
     tracking_code?: string | null;
     label_url?: string | null;
@@ -42,11 +44,13 @@ export function MelhorEnvioOrderAction({ order }: Props) {
   const prepare = useServerFn(prepareMelhorEnvioShipping);
   const inspect = useServerFn(inspectMelhorEnvioShipping);
   const resetShipping = useServerFn(resetMelhorEnvioShipping);
+  const checkHold = useServerFn(checkMelhorEnvioPaymentHold);
   const qc = useQueryClient();
   const [inspecting, setInspecting] = useState(false);
   const [diagnostic, setDiagnostic] = useState<Awaited<ReturnType<typeof inspectMelhorEnvioShipping>> | null>(null);
   const [busy, setBusy] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [checkingHold, setCheckingHold] = useState(false);
   const [message, setMessage] = useState("");
   const [prepared, setPrepared] = useState<{ shipmentId: string; dashboardUrl: string } | null>(null);
   const linked = prepared?.shipmentId || order.provider_shipment_id;
@@ -213,8 +217,35 @@ export function MelhorEnvioOrderAction({ order }: Props) {
           {resetting ? "Conferindo e reiniciando…" : "Reiniciar emissão da etiqueta"}
         </Button>
       )}
-      {blocked && !canReset && <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">{hold}</p>}
-      {blocked && canReset && <p className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-500">{hold} Se nenhuma etiqueta foi paga ou gerada, use o botão de reinício acima.</p>}
+      {blocked && (
+        <div role="alert" className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs leading-5 text-amber-600 dark:text-amber-400">
+          <p>{hold}</p>
+          {order.shipping_review_reason && <p className="mt-2 font-medium [overflow-wrap:anywhere]">Motivo registrado: {order.shipping_review_reason}</p>}
+          {canReset && <p className="mt-2">O reinício só é permitido depois de resolver a pendência acima e confirmar que não existe etiqueta paga ou emitida.</p>}
+        </div>
+      )}
+      {blocked && order.payment_status === "approved" && (
+        <Button
+          variant="outline"
+          className="mt-3 h-auto min-h-10 w-full whitespace-normal py-3"
+          disabled={checkingHold || busy || resetting}
+          onClick={async () => {
+            setCheckingHold(true);
+            setMessage("");
+            try {
+              const result = await checkHold({ data: { orderId: order.id } });
+              setMessage(result.message);
+              await qc.invalidateQueries({ queryKey: ["sales-admin"] });
+            } catch (error) {
+              setMessage(error instanceof Error ? error.message : "Não foi possível conferir a pendência.");
+            } finally {
+              setCheckingHold(false);
+            }
+          }}
+        >
+          {checkingHold ? "Conferindo pagamento…" : "Conferir motivo e pagamento"}
+        </Button>
+      )}
       {message && <p role="status" className="mt-4 rounded-lg border bg-background p-3 text-sm leading-6 [overflow-wrap:anywhere]">{message}</p>}
       <details className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         <summary className="cursor-pointer font-medium">Como funciona o envio</summary>
