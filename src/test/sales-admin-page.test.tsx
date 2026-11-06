@@ -168,7 +168,7 @@ it("saves the ready marker and renders persisted green rows after reload", async
   fireEvent.click(screen.getByRole("button", { name: "Marcar como pronto pedido test-order" }));
   await waitFor(() => expect(setOrderPreparation).toHaveBeenCalledWith({ data: { orderId: "test-order", ready: true } }));
   await screen.findByText("Pedido marcado como pronto.");
-  data.orders[0]!.preparation_ready = true;
+  data.orders[0]!["preparation_ready"] = true;
   rerender(<SalesAdmin />);
   expect(screen.getByText("Pronto").closest("tr")).toHaveClass("bg-emerald-500/15");
   fireEvent.click(screen.getByRole("button", { name: "Desmarcar pronto pedido test-order" }));
