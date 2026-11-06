@@ -34,6 +34,16 @@ beforeEach(() => localStorage.clear());
 afterEach(cleanup);
 
 describe("Shirt selection in the shared cart", () => {
+  it("opens size selection from the buy action for an enabled model", () => {
+    render(<CartProvider><ShirtCollection /></CartProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "COMPRAR AGORA" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Selecione um tamanho para adicionar ao carrinho.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ESCOLHA UM TAMANHO" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("radio", { name: "M" }));
+    expect(screen.getByRole("button", { name: "ADICIONAR AO CARRINHO" })).toBeEnabled();
+  });
+
   it("requires a size, adds the selected SKU at R$ 79,90, and opens the cart", async () => {
     render(<CartProvider><ShirtCollection /><CartStatus /></CartProvider>);
     fireEvent.click(screen.getByRole("button", { name: "Ver detalhes de Camisa iFood Entregador — Ref. 02" }));

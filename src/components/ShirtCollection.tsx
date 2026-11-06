@@ -86,6 +86,7 @@ function ShirtPurchase({ model, onAdded }: { model: ShirtModel; onAdded: () => v
         </label>)}
       </div>
     </fieldset> : <p className="text-sm text-muted-foreground">Tamanhos em atualização.</p>}
+    {model.checkoutReady && !size && <p className="mt-3 text-xs leading-5 text-muted-foreground">Selecione um tamanho para adicionar ao carrinho.</p>}
     <Button type="button" disabled={!variant} className="mt-5 min-h-12 w-full rounded-md font-bold shadow-none"
       onClick={() => {
         if (!variant) return;
@@ -129,8 +130,8 @@ export function ShirtCollection({ featured = false }: { featured?: boolean }) {
               <p className="text-[10px] font-semibold tracking-[0.14em] text-muted-foreground">DRYSPORT · MANGA LONGA · UNISSEX</p>
               <h3 className="mt-2 font-display text-lg font-semibold leading-snug">{model.name}</h3>
               <p className="mt-3 font-display text-2xl font-bold tracking-tight text-brand">{formatBRL(model.priceCents / 100)}</p>
-              <Button type="button" variant="outline" onClick={(event) => { opener.current = event.currentTarget; setSelected(model); }} className="mt-5 min-h-12 w-full rounded-md font-bold">
-                VER MODELO <ArrowRight aria-hidden className="h-4 w-4" />
+              <Button type="button" variant={model.checkoutReady ? "default" : "outline"} onClick={(event) => { opener.current = event.currentTarget; setSelected(model); }} className="mt-5 min-h-12 w-full rounded-md font-bold shadow-none">
+                {model.checkoutReady ? "COMPRAR AGORA" : "VER MODELO"} <ArrowRight aria-hidden className="h-4 w-4" />
               </Button>
             </div>
           </article>)}
