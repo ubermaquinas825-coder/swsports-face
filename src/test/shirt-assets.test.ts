@@ -34,14 +34,14 @@ describe("Original shirt photographs", () => {
     }
   });
 
-  it("connects the correct reference photos to every gallery and keeps checkout blocked", () => {
+  it("connects the correct original photos to every enabled model", () => {
     const expectedCounts: Record<string, number> = { "01": 5, "02": 5, "03": 2 };
     const linkedPhotos = new Set<string>();
     for (const model of shirtModels) {
       expect(model.gallery).toHaveLength(expectedCounts[model.reference]!);
       expect(model.image).toBe(model.gallery[0]!.src);
       expect(model.image).toBe(`/products/camisetas/ref-${model.reference}-frente.png`);
-      expect(model.checkoutReady).toBe(false);
+      expect(model.checkoutReady).toBe(true);
       expect(new Set(model.gallery.map((photo) => photo.src)).size).toBe(model.gallery.length);
       for (const photo of model.gallery) {
         const asset = manifest.assets.find((entry) => `/${entry.target_path.slice("public/".length)}` === photo.src);

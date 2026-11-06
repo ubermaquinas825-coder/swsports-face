@@ -16,6 +16,13 @@ export const apparelPackageSchema = z.object({
   heightCm: z.number().finite().positive(),
 });
 export type ApparelPackage = z.infer<typeof apparelPackageSchema>;
+// Explicitly approved packages for shirts, with an individual garment weight and
+// a known empty-package weight. The balaclava configuration remains independent.
+export const apparelShippingSchema = z.object({
+  productWeightKg: z.number().finite().positive(),
+  packages: z.array(packageSchema).min(1),
+});
+export type ApparelShipping = z.infer<typeof apparelShippingSchema>;
 export const labelSenderSchema = z.object({
   name: z.string().trim().min(3).max(50).refine((v) => v.split(/\s+/).length > 1, "Informe nome e sobrenome ou nome da loja."),
   address: z.string().trim().min(1).max(50), number: z.string().trim().max(10),
@@ -39,7 +46,7 @@ export const labelSenderSchema = z.object({
 export const labelAutomationSchema = z.object({ enabled: z.boolean(), sender: labelSenderSchema.nullable() }).superRefine((value, ctx) => {
   if (value.enabled && !value.sender) ctx.addIssue({ code: "custom", message: "Preencha os dados do remetente antes de ativar etiquetas automáticas." });
 });
-export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), apparelPackages: z.array(apparelPackageSchema).optional(), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable(), labelAutomation: labelAutomationSchema.default({ enabled: false, sender: null }) }).superRefine((value, ctx) => {
+export const shippingConfigSchema = z.object({ originCep: cepSchema, senderAddress: z.string().min(5), packages: z.array(packageSchema).min(1), apparelPackages: z.array(apparelPackageSchema).optional(), apparelShipping: apparelShippingSchema.optional(), carriers: z.array(z.string()), productWeightKg: z.number().positive().nullable(), labelAutomation: labelAutomationSchema.default({ enabled: false, sender: null }) }).superRefine((value, ctx) => {
   if (value.labelAutomation.enabled && value.labelAutomation.sender?.postal_code !== value.originCep) ctx.addIssue({ code: "custom", message: "O CEP do remetente deve ser igual ao CEP de origem do frete." });
   const combinations = new Set<string>();
   value.apparelPackages?.forEach((packaging, index) => {
@@ -83,9 +90,19 @@ export function chooseCartPackage(lines: { id: string; qty: number }[], config: 
     else balaclavaQuantity += line.qty;
   }
   if (shirtQuantity === 0) return choosePackage(balaclavaQuantity, config);
-  return config.apparelPackages?.find((packaging) =>
+  const measured = config.apparelPackages?.find((packaging) =>
     packaging.shirtQuantity === shirtQuantity && packaging.balaclavaQuantity === balaclavaQuantity,
-  ) ?? null;
+  );
+  if (measured) return measured;
+  const apparel = config.apparelShipping;
+  if (!apparel || (balaclavaQuantity > 0 && config.productWeightKg === null)) return null;
+  const quantity = shirtQuantity + balaclavaQuantity;
+  const packaging = [...apparel.packages].sort((a, b) => a.capacity - b.capacity)
+    .find((candidate) => candidate.capacity >= quantity && candidate.packagingWeightKg !== null);
+  if (!packaging || packaging.packagingWeightKg === null) return null;
+  const weightKg = Math.round((shirtQuantity * apparel.productWeightKg
+    + balaclavaQuantity * (config.productWeightKg ?? 0) + packaging.packagingWeightKg) * 1000) / 1000;
+  return { ...packaging, weightKg };
 }
 export function validatedTotal(lines: { id: string; qty: number }[], discountCents: number, freightCents: number) {
   if (lines.length === 0 || !Number.isInteger(discountCents) || discountCents < 0 || !Number.isInteger(freightCents) || freightCents < 0) throw new Error("Valores inválidos.");

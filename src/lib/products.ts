@@ -18,6 +18,7 @@ export type Product = {
   category?: "balaclava" | "camiseta";
   priceCents?: number;
   size?: string;
+  inventorySlug?: string;
 };
 
 export const products: Product[] = [
@@ -161,7 +162,7 @@ export const shirtModels: ShirtModel[] = [
       { label: "Caimento", value: "Slim" },
     ],
     sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-02-protecao-uv50/up/MLBU4740694356",
-    checkoutReady: false,
+    checkoutReady: true,
   },
   {
     id: "camisa-ifood-ref-03",
@@ -183,7 +184,7 @@ export const shirtModels: ShirtModel[] = [
       { label: "Gola", value: "Com zíper" },
     ],
     sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-03-protecao-uv50/up/MLBU4714185455",
-    checkoutReady: false,
+    checkoutReady: true,
   },
   {
     id: "camisa-ifood-ref-01",
@@ -207,7 +208,7 @@ export const shirtModels: ShirtModel[] = [
       { label: "Gola", value: "Com zíper" },
     ],
     sourceUrl: "https://www.mercadolivre.com.br/camisa-ifood-entregador-manga-longa-ref-01-protecao-uv50/up/MLBU4741204286",
-    checkoutReady: false,
+    checkoutReady: true,
   },
 ];
 
@@ -225,6 +226,7 @@ export function shirtVariantFor(model: ShirtModel, size: string): Product | unde
     category: "camiseta",
     priceCents: model.priceCents,
     size,
+    inventorySlug: model.id,
   };
 }
 

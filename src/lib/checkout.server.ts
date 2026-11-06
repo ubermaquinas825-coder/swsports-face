@@ -104,7 +104,10 @@ export async function appmaxPaymentLink(lines: CheckoutLine[], cep: string, opti
   const orderItems = lines.map((line) => {
     const product = productFor(line.id);
     if (!product) throw new Error("Item inválido.");
-    return { id: line.id, name: productTitle(product), qty: line.qty, unit_price_cents: unitPriceCents(product) };
+    const snapshot = { id: line.id, name: productTitle(product), qty: line.qty, unit_price_cents: unitPriceCents(product) };
+    if (product.category !== "camiseta") return snapshot;
+    if (!product.inventorySlug?.trim()) throw new Error("Estoque do produto não confirmado.");
+    return { ...snapshot, inventory_slug: product.inventorySlug };
   });
   const accessToken = await authenticateAppmax();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

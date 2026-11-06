@@ -44,6 +44,8 @@ describe("Shirt catalog readiness", () => {
     expect(medium.id).not.toBe(large.id);
     expect(unitPriceCents(medium)).toBe(7990);
     expect(productTitle(large)).toContain("Tamanho G");
+    expect(medium.inventorySlug).toBe(ready.id);
+    expect(large.inventorySlug).toBe(ready.id);
     expect(shirtVariantFor(ready, "")).toBeUndefined();
     expect(shirtVariantFor(ready, "GG")).toBeUndefined();
     expect(shirtVariantFor({ ...ready, image: null }, "M")).toBeUndefined();
@@ -54,11 +56,18 @@ describe("Shirt catalog readiness", () => {
     expect(shirtVariantFor({ ...ready, sizes: ["M", "m"] }, "M")).toBeUndefined();
   });
 
-  it("does not accept unfinished listings or unsized shirts in a real checkout", () => {
-    for (const model of shirtModels.filter((model) => !model.checkoutReady)) {
-      expect(productFor(model.id)).toBeUndefined();
-      expect(productFor(`${model.id}-m`)).toBeUndefined();
-    }
+  it("enables exactly 20 sized SKUs sharing three model balances and rejects unsized products", () => {
+    const variants = shirtModels.flatMap((model) => model.sizes.map((size) => {
+      expect(model.checkoutReady).toBe(true);
+      const variant = shirtVariantFor(model, size)!;
+      expect(productFor(variant.id)?.inventorySlug).toBe(model.id);
+      expect(unitPriceCents(productFor(variant.id)!)).toBe(7990);
+      return variant;
+    }));
+    expect(variants).toHaveLength(20);
+    expect(new Set(variants.map((variant) => variant.id)).size).toBe(20);
+    expect(new Set(variants.map((variant) => variant.inventorySlug)).size).toBe(3);
+    for (const model of shirtModels) expect(productFor(model.id)).toBeUndefined();
     expect(unitPriceCents(productFor("gato-divertido")!)).toBe(4990);
   });
 });

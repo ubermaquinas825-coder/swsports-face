@@ -32,27 +32,24 @@ Os arquivos também estão agrupados em ZIPs públicos por referência, sem adic
 - Referência 02: `/products/camisetas/arquivos/ref-02.zip`.
 - Referência 03: `/products/camisetas/arquivos/ref-03.zip`.
 
-## Pendências para ativar a compra
+## Compra, estoque e frete ativados
 
-Os modelos estão em `src/lib/products.ts`, em `shirtModels`, com `image` e `gallery` apontando para os PNGs originais, tamanhos confirmados preenchidos e `checkoutReady: false`. A vitrine exibe as fotos, características, tamanhos e medidas confirmados e mantém o botão de compra desativado. Esses modelos não são aceitos pelo checkout real enquanto faltam estoque e dados de embalagem.
+O proprietário confirmou peso líquido de 180 g por camisa e estoque total de 1.000 unidades de cada referência, compartilhado entre tamanhos. As três referências estão com `checkoutReady: true`, fotos originais e tamanhos confirmados. São 20 variantes de tamanho no carrinho, ligadas a três produtos mestres de estoque; não foram criadas 1.000 unidades por tamanho.
 
-Para cada referência:
+O servidor define `inventory_slug` a partir do catálogo e grava o modelo no snapshot do pedido, mantendo o SKU/tamanho e preço individuais. A migração `0018_shared_shirt_inventory.sql` agrega os tamanhos do mesmo modelo antes de baixar o estoque após confirmação independente de pagamento. Preserva locks, idempotência, compatibilidade de pedidos anteriores e execução exclusiva do servidor. Não houve reativação de integrações externas de ERP, emissão automática de etiquetas ou cobranças de teste.
 
-1. Cadastrar os SKUs de tamanho no estoque interno pelo fluxo administrativo existente, com os mesmos identificadores produzidos por `shirtVariantFor`, por exemplo `camisa-ifood-ref-02-m`. Informar estoque real. A baixa de estoque de pagamentos aprovados requer o cadastro; não basta criar o SKU no frontend.
-2. Medir os pacotes prontos e cadastrar em **Frete e Envios → Embalagens para camisetas**. Cada configuração descreve a quantidade exata de camisetas e de balaclavas, peso total embalado e medidas externas. Uma camisa, duas camisas e uma camisa + uma balaclava são combinações independentes; não há estimativa de capacidade.
-3. Ativar `checkoutReady` só depois das confirmações anteriores, executar os testes e build e validar frete/pagamento no ambiente autorizado. A página não envia a compra ao Mercado Livre.
+Apenas essa migração foi aplicada ao projeto Supabase existente `ybgglngfutfsenhlwtei`, depois de inspecionar o schema e testar a função com dados isolados em transação revertida. O script `scripts/initialize-shirt-catalog.sql` registrou três movimentos auditados de abertura de 1.000 unidades, preços de 7.990 centavos e peso de 180 g. Ele não redefine saldos de produtos já existentes.
 
-As fotos e grades já estão preenchidas. A tabela da referência 02 só deve ser acrescentada após confirmação; nenhuma tabela foi estimada para esse modelo.
+O proprietário confirmou o uso das embalagens atuais. A configuração real possui dois pacotes de 22 × 15 × 10 cm, para uma peça e até dez peças, ambos com tara medida de 5 g. `apparelShipping` registra peso líquido de 0,18 kg e essas embalagens. O frete soma os pesos das camisas e balaclavas à tara, sem multiplicar dimensões: uma camisa pesa 185 g embalada, duas pesam 365 g. Carrinhos acima da capacidade cadastrada continuam sem cotação.
 
-As configurações antigas de frete continuam válidas: `apparelPackages` é opcional e pedidos apenas de balaclavas usam a regra anterior. Sem uma embalagem para a combinação de camisetas, o servidor não fornece cotação nem permite prosseguir com um frete estimado.
-
-Nenhum banco de dados, estoque de produção ou cobrança foi alterado nesta implementação. O proprietário autorizou a publicação do código e o deploy do site existente, mantendo as camisetas sem compra ativa enquanto faltam dados logísticos e estoque real.
+A tabela da referência 02 só deve ser acrescentada após confirmação; nenhuma tabela foi estimada. As configurações e o fluxo anterior de balaclavas foram preservados. Nenhum pedido de cliente ou cobrança real foi criado para os testes.
 
 ## Verificação
 
 - Build de produção: `npm run build`.
-- 97 testes locais em 14 arquivos passaram, incluindo seleção de tamanho, retorno de foco, carrinho misto, totais em centavos, payloads/snapshots dos pagamentos, embalagens exatas, validação de checkout e proteção de manutenção financeira. Os testes de pagamento usam respostas simuladas, sem criar cobranças.
+- 128 testes locais em 16 arquivos passaram, incluindo seleção de tamanho, retorno de foco, carrinho misto, totais em centavos, payloads/snapshots dos pagamentos, embalagens exatas, validação de checkout e proteção de manutenção financeira. Os testes de pagamento usam respostas simuladas, sem criar cobranças.
 - A suíte `shirt-assets.test.ts` valida hashes SHA-256, bytes, assinatura PNG e dimensões dos 13 uploads, a duplicata, os vínculos das 12 fotos às referências corretas e a presença dos três ZIPs públicos. Os testes de galeria usam fotos sintéticas isoladas e preservam o cenário sem fotos para um cadastro ainda incompleto.
+- A função de estoque compartilhado foi testada no banco em transação revertida, incluindo baixa agregada, repetição idempotente, legado, pagamento pendente e insuficiência sem baixa parcial. Após aplicação, foram conferidos três saldos de 1.000 unidades, três movimentos auditados de abertura, peso de 180 g e permissões exclusivas do servidor. A verificação de segurança não mostrou novos apontamentos.
 - `git diff --check` passou.
 - `tsc --noEmit` aponta erros em arquivos anteriores fora das alterações (estoque/relatórios, showcase, logística histórica e testes antigos). Não foram encontrados erros de tipos nos componentes/helpers/testes adicionados.
 - Não houve verificação visual em navegador: o controlador `cua_repl.js` não está disponível neste ambiente. Também não houve transação real nem validação de credenciais de produção.

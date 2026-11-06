@@ -14,6 +14,7 @@ vi.mock("@/lib/products", async (importOriginal) => {
     category: "camiseta" as const,
     size: "M",
     priceCents: 7990,
+    inventorySlug: "camisa-ifood-ref-01",
   };
   const large = { ...fixture, id: "fixture-shirt-g", size: "G" };
   return {
@@ -42,7 +43,7 @@ const option = { id: "1", name: "PAC", company: "Correios", priceCents: 1234, de
 const shirtName = "Camisa de teste — Ref. 01 · Tamanho M";
 const expectedItems = [
   { id: "gato-divertido", name: "Balaclava Gato Divertido", qty: 1, unit_price_cents: 4990 },
-  { id: "fixture-shirt-m", name: shirtName, qty: 2, unit_price_cents: 7990 },
+  { id: "fixture-shirt-m", name: shirtName, qty: 2, unit_price_cents: 7990, inventory_slug: "camisa-ifood-ref-01" },
 ];
 
 beforeEach(() => {
@@ -171,7 +172,8 @@ describe("SKU prices and shirt sizes in the shared checkout", () => {
       checkout_url: "https://www.mercadopago.com.br/checkout/fixture",
     })));
     vi.stubGlobal("fetch", request);
-    const result = await mercadoPagoPaymentLink(mixed, "38408562", option, testDeliveryAddress);
+    const tampered = mixed.map((line) => ({ ...line, inventory_slug: "untrusted-client-master" }));
+    const result = await mercadoPagoPaymentLink(tampered, "38408562", option, testDeliveryAddress);
     expect(result.totalCents).toBe(22204);
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({
       items: expectedItems,
