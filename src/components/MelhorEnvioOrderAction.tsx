@@ -77,6 +77,7 @@ export function MelhorEnvioOrderAction({ order }: Props) {
       : null);
   const blocked = Boolean(hold);
   const canReset =
+    !blocked &&
     order.payment_status === "approved" &&
     !order.tracking_code &&
     !order.label_url &&
