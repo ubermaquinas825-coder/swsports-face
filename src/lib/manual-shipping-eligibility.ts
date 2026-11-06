@@ -27,3 +27,14 @@ export function manualShippingHold(order: ManualShippingState): string | null {
     return "Pedido em revisão: resolva a pendência de conferência antes de enviar.";
   return null;
 }
+
+/** Admin-only explanation of an existing hold. Never changes financial or shipment state. */
+export function manualShippingReviewReason(order: ManualShippingState): string | null {
+  if (!manualShippingHold(order) || order.payment_status !== "approved") return null;
+  if (order.bling_sync_status === "processing") {
+    return "Existe um processamento anterior que precisa ser conferido antes de gerar outro envio.";
+  }
+  if (!["blocked", "reconciliation_required"].includes(order.bling_sync_status)) return null;
+  const reason = order.bling_sync_error?.replace(/\s+/g, " ").trim();
+  return reason ? reason.slice(0, 350) : "O pedido foi marcado para revisão, mas o motivo não foi registrado. Confira o histórico financeiro antes de liberar o envio.";
+}
