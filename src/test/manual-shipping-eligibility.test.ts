@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { manualShippingHold, LEGACY_SETUP_FAILURE } from "@/lib/manual-shipping-eligibility";
+import { manualShippingHold, manualShippingReviewReason, LEGACY_SETUP_FAILURE } from "@/lib/manual-shipping-eligibility";
 const order = {
   payment_status: "approved",
   payment_link_id: "mp:order",
@@ -21,4 +21,17 @@ describe("Manual shipping ERP eligibility", () => {
   ])("keeps other financial and ambiguous cases blocked: %o", (change) =>
     expect(manualShippingHold({ ...order, ...change })).not.toBeNull(),
   );
+});
+describe("Admin shipping hold explanation", () => {
+  it("explains the actual stored failure without relaxing the hold", () => {
+    const held = { ...order, bling_sync_error: "Divergência de pagamento" };
+    expect(manualShippingHold(held)).not.toBeNull();
+    expect(manualShippingReviewReason(held)).toBe("Divergência de pagamento");
+  });
+  it("hides historical reasons when there is no active hold", () =>
+    expect(manualShippingReviewReason(order)).toBeNull());
+  it("returns a useful message when no reason was persisted", () =>
+    expect(manualShippingReviewReason({ ...order, bling_sync_error: null })).toContain("motivo não foi registrado"));
+  it("normalizes line breaks and truncates administrative diagnostics", () =>
+    expect(manualShippingReviewReason({ ...order, bling_sync_error: "Erro\\n" + "x".repeat(600) })).toHaveLength(350));
 });
