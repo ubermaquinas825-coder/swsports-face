@@ -35,6 +35,6 @@ export function manualShippingReviewReason(order: ManualShippingState): string |
     return "Existe um processamento anterior que precisa ser conferido antes de gerar outro envio.";
   }
   if (!["blocked", "reconciliation_required"].includes(order.bling_sync_status)) return null;
-  const reason = order.bling_sync_error?.replace(/[\\r\\n\\t\\x00-\\x1f]+/g, " ").trim();
+  const reason = order.bling_sync_error?.replace(/\s+/g, " ").trim();
   return reason ? reason.slice(0, 350) : "O pedido foi marcado para revisão, mas o motivo não foi registrado. Confira o histórico financeiro antes de liberar o envio.";
 }
