@@ -1,4 +1,4 @@
-import { manualShippingHold } from "./manual-shipping-eligibility";
+import { manualShippingHold, manualShippingReviewReason } from "./manual-shipping-eligibility";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -41,7 +41,7 @@ export const getSalesAdmin = createServerFn({ method: "GET" })
           bling_sync_error: _legacyError,
           ...publicOrder
         } = order;
-        return { ...publicOrder, preparation_ready: readyIds.has(order.id), shipping_hold: manualShippingHold(order) };
+        return { ...publicOrder, preparation_ready: readyIds.has(order.id), shipping_hold: manualShippingHold(order), shipping_review_reason: manualShippingReviewReason(order) };
       }),
       count: result.count ?? 0,
     };
