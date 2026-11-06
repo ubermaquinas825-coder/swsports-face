@@ -66,7 +66,9 @@ function PaymentBadge({ status }: { status: string }) {
     ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
     : pending
       ? "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-      : "border-border bg-muted text-muted-foreground";
+      : status === "failed"
+        ? "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-400"
+        : "border-border bg-muted text-muted-foreground";
 
   return <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${classes}`}>
     {paymentLabels[status] ?? status}
@@ -266,7 +268,7 @@ export function SalesAdmin() {
           <p role="status" aria-live="polite" className="px-5 text-sm">{preparationMessage}</p>
           {filtered.length === 0 ? <div className="px-6 py-16 text-center"><ShoppingBag className="mx-auto text-muted-foreground/40" size={30} /><p className="mt-3 font-semibold">Nenhum pedido encontrado</p><p className="mt-1 text-sm text-muted-foreground">{orders.length ? "Ajuste os filtros para encontrar outro pedido." : view === "all" ? "Nenhum pedido foi registrado ainda." : "Nenhum pedido está neste grupo."}</p></div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><caption className="sr-only">Pedidos e compradores</caption><thead className="bg-muted/35 text-xs uppercase tracking-wide text-muted-foreground"><tr>{["Pedido / data", "Cliente", "Total", "Pagamento", "Entrega", ""].map((heading, index) => <th key={index} className="px-5 py-3 font-semibold">{heading || "Detalhes"}</th>)}</tr></thead><tbody>{filtered.map((row) => {
             const address = record(row.delivery_address);
-            return <tr key={row.id} className={`border-t transition-colors ${row.preparation_ready ? "bg-emerald-500/15 hover:bg-emerald-500/20" : "hover:bg-muted/25"}`}>
+            return <tr key={row.id} className={`border-t transition-colors ${row.payment_status === "failed" ? "bg-red-500/15 hover:bg-red-500/20" : row.preparation_ready ? "bg-emerald-500/15 hover:bg-emerald-500/20" : "hover:bg-muted/25"}`}>
               <td className="px-5 py-4"><span className="rounded-md bg-muted px-2 py-1 font-mono text-xs font-semibold">#{row.id.slice(0, 8)}</span><p className="mt-2 text-xs text-muted-foreground">{dateTime(row.created_at)}</p></td>
               <td className="px-5 py-4"><p className="font-semibold">{text(address["name"]) || "Cliente não registrado"}</p><p className="mt-1 text-xs text-muted-foreground">{text(address["city"]) || "Cidade não informada"}</p></td>
               <td className="whitespace-nowrap px-5 py-4 text-base font-bold">{money(orderTotal(row))}</td>

@@ -76,7 +76,7 @@ export function OrderDetails({ order, onClose }: { order: Order; onClose: () => 
             </DialogDescription>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${paid ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}`}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${paid ? "bg-emerald-500/10 text-emerald-500" : order.payment_status === "failed" ? "bg-red-500/15 text-red-700 dark:text-red-400" : "bg-amber-500/10 text-amber-500"}`}
               >
                 {paymentLabels[order.payment_status] ?? order.payment_status}
               </span>
