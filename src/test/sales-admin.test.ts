@@ -34,7 +34,7 @@ describe("Sales administration", () => {
     const query = { select: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range };
     from.mockReturnValueOnce(query).mockReturnValueOnce({ select: () => ({ in: async () => ({ data: [{ order_id: "order", ready: true }], error: null }) }) });
     range.mockResolvedValue({ data: [{ id: "order" }], count: 51, error: null });
-    await expect(invoke(1)).resolves.toEqual({ orders: [{ id: "order", preparation_ready: true, shipping_hold: "O pagamento deste pedido ainda não está aprovado." }], count: 51 });
+    await expect(invoke(1)).resolves.toEqual({ orders: [{ id: "order", preparation_ready: true, shipping_hold: "O pagamento deste pedido ainda não está aprovado.", shipping_review_reason: null }], count: 51 });
     expect(rpc).toHaveBeenCalledWith("has_role", { _user_id: "user", _role: "admin" });
     expect(range).toHaveBeenCalledWith(50, 99);
     expect(query.select.mock.calls[0]?.[0]).not.toContain("bling_export_token");
