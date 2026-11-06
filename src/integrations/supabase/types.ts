@@ -14,6 +14,13 @@ export type Database = {
   }
   public: {
     Tables: {
+      order_preparation: {
+        Row: { order_id: string; ready: boolean; updated_at: string; updated_by: string }
+        Insert: { order_id: string; ready: boolean; updated_at?: string; updated_by: string }
+        Update: { ready?: boolean; updated_at?: string; updated_by?: string }
+        Relationships: []
+      }
+
       shipping_label_jobs: {
         Row: { order_id: string; token: string; revision: string; stage: string; payload: Json; shipment_id: string | null; created_at: string; updated_at: string }
         Insert: { order_id: string; token?: string; revision: string; stage: string; payload: Json; shipment_id?: string | null; created_at?: string; updated_at?: string }

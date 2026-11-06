@@ -28,6 +28,12 @@ export const getSalesAdmin = createServerFn({ method: "GET" })
       .order("id", { ascending: false })
       .range(data.page * 50, data.page * 50 + 49);
     if (result.error) throw new Error("Não foi possível carregar os pedidos. Tente novamente.");
+    const ids = (result.data ?? []).map((order) => order.id);
+    const preparation = ids.length
+      ? await context.supabase.from("order_preparation").select("order_id,ready").in("order_id", ids)
+      : { data: [], error: null };
+    if (preparation.error) throw new Error("Não foi possível carregar o preparo dos pedidos. Tente novamente.");
+    const readyIds = new Set((preparation.data ?? []).filter((row) => row.ready).map((row) => row.order_id));
     return {
       orders: (result.data ?? []).map((order) => {
         const {
@@ -35,8 +41,25 @@ export const getSalesAdmin = createServerFn({ method: "GET" })
           bling_sync_error: _legacyError,
           ...publicOrder
         } = order;
-        return { ...publicOrder, shipping_hold: manualShippingHold(order) };
+        return { ...publicOrder, preparation_ready: readyIds.has(order.id), shipping_hold: manualShippingHold(order) };
       }),
       count: result.count ?? 0,
     };
+  });
+
+// Preparation is an internal marker; it never changes payment or shipping states.
+export const setOrderPreparation = createServerFn({ method: "POST" })
+  .validator((input: unknown) => z.object({ orderId: z.string().uuid(), ready: z.boolean() }).strict().parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    const role = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (role.error || !role.data) throw new Error("Acesso exclusivo para administradores.");
+    const result = await context.supabase.from("order_preparation").upsert({
+      order_id: data.orderId,
+      ready: data.ready,
+      updated_at: new Date().toISOString(),
+      updated_by: context.userId,
+    }, { onConflict: "order_id" }).select("order_id,ready").single();
+    if (result.error || !result.data) throw new Error("Não foi possível salvar o preparo do pedido. Tente novamente.");
+    return result.data;
   });

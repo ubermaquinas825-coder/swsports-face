@@ -8,7 +8,7 @@ vi.mock("@/lib/melhor-envio-cart.functions", () => ({
   inspectMelhorEnvioShipping: vi.fn(),
   resetMelhorEnvioShipping: vi.fn(),
 }));
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { response } = vi.hoisted(() => ({
   response: {
@@ -21,24 +21,25 @@ const { response } = vi.hoisted(() => ({
     queryFn: undefined as undefined | (() => unknown),
   },
 }));
-vi.mock("@tanstack/react-query", () => ({ useQuery: (options: { queryFn: () => unknown }) => { response.queryFn = options.queryFn; return response; }, useQueryClient: () => ({}) }));
+vi.mock("@tanstack/react-query", () => ({ useQuery: (options: { queryFn: () => unknown }) => { response.queryFn = options.queryFn; return response; }, useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (config: unknown) => config,
   useNavigate: () => vi.fn(),
   Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
 vi.mock("@tanstack/react-start", () => ({
-  useServerFn: () => vi.fn(),
+  useServerFn: (fn: unknown) => fn,
   createServerFn: () => {
     const b = { middleware: () => b, inputValidator: () => b, handler: () => vi.fn() };
     return b;
   },
 }));
-vi.mock("@/lib/sales.functions", () => ({ getSalesAdmin: vi.fn() }));
+vi.mock("@/lib/sales.functions", () => ({ getSalesAdmin: vi.fn(), setOrderPreparation: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
-import { getSalesAdmin } from "@/lib/sales.functions";
+import { getSalesAdmin, setOrderPreparation } from "@/lib/sales.functions";
 import { SalesAdmin } from "@/components/admin/SalesAdmin";
 beforeEach(() => {
+  vi.mocked(setOrderPreparation).mockReset();
   response.isError = false;
   response.data = {
     count: 1,
@@ -85,7 +86,7 @@ describe("Administrative sales page", () => {
     expect(screen.getByPlaceholderText("Cliente, telefone, pedido ou produto")).toHaveValue("");
     response.queryFn?.();
     expect(getSalesAdmin).toHaveBeenLastCalledWith({ data: { page: 0, view } });
-    fireEvent.click(screen.getByRole("button", { name: "Voltar para todos os pedidos" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ver todos" }));
     response.queryFn?.();
     expect(getSalesAdmin).toHaveBeenLastCalledWith({ data: { page: 0, view: "all" } });
     expect(screen.getByRole("heading", { name: "Resumo operacional" })).toBeVisible();
@@ -149,7 +150,7 @@ describe("Administrative sales page", () => {
     });
     expect(screen.queryByRole("button", { name: "Ver pedido test-order" })).not.toBeInTheDocument();
     expect(
-      screen.getByText("Nenhum pedido corresponde aos filtros desta página."),
+      screen.getByText("Nenhum pedido encontrado"),
     ).toBeInTheDocument();
   });
   it("does not display cached customer details on access failure", () => {
@@ -158,4 +159,25 @@ describe("Administrative sales page", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Acesso exclusivo");
     expect(screen.queryByText("Maria Silva")).not.toBeInTheDocument();
   });
+});
+
+it("saves the ready marker and renders persisted green rows after reload", async () => {
+  const data = response.data as { orders: Array<Record<string, unknown>> };
+  vi.mocked(setOrderPreparation).mockResolvedValue({ order_id: "test-order", ready: true });
+  const { rerender } = render(<SalesAdmin />);
+  fireEvent.click(screen.getByRole("button", { name: "Marcar como pronto pedido test-order" }));
+  await waitFor(() => expect(setOrderPreparation).toHaveBeenCalledWith({ data: { orderId: "test-order", ready: true } }));
+  await screen.findByText("Pedido marcado como pronto.");
+  data.orders[0]!.preparation_ready = true;
+  rerender(<SalesAdmin />);
+  expect(screen.getByText("Pronto").closest("tr")).toHaveClass("bg-emerald-500/15");
+  fireEvent.click(screen.getByRole("button", { name: "Desmarcar pronto pedido test-order" }));
+  await waitFor(() => expect(setOrderPreparation).toHaveBeenLastCalledWith({ data: { orderId: "test-order", ready: false } }));
+});
+it("keeps the row unmarked when saving fails", async () => {
+  vi.mocked(setOrderPreparation).mockRejectedValue(new Error("Não foi possível salvar"));
+  render(<SalesAdmin />);
+  fireEvent.click(screen.getByRole("button", { name: "Marcar como pronto pedido test-order" }));
+  await screen.findByText("Não foi possível salvar");
+  expect(screen.queryByText("Pronto")).not.toBeInTheDocument();
 });

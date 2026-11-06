@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
-import { getSalesAdmin } from "@/lib/sales.functions";
+import { getSalesAdmin, setOrderPreparation } from "@/lib/sales.functions";
 const invoke = (page = 0, view = "all") =>
   (getSalesAdmin as unknown as (args: unknown) => Promise<unknown>)({
     data: { page, view },
@@ -32,9 +32,9 @@ describe("Sales administration", () => {
   it("loads the requested page only after admin authorization", async () => {
     rpc.mockResolvedValue({ data: true, error: null });
     const query = { select: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), range };
-    from.mockReturnValue(query);
+    from.mockReturnValueOnce(query).mockReturnValueOnce({ select: () => ({ in: async () => ({ data: [{ order_id: "order", ready: true }], error: null }) }) });
     range.mockResolvedValue({ data: [{ id: "order" }], count: 51, error: null });
-    await expect(invoke(1)).resolves.toEqual({ orders: [{ id: "order", shipping_hold: "O pagamento deste pedido ainda não está aprovado." }], count: 51 });
+    await expect(invoke(1)).resolves.toEqual({ orders: [{ id: "order", preparation_ready: true, shipping_hold: "O pagamento deste pedido ainda não está aprovado." }], count: 51 });
     expect(rpc).toHaveBeenCalledWith("has_role", { _user_id: "user", _role: "admin" });
     expect(range).toHaveBeenCalledWith(50, 99);
     expect(query.select.mock.calls[0]?.[0]).not.toContain("bling_export_token");
@@ -65,5 +65,28 @@ describe("Sales administration", () => {
   it("does not manufacture dates for historical payments", () => {
     expect(dateTime(null)).toBe("Não registrado");
     expect(dateTime("invalid")).toBe("Não registrado");
+  });
+});
+const save = (ready: boolean) => (setOrderPreparation as unknown as (args: unknown) => Promise<unknown>)({
+  data: { orderId: "order", ready }, context: { userId: "admin", supabase: { rpc, from } },
+});
+describe("Order preparation", () => {
+  it("denies writes by non-admin users", async () => {
+    rpc.mockResolvedValue({ data: false, error: null });
+    await expect(save(true)).rejects.toThrow("administradores");
+    expect(from).not.toHaveBeenCalled();
+  });
+  it.each([true, false])("saves readiness %s without changing financial or shipping records", async (ready) => {
+    rpc.mockResolvedValue({ data: true, error: null });
+    const upsert = vi.fn(() => ({ select: () => ({ single: async () => ({ data: { order_id: "order", ready }, error: null }) }) }));
+    from.mockReturnValue({ upsert });
+    await expect(save(ready)).resolves.toEqual({ order_id: "order", ready });
+    expect(from).toHaveBeenCalledExactlyOnceWith("order_preparation");
+    expect(upsert).toHaveBeenCalledWith({ order_id: "order", ready, updated_by: "admin", updated_at: expect.any(String) }, { onConflict: "order_id" });
+  });
+  it("reports persistence failures", async () => {
+    rpc.mockResolvedValue({ data: true, error: null });
+    from.mockReturnValue({ upsert: () => ({ select: () => ({ single: async () => ({ data: null, error: {} }) }) }) });
+    await expect(save(true)).rejects.toThrow("Não foi possível salvar");
   });
 });

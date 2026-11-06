@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { OrderDetails } from "@/components/OrderDetails";
 import { Input } from "@/components/ui/input";
 import { checkPayments } from "@/lib/payment-reconciliation.functions";
-import { getSalesAdmin } from "@/lib/sales.functions";
+import { getSalesAdmin, setOrderPreparation } from "@/lib/sales.functions";
 import { dateTime, money, orderTotal, paymentLabels, record, text } from "@/lib/sales";
 import { shippingStates } from "@/lib/shipping";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,6 +87,22 @@ export function SalesAdmin() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
+  const [savingOrders, setSavingOrders] = useState<Set<string>>(new Set());
+  const [preparationMessage, setPreparationMessage] = useState("");
+  const savePreparation = useServerFn(setOrderPreparation);
+  async function togglePreparation(orderId: string, ready: boolean) {
+    setSavingOrders((current) => new Set(current).add(orderId));
+    setPreparationMessage("");
+    try {
+      await savePreparation({ data: { orderId, ready } });
+      await qc.invalidateQueries({ queryKey: ["sales-admin"] });
+      setPreparationMessage(ready ? "Pedido marcado como pronto." : "Marcação de pronto removida.");
+    } catch (error) {
+      setPreparationMessage(error instanceof Error ? error.message : "Não foi possível salvar o pedido.");
+    } finally {
+      setSavingOrders((current) => { const next = new Set(current); next.delete(orderId); return next; });
+    }
+  }
   const qc = useQueryClient();
   const check = useServerFn(checkPayments);
   const [checkingPayments, setCheckingPayments] = useState(false);
@@ -247,15 +263,21 @@ export function SalesAdmin() {
             </div>
           </div>
 
+          <p role="status" aria-live="polite" className="px-5 text-sm">{preparationMessage}</p>
           {filtered.length === 0 ? <div className="px-6 py-16 text-center"><ShoppingBag className="mx-auto text-muted-foreground/40" size={30} /><p className="mt-3 font-semibold">Nenhum pedido encontrado</p><p className="mt-1 text-sm text-muted-foreground">{orders.length ? "Ajuste os filtros para encontrar outro pedido." : view === "all" ? "Nenhum pedido foi registrado ainda." : "Nenhum pedido está neste grupo."}</p></div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><caption className="sr-only">Pedidos e compradores</caption><thead className="bg-muted/35 text-xs uppercase tracking-wide text-muted-foreground"><tr>{["Pedido / data", "Cliente", "Total", "Pagamento", "Entrega", ""].map((heading, index) => <th key={index} className="px-5 py-3 font-semibold">{heading || "Detalhes"}</th>)}</tr></thead><tbody>{filtered.map((row) => {
             const address = record(row.delivery_address);
-            return <tr key={row.id} className="border-t transition-colors hover:bg-muted/25">
+            return <tr key={row.id} className={`border-t transition-colors ${row.preparation_ready ? "bg-emerald-500/15 hover:bg-emerald-500/20" : "hover:bg-muted/25"}`}>
               <td className="px-5 py-4"><span className="rounded-md bg-muted px-2 py-1 font-mono text-xs font-semibold">#{row.id.slice(0, 8)}</span><p className="mt-2 text-xs text-muted-foreground">{dateTime(row.created_at)}</p></td>
               <td className="px-5 py-4"><p className="font-semibold">{text(address["name"]) || "Cliente não registrado"}</p><p className="mt-1 text-xs text-muted-foreground">{text(address["city"]) || "Cidade não informada"}</p></td>
               <td className="whitespace-nowrap px-5 py-4 text-base font-bold">{money(orderTotal(row))}</td>
               <td className="px-5 py-4"><PaymentBadge status={row.payment_status} /></td>
               <td className="px-5 py-4"><span className="text-sm font-medium">{row.payment_status === "approved" && row.shipping_status === "awaiting_payment" ? "Aguardando preparo do envio" : (shippingStates[row.shipping_status] ?? row.shipping_status)}</span>{row.tracking_code && <p className="mt-1 text-xs text-muted-foreground">Rastreio: {row.tracking_code}</p>}</td>
-              <td className="px-5 py-4 text-right"><Button variant="outline" size="sm" aria-label={`Ver pedido ${row.id}`} onClick={() => setSelected(row.id)}>Ver pedido <ArrowUpRight size={14} /></Button></td>
+              <td className="px-5 py-4 text-right"><div className="flex flex-col items-end gap-2">
+                {row.preparation_ready && <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400"><PackageCheck size={14} /> Pronto</span>}
+                <Button variant="outline" size="sm" disabled={savingOrders.has(row.id)} aria-label={`${row.preparation_ready ? "Desmarcar pronto" : "Marcar como pronto"} pedido ${row.id}`} onClick={() => togglePreparation(row.id, !row.preparation_ready)}>
+                  {savingOrders.has(row.id) ? "Salvando…" : row.preparation_ready ? "Desmarcar pronto" : "Marcar como pronto"}
+                </Button>
+                <Button variant="outline" size="sm" aria-label={`Ver pedido ${row.id}`} onClick={() => setSelected(row.id)}>Ver pedido <ArrowUpRight size={14} /></Button></div></td>
             </tr>;
           })}</tbody></table></div>}
 
